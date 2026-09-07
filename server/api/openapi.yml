@@ -474,7 +474,6 @@ components:
         password:
           type: string
           format: password
-          minLength: 8
     LoginResponse:
       type: object
       additionalProperties: false
