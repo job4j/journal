@@ -1,0 +1,30 @@
+put:
+  tags: [Scores]
+  operationId: putStudentScore
+  summary: Поставить или изменить оценку ученика
+  description: Ученик должен состоять в классе на дату урока.
+  x-required-permission: can_create_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/GradeItemIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/PutStudentScoreRequest'
+  responses:
+    '200':
+      description: Оценка сохранена.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/PutStudentScoreResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

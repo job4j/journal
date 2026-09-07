@@ -1,0 +1,13 @@
+get:
+  tags: [Auth]
+  operationId: getCurrentUser
+  summary: Получить текущего пользователя
+  responses:
+    '200':
+      description: Текущий пользователь и его роли.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/GetCurrentUserResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'

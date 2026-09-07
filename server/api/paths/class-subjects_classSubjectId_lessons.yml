@@ -1,0 +1,53 @@
+get:
+  tags: [Lessons]
+  operationId: listClassSubjectLessons
+  summary: Получить уроки предмета класса
+  x-required-permission: can_view_lesson
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassSubjectIdPath'
+    - $ref: '../openapi.yml#/components/parameters/DateFromQuery'
+    - $ref: '../openapi.yml#/components/parameters/DateToQuery'
+  responses:
+    '200':
+      description: Список уроков.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListClassSubjectLessonsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+post:
+  tags: [Lessons]
+  operationId: createLesson
+  summary: Создать урок
+  description: Доступен ответственному учителю предмета класса.
+  x-required-permission: can_create_lesson
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassSubjectIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateLessonRequest'
+  responses:
+    '201':
+      description: Урок создан.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateLessonResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

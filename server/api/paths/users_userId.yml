@@ -1,0 +1,21 @@
+get:
+  tags: [Users]
+  operationId: getUser
+  summary: Получить пользователя
+  description: Требуется глобальное или персональное `can_view_user`.
+  x-required-permission: can_view_user
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/UserIdPath'
+  responses:
+    '200':
+      description: Пользователь найден.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/GetUserResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

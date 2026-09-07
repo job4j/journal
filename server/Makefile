@@ -1,20 +1,32 @@
 GOOSE_VERSION := v3.27.3
+OAPI_CODEGEN_VERSION := v2.8.0
 TOOLS_DIR := $(CURDIR)/bin
 GOOSE := $(TOOLS_DIR)/goose
+OAPI_CODEGEN := $(TOOLS_DIR)/oapi-codegen
 
 ifeq ($(OS),Windows_NT)
 GOOSE := $(TOOLS_DIR)/goose.exe
+OAPI_CODEGEN := $(TOOLS_DIR)/oapi-codegen.exe
 endif
 
 MIGRATIONS_DIR := $(CURDIR)/migrations
+OPENAPI_SPEC := $(CURDIR)/api/openapi.yml
+OPENAPI_CONFIG := $(CURDIR)/api/oapi-codegen.yml
+OPENAPI_OUTPUT := $(CURDIR)/gen/openapi.gen.go
 GOOSE_DRIVER ?= postgres
 GOOSE_DBSTRING ?=
 
-.PHONY: deps migration-create migrate-up migrate-down migrate-status migrate-validate
+.PHONY: deps generate migration-create migrate-up migrate-down migrate-status migrate-validate
 
 deps:
 	mkdir -p "$(TOOLS_DIR)"
 	GOBIN="$(TOOLS_DIR)" go install github.com/pressly/goose/v3/cmd/goose@$(GOOSE_VERSION)
+	GOBIN="$(TOOLS_DIR)" go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OAPI_CODEGEN_VERSION)
+
+generate:
+	mkdir -p "$(dir $(OPENAPI_OUTPUT))"
+	"$(OAPI_CODEGEN)" --config "$(OPENAPI_CONFIG)" "$(OPENAPI_SPEC)"
+	gofmt -w "$(OPENAPI_OUTPUT)"
 
 migration-create:
 	@test -n "$(name)" || (echo "Usage: make migration-create name=migration_name" && exit 1)

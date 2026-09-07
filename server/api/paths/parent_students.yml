@@ -1,0 +1,16 @@
+get:
+  tags: [Parent]
+  operationId: listParentStudents
+  summary: Получить учеников текущего родителя
+  description: Возвращает пользователей-учеников из персональных `can_view_user`.
+  responses:
+    '200':
+      description: Список учеников родителя.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListParentStudentsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'

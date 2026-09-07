@@ -1,0 +1,13 @@
+post:
+  tags: [Auth]
+  operationId: logout
+  summary: Завершить текущую сессию
+  responses:
+    '200':
+      description: Сессия завершена.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/LogoutResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'

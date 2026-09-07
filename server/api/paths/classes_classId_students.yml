@@ -1,0 +1,52 @@
+get:
+  tags: [Classes]
+  operationId: listClassStudents
+  summary: Получить состав класса
+  description: Требуется доступ к классу.
+  x-required-permission: can_view_class
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  responses:
+    '200':
+      description: Состав класса.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListClassStudentsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+post:
+  tags: [Classes]
+  operationId: addStudentToClass
+  summary: Добавить ученика в класс
+  description: Требуется `can_manage_class_students` для класса.
+  x-required-permission: can_manage_class_students
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/AddStudentToClassRequest'
+  responses:
+    '201':
+      description: Ученик добавлен в класс.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/AddStudentToClassResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

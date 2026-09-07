@@ -1,0 +1,26 @@
+post:
+  tags: [Auth]
+  operationId: login
+  summary: Войти в систему
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/LoginRequest'
+  responses:
+    '200':
+      description: Пользователь вошёл в систему. Сессия установлена в cookie.
+      headers:
+        Set-Cookie:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/LoginResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'

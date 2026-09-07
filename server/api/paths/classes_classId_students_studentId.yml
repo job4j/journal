@@ -1,0 +1,30 @@
+patch:
+  tags: [Classes]
+  operationId: updateClassStudent
+  summary: Изменить участие ученика в классе
+  description: Используется в том числе для сохранения даты выбытия.
+  x-required-permission: can_manage_class_students
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/UpdateClassStudentRequest'
+  responses:
+    '200':
+      description: Участие ученика обновлено.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/UpdateClassStudentResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

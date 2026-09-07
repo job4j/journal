@@ -1,0 +1,19 @@
+get:
+  tags: [Teacher]
+  operationId: listTeacherClassSubjects
+  summary: Получить предметы учителя в классе
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  responses:
+    '200':
+      description: Только назначения текущего учителя.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListTeacherClassSubjectsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

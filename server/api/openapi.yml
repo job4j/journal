@@ -1,0 +1,972 @@
+openapi: 3.0.3
+info:
+  title: Journal API
+  version: 0.1.0
+  description: API первой версии электронного журнала семейных классов.
+  license:
+    name: Proprietary
+    url: https://job4j.ru
+servers:
+  - url: /api/v1
+security:
+  - sessionCookie: []
+
+tags:
+  - name: Auth
+    description: Вход, выход и текущая сессия.
+  - name: Users
+    description: Пользователи, роли и связи родителей с учениками.
+  - name: Academic years
+    description: Учебные годы.
+  - name: Subjects
+    description: Общий справочник предметов.
+  - name: Classes
+    description: Классы, их состав и назначенные предметы.
+  - name: Teacher
+    description: Доступные текущему учителю классы и предметы.
+  - name: Lessons
+    description: Уроки, материалы и оцениваемые работы.
+  - name: Scores
+    description: Оценки учеников и комментарии учителя.
+  - name: Parent
+    description: Дети текущего родителя и их табели.
+
+paths:
+  /auth/login:
+    $ref: './paths/auth_login.yml'
+  /auth/logout:
+    $ref: './paths/auth_logout.yml'
+  /me:
+    $ref: './paths/me.yml'
+  /users:
+    $ref: './paths/users.yml'
+  /users/{userId}:
+    $ref: './paths/users_userId.yml'
+  /academic-years:
+    $ref: './paths/academic-years.yml'
+  /subjects:
+    $ref: './paths/subjects.yml'
+  /classes:
+    $ref: './paths/classes.yml'
+  /classes/{classId}:
+    $ref: './paths/classes_classId.yml'
+  /classes/{classId}/students:
+    $ref: './paths/classes_classId_students.yml'
+  /classes/{classId}/students/{studentId}:
+    $ref: './paths/classes_classId_students_studentId.yml'
+  /classes/{classId}/subjects:
+    $ref: './paths/classes_classId_subjects.yml'
+  /class-subjects/{classSubjectId}:
+    $ref: './paths/class-subjects_classSubjectId.yml'
+  /parents/{parentId}/students/{studentId}:
+    $ref: './paths/parents_parentId_students_studentId.yml'
+  /teacher/classes:
+    $ref: './paths/teacher_classes.yml'
+  /teacher/classes/{classId}/subjects:
+    $ref: './paths/teacher_classes_classId_subjects.yml'
+  /class-subjects/{classSubjectId}/lessons:
+    $ref: './paths/class-subjects_classSubjectId_lessons.yml'
+  /lessons/{lessonId}/grade-items:
+    $ref: './paths/lessons_lessonId_grade-items.yml'
+  /grade-items/{gradeItemId}/scores/{studentId}:
+    $ref: './paths/grade-items_gradeItemId_scores_studentId.yml'
+  /parent/students:
+    $ref: './paths/parent_students.yml'
+  /parent/students/{studentId}/journal:
+    $ref: './paths/parent_students_studentId_journal.yml'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: journal_session
+
+  parameters:
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ParentIdPath:
+      name: parentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    StudentIdPath:
+      name: studentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClassIdPath:
+      name: classId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClassSubjectIdPath:
+      name: classSubjectId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LessonIdPath:
+      name: lessonId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GradeItemIdPath:
+      name: gradeItemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AcademicYearIdQuery:
+      name: academicYearId
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleQuery:
+      name: role
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RoleCode'
+    DateFromQuery:
+      name: dateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    DateToQuery:
+      name: dateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    OffsetQuery:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  responses:
+    BadRequest:
+      description: Запрос содержит некорректные данные.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Пользователь не вошёл в систему или сессия недействительна.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: У пользователя нет требуемого разрешения.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Запрошенный объект не найден.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Объект конфликтует с существующими данными.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: validation_failed
+        message:
+          type: string
+          example: Request contains invalid data
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+
+    RoleCode:
+      type: string
+      enum: [admin, teacher, parent, student]
+
+    UserStatus:
+      type: string
+      enum: [active, blocked]
+
+    AcademicYearStatus:
+      type: string
+      enum: [planned, active, completed]
+
+    GradeItemKind:
+      type: string
+      enum: [homework, classwork, knowledge_check, other]
+
+    GradingScale:
+      type: string
+      enum: [five_point, points, pass_fail]
+
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email, firstName, lastName, status, roles]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        roles:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RoleCode'
+
+    UserSummary:
+      type: object
+      additionalProperties: false
+      required: [id, firstName, lastName, roles]
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        roles:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RoleCode'
+
+    AcademicYear:
+      type: object
+      additionalProperties: false
+      required: [id, name, startsOn, endsOn, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AcademicYearStatus'
+
+    Subject:
+      type: object
+      additionalProperties: false
+      required: [id, code, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+
+    Class:
+      type: object
+      additionalProperties: false
+      required: [id, academicYearId, name, gradeLevel]
+      properties:
+        id:
+          type: string
+          format: uuid
+        academicYearId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        gradeLevel:
+          type: integer
+          minimum: 1
+          maximum: 11
+
+    ClassStudent:
+      type: object
+      additionalProperties: false
+      required: [student, enrolledOn]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserSummary'
+        enrolledOn:
+          type: string
+          format: date
+        leftOn:
+          type: string
+          format: date
+          nullable: true
+
+    ClassSubject:
+      type: object
+      additionalProperties: false
+      required: [id, classId, subject, responsibleTeacher]
+      properties:
+        id:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subject:
+          $ref: '#/components/schemas/Subject'
+        responsibleTeacher:
+          $ref: '#/components/schemas/UserSummary'
+
+    LessonMaterial:
+      type: object
+      additionalProperties: false
+      required: [id, title, url, position]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        position:
+          type: integer
+          minimum: 1
+
+    GradeItem:
+      type: object
+      additionalProperties: false
+      required: [id, lessonId, title, kind, gradingScale]
+      properties:
+        id:
+          type: string
+          format: uuid
+        lessonId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        kind:
+          $ref: '#/components/schemas/GradeItemKind'
+        gradingScale:
+          $ref: '#/components/schemas/GradingScale'
+        maxScore:
+          type: number
+          format: double
+          nullable: true
+
+    Lesson:
+      type: object
+      additionalProperties: false
+      required: [id, classSubjectId, lessonDate, position, topic, materials, gradeItems]
+      properties:
+        id:
+          type: string
+          format: uuid
+        classSubjectId:
+          type: string
+          format: uuid
+        lessonDate:
+          type: string
+          format: date
+        position:
+          type: integer
+          minimum: 1
+        topic:
+          type: string
+        homework:
+          type: string
+          nullable: true
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonMaterial'
+        gradeItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeItem'
+
+    Score:
+      type: object
+      additionalProperties: false
+      required: [id, gradeItemId, studentId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        gradeItemId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        numericValue:
+          type: number
+          format: double
+          nullable: true
+        textValue:
+          type: string
+          nullable: true
+        teacherComment:
+          type: string
+          nullable: true
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+    LoginResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    LogoutResponse:
+      type: object
+      additionalProperties: false
+      required: [loggedOut]
+      properties:
+        loggedOut:
+          type: boolean
+          enum: [true]
+    GetCurrentUserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, firstName, lastName, roles]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RoleCode'
+    CreateUserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    ListUsersResponse:
+      type: object
+      additionalProperties: false
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        total:
+          type: integer
+          minimum: 0
+    GetUserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+
+    CreateAcademicYearRequest:
+      type: object
+      additionalProperties: false
+      required: [name, startsOn, endsOn, status]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: 2026/2027
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AcademicYearStatus'
+    CreateAcademicYearResponse:
+      type: object
+      additionalProperties: false
+      required: [academicYear]
+      properties:
+        academicYear:
+          $ref: '#/components/schemas/AcademicYear'
+    ListAcademicYearsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicYear'
+
+    CreateSubjectRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          pattern: '^[a-z][a-z0-9_]*$'
+        name:
+          type: string
+          minLength: 1
+    CreateSubjectResponse:
+      type: object
+      additionalProperties: false
+      required: [subject]
+      properties:
+        subject:
+          $ref: '#/components/schemas/Subject'
+    ListSubjectsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subject'
+
+    CreateClassRequest:
+      type: object
+      additionalProperties: false
+      required: [academicYearId, name, gradeLevel]
+      properties:
+        academicYearId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+        gradeLevel:
+          type: integer
+          minimum: 1
+          maximum: 11
+    CreateClassResponse:
+      type: object
+      additionalProperties: false
+      required: [class]
+      properties:
+        class:
+          $ref: '#/components/schemas/Class'
+    ListClassesResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Class'
+    GetClassResponse:
+      type: object
+      additionalProperties: false
+      required: [class]
+      properties:
+        class:
+          $ref: '#/components/schemas/Class'
+
+    AddStudentToClassRequest:
+      type: object
+      additionalProperties: false
+      required: [studentId, enrolledOn]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        enrolledOn:
+          type: string
+          format: date
+    AddStudentToClassResponse:
+      type: object
+      additionalProperties: false
+      required: [classStudent]
+      properties:
+        classStudent:
+          $ref: '#/components/schemas/ClassStudent'
+    ListClassStudentsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassStudent'
+    UpdateClassStudentRequest:
+      type: object
+      additionalProperties: false
+      required: [leftOn]
+      properties:
+        leftOn:
+          type: string
+          format: date
+          nullable: true
+    UpdateClassStudentResponse:
+      type: object
+      additionalProperties: false
+      required: [classStudent]
+      properties:
+        classStudent:
+          $ref: '#/components/schemas/ClassStudent'
+
+    AssignSubjectToClassRequest:
+      type: object
+      additionalProperties: false
+      required: [subjectId, responsibleTeacherId]
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+        responsibleTeacherId:
+          type: string
+          format: uuid
+    AssignSubjectToClassResponse:
+      type: object
+      additionalProperties: false
+      required: [classSubject]
+      properties:
+        classSubject:
+          $ref: '#/components/schemas/ClassSubject'
+    ListClassSubjectsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassSubject'
+    UpdateClassSubjectRequest:
+      type: object
+      additionalProperties: false
+      required: [responsibleTeacherId]
+      properties:
+        responsibleTeacherId:
+          type: string
+          format: uuid
+    UpdateClassSubjectResponse:
+      type: object
+      additionalProperties: false
+      required: [classSubject]
+      properties:
+        classSubject:
+          $ref: '#/components/schemas/ClassSubject'
+
+    GrantParentStudentAccessRequest:
+      type: object
+      additionalProperties: false
+      required: [canViewProfile, canViewJournal]
+      properties:
+        canViewProfile:
+          type: boolean
+          enum: [true]
+        canViewJournal:
+          type: boolean
+          enum: [true]
+    GrantParentStudentAccessResponse:
+      type: object
+      additionalProperties: false
+      required: [parentId, studentId, permissions]
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+          example: [can_view_user, can_view_journal]
+    RevokeParentStudentAccessResponse:
+      type: object
+      additionalProperties: false
+      required: [parentId, studentId, revoked]
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        revoked:
+          type: boolean
+          enum: [true]
+
+    ListTeacherClassesResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Class'
+    ListTeacherClassSubjectsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassSubject'
+
+    CreateLessonMaterialInput:
+      type: object
+      additionalProperties: false
+      required: [title, url, position]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          format: uri
+        position:
+          type: integer
+          minimum: 1
+    CreateLessonRequest:
+      type: object
+      additionalProperties: false
+      required: [lessonDate, position, topic, materials]
+      properties:
+        lessonDate:
+          type: string
+          format: date
+        position:
+          type: integer
+          minimum: 1
+          default: 1
+        topic:
+          type: string
+          minLength: 1
+        homework:
+          type: string
+          nullable: true
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateLessonMaterialInput'
+    CreateLessonResponse:
+      type: object
+      additionalProperties: false
+      required: [lesson]
+      properties:
+        lesson:
+          $ref: '#/components/schemas/Lesson'
+    ListClassSubjectLessonsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lesson'
+
+    CreateGradeItemRequest:
+      type: object
+      additionalProperties: false
+      required: [title, kind, gradingScale]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        kind:
+          $ref: '#/components/schemas/GradeItemKind'
+        gradingScale:
+          $ref: '#/components/schemas/GradingScale'
+        maxScore:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          nullable: true
+    CreateGradeItemResponse:
+      type: object
+      additionalProperties: false
+      required: [gradeItem]
+      properties:
+        gradeItem:
+          $ref: '#/components/schemas/GradeItem'
+
+    PutStudentScoreRequest:
+      oneOf:
+        - $ref: '#/components/schemas/PutNumericStudentScoreRequest'
+        - $ref: '#/components/schemas/PutTextStudentScoreRequest'
+    PutNumericStudentScoreRequest:
+      type: object
+      additionalProperties: false
+      required: [numericValue]
+      properties:
+        numericValue:
+          type: number
+          format: double
+        teacherComment:
+          type: string
+          nullable: true
+    PutTextStudentScoreRequest:
+      type: object
+      additionalProperties: false
+      required: [textValue]
+      properties:
+        textValue:
+          type: string
+          minLength: 1
+        teacherComment:
+          type: string
+          nullable: true
+    PutStudentScoreResponse:
+      type: object
+      additionalProperties: false
+      required: [score]
+      properties:
+        score:
+          $ref: '#/components/schemas/Score'
+
+    ListParentStudentsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSummary'
+
+    JournalScore:
+      type: object
+      additionalProperties: false
+      required: [gradeItem, score]
+      properties:
+        gradeItem:
+          $ref: '#/components/schemas/GradeItem'
+        score:
+          $ref: '#/components/schemas/Score'
+    JournalLesson:
+      type: object
+      additionalProperties: false
+      required: [lesson, scores]
+      properties:
+        lesson:
+          $ref: '#/components/schemas/Lesson'
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalScore'
+    JournalSubject:
+      type: object
+      additionalProperties: false
+      required: [classSubject, lessons]
+      properties:
+        classSubject:
+          $ref: '#/components/schemas/ClassSubject'
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalLesson'
+    GetParentStudentJournalResponse:
+      type: object
+      additionalProperties: false
+      required: [student, academicYear, class, subjects]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserSummary'
+        academicYear:
+          $ref: '#/components/schemas/AcademicYear'
+        class:
+          $ref: '#/components/schemas/Class'
+        subjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalSubject'

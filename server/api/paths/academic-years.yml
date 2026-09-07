@@ -1,0 +1,40 @@
+get:
+  tags: [Academic years]
+  operationId: listAcademicYears
+  summary: Получить учебные годы
+  responses:
+    '200':
+      description: Список доступных учебных годов.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListAcademicYearsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+post:
+  tags: [Academic years]
+  operationId: createAcademicYear
+  summary: Создать учебный год
+  description: Требуется `can_manage_academic_year`.
+  x-required-permission: can_manage_academic_year
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateAcademicYearRequest'
+  responses:
+    '201':
+      description: Учебный год создан.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateAcademicYearResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

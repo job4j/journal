@@ -1,0 +1,16 @@
+get:
+  tags: [Teacher]
+  operationId: listTeacherClasses
+  summary: Получить классы текущего учителя
+  description: Класс включается, если учителю назначен хотя бы один его предмет.
+  responses:
+    '200':
+      description: Классы текущего учителя.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListTeacherClassesResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'

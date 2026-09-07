@@ -1,0 +1,43 @@
+get:
+  tags: [Classes]
+  operationId: listClasses
+  summary: Получить классы учебного года
+  description: Возвращает классы, доступные текущему пользователю.
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/AcademicYearIdQuery'
+  responses:
+    '200':
+      description: Список классов.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListClassesResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+post:
+  tags: [Classes]
+  operationId: createClass
+  summary: Создать класс
+  description: Требуется `can_create_class`.
+  x-required-permission: can_create_class
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateClassRequest'
+  responses:
+    '201':
+      description: Класс создан.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateClassResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

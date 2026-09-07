@@ -1,0 +1,21 @@
+get:
+  tags: [Classes]
+  operationId: getClass
+  summary: Получить класс
+  description: Требуется глобальное или персональное `can_view_class`.
+  x-required-permission: can_view_class
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  responses:
+    '200':
+      description: Класс найден.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/GetClassResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

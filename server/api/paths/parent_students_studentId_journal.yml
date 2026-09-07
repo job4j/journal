@@ -1,0 +1,23 @@
+get:
+  tags: [Parent]
+  operationId: getParentStudentJournal
+  summary: Получить табель ученика
+  description: Требуются `can_view_user` и `can_view_journal` со значением studentId.
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+    - $ref: '../openapi.yml#/components/parameters/AcademicYearIdQuery'
+  responses:
+    '200':
+      description: Табель ученика по учебному году.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/GetParentStudentJournalResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

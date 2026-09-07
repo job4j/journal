@@ -1,0 +1,52 @@
+get:
+  tags: [Classes]
+  operationId: listClassSubjects
+  summary: Получить предметы класса
+  description: Возвращает только доступные текущему пользователю назначения.
+  x-required-permission: can_view_class_subject
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  responses:
+    '200':
+      description: Предметы класса и ответственные учителя.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListClassSubjectsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+post:
+  tags: [Classes]
+  operationId: assignSubjectToClass
+  summary: Добавить предмет в класс и назначить учителя
+  description: Требуется `can_manage_class_subjects` для класса.
+  x-required-permission: can_manage_class_subjects
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/AssignSubjectToClassRequest'
+  responses:
+    '201':
+      description: Предмет добавлен в класс.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/AssignSubjectToClassResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

@@ -1,0 +1,29 @@
+patch:
+  tags: [Classes]
+  operationId: updateClassSubject
+  summary: Изменить ответственного учителя
+  description: Обновляет назначение и связанные персональные permissions.
+  x-required-permission: can_manage_class_subjects
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassSubjectIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/UpdateClassSubjectRequest'
+  responses:
+    '200':
+      description: Назначение обновлено.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/UpdateClassSubjectResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

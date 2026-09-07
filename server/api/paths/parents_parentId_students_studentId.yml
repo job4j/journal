@@ -1,0 +1,52 @@
+put:
+  tags: [Users]
+  operationId: grantParentStudentAccess
+  summary: Предоставить родителю доступ к ученику
+  description: Атомарно назначает `can_view_user` и `can_view_journal` со значением studentId.
+  x-required-permission: can_update_user
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ParentIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/GrantParentStudentAccessRequest'
+  responses:
+    '200':
+      description: Доступ предоставлен.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/GrantParentStudentAccessResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
+delete:
+  tags: [Users]
+  operationId: revokeParentStudentAccess
+  summary: Отозвать у родителя доступ к ученику
+  description: Атомарно отзывает `can_view_user` и `can_view_journal` для studentId.
+  x-required-permission: can_update_user
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ParentIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  responses:
+    '200':
+      description: Доступ отозван.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/RevokeParentStudentAccessResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

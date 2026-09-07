@@ -1,0 +1,29 @@
+post:
+  tags: [Lessons]
+  operationId: createGradeItem
+  summary: Создать оцениваемую работу
+  description: Доступно ответственному учителю предмета класса.
+  x-required-permission: can_create_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/LessonIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateGradeItemRequest'
+  responses:
+    '201':
+      description: Оцениваемая работа создана.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateGradeItemResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

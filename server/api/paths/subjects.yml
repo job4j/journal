@@ -1,0 +1,44 @@
+get:
+  tags: [Subjects]
+  operationId: listSubjects
+  summary: Получить справочник предметов
+  description: Требуется `can_view_subject`.
+  x-required-permission: can_view_subject
+  responses:
+    '200':
+      description: Список предметов.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListSubjectsResponse'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+post:
+  tags: [Subjects]
+  operationId: createSubject
+  summary: Создать предмет
+  description: Требуется `can_create_subject`.
+  x-required-permission: can_create_subject
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateSubjectRequest'
+  responses:
+    '201':
+      description: Предмет создан.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateSubjectResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '409':
+      $ref: '../openapi.yml#/components/responses/Conflict'

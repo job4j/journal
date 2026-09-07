@@ -1,0 +1,8 @@
+package: gen
+generate:
+  fiber-server: true
+  models: true
+  embedded-spec: true
+output: gen/openapi.gen.go
+import-mapping:
+  ../openapi.yml: '-'
