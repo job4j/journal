@@ -81,6 +81,8 @@ type ClassReadRepository interface {
 	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
 	CreateClassStudent(context.Context, Transaction, entity.ClassStudent) (entity.ClassStudent, error)
+	GetClassStudent(context.Context, Transaction, uuid.UUID, uuid.UUID) (entity.ClassStudent, error)
+	UpdateClassStudent(context.Context, Transaction, entity.ClassStudent) (entity.ClassStudent, error)
 	ListClasses(context.Context, Transaction) ([]entity.Class, error)
 	ListClassStudents(context.Context, Transaction) ([]entity.ClassStudent, error)
 	ListUsers(context.Context, Transaction) ([]entity.User, error)
