@@ -21,6 +21,10 @@ type classRepoStub struct {
 	createdStudent         entity.ClassStudent
 	createStudentErr       error
 	updateStudentErr       error
+	createdClassSubject    entity.ClassSubject
+	createClassSubjectErr  error
+	permissions            *[]entity.Permission
+	userPermissions        *[]entity.UserPermission
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
@@ -77,6 +81,35 @@ func (s classRepoStub) ListSubjects(context.Context, repository.Transaction) ([]
 }
 func (s classRepoStub) ListClassSubjects(context.Context, repository.Transaction) ([]entity.ClassSubject, error) {
 	return s.classSubjects, nil
+}
+func (s classRepoStub) GetSubject(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.Subject, error) {
+	for _, item := range s.subjects {
+		if item.ID == id {
+			return item, nil
+		}
+	}
+	return entity.Subject{}, repository.ErrNotFound
+}
+func (s classRepoStub) CreateClassSubject(_ context.Context, _ repository.Transaction, item entity.ClassSubject) (entity.ClassSubject, error) {
+	if s.createClassSubjectErr != nil {
+		return entity.ClassSubject{}, s.createClassSubjectErr
+	}
+	item.ID = uuid.New()
+	s.createdClassSubject = item
+	return item, nil
+}
+func (s classRepoStub) EnsurePermission(_ context.Context, _ repository.Transaction, item entity.Permission) (entity.Permission, error) {
+	item.ID = uuid.New()
+	if s.permissions != nil {
+		*s.permissions = append(*s.permissions, item)
+	}
+	return item, nil
+}
+func (s classRepoStub) EnsureUserPermission(_ context.Context, _ repository.Transaction, item entity.UserPermission) (entity.UserPermission, error) {
+	if s.userPermissions != nil {
+		*s.userPermissions = append(*s.userPermissions, item)
+	}
+	return item, nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {

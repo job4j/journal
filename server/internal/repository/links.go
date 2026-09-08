@@ -35,6 +35,9 @@ func (r *Repository) DeleteRolePermission(ctx context.Context, tx Transaction, r
 func (r *Repository) CreateUserPermission(ctx context.Context, tx Transaction, value entity.UserPermission) (entity.UserPermission, error) {
 	return queryOne[entity.UserPermission](ctx, tx, "create user permission", `INSERT INTO user_permissions (user_id,permission_id) VALUES ($1,$2) RETURNING user_id,permission_id,created_at`, value.UserID, value.PermissionID)
 }
+func (r *Repository) EnsureUserPermission(ctx context.Context, tx Transaction, value entity.UserPermission) (entity.UserPermission, error) {
+	return queryOne[entity.UserPermission](ctx, tx, "ensure user permission", `INSERT INTO user_permissions (user_id,permission_id) VALUES ($1,$2) ON CONFLICT (user_id,permission_id) DO UPDATE SET user_id=EXCLUDED.user_id RETURNING user_id,permission_id,created_at`, value.UserID, value.PermissionID)
+}
 func (r *Repository) GetUserPermission(ctx context.Context, tx Transaction, userID, permissionID uuid.UUID) (entity.UserPermission, error) {
 	return queryOne[entity.UserPermission](ctx, tx, "get user permission", `SELECT user_id,permission_id,created_at FROM user_permissions WHERE user_id=$1 AND permission_id=$2`, userID, permissionID)
 }

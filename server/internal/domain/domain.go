@@ -25,6 +25,7 @@ var (
 	ErrAcademicYearExists   = errors.New("academic year already exists")
 	ErrInvalidSubject       = errors.New("invalid subject")
 	ErrSubjectExists        = errors.New("subject already exists")
+	ErrSubjectNotFound      = errors.New("subject not found")
 	ErrClassNotFound        = errors.New("class not found")
 	ErrInvalidClass         = errors.New("invalid class")
 	ErrClassExists          = errors.New("class already exists")
@@ -32,6 +33,8 @@ var (
 	ErrInvalidClassStudent  = errors.New("invalid class student")
 	ErrClassStudentExists   = errors.New("class student already exists")
 	ErrClassStudentNotFound = errors.New("class student not found")
+	ErrInvalidTeacher       = errors.New("invalid teacher")
+	ErrClassSubjectExists   = errors.New("class subject already exists")
 )
 
 type AuthDomain struct {

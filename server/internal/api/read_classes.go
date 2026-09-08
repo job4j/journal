@@ -56,6 +56,12 @@ func (h *ClassHandler) writeClassError(c *fiber.Ctx, err error) error {
 		return writeError(c, 409, "class_student_exists", "Ученик уже зачислен в класс")
 	case errors.Is(err, domain.ErrClassStudentNotFound):
 		return writeError(c, 404, "class_student_not_found", "Ученик не состоит в классе")
+	case errors.Is(err, domain.ErrSubjectNotFound):
+		return writeError(c, 404, "subject_not_found", "Предмет не найден")
+	case errors.Is(err, domain.ErrInvalidTeacher):
+		return writeError(c, 400, "invalid_teacher", "Ответственный пользователь не является учителем")
+	case errors.Is(err, domain.ErrClassSubjectExists):
+		return writeError(c, 409, "class_subject_exists", "Предмет уже назначен классу")
 	case errors.Is(err, domain.ErrInvalidClass):
 		return writeError(c, 400, "validation_failed", "Некорректные данные класса")
 	case errors.Is(err, domain.ErrClassExists):

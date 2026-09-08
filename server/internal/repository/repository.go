@@ -88,6 +88,10 @@ type ClassReadRepository interface {
 	ListUsers(context.Context, Transaction) ([]entity.User, error)
 	ListSubjects(context.Context, Transaction) ([]entity.Subject, error)
 	ListClassSubjects(context.Context, Transaction) ([]entity.ClassSubject, error)
+	GetSubject(context.Context, Transaction, uuid.UUID) (entity.Subject, error)
+	CreateClassSubject(context.Context, Transaction, entity.ClassSubject) (entity.ClassSubject, error)
+	EnsurePermission(context.Context, Transaction, entity.Permission) (entity.Permission, error)
+	EnsureUserPermission(context.Context, Transaction, entity.UserPermission) (entity.UserPermission, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
