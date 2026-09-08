@@ -13,6 +13,7 @@ type classRepoStub struct {
 	authenticated, allowed bool
 	classes                []entity.Class
 	students               []entity.ClassStudent
+	users                  []entity.User
 	getErr                 error
 }
 
@@ -35,6 +36,9 @@ func (s classRepoStub) ListClasses(context.Context, repository.Transaction) ([]e
 }
 func (s classRepoStub) ListClassStudents(context.Context, repository.Transaction) ([]entity.ClassStudent, error) {
 	return s.students, nil
+}
+func (s classRepoStub) ListUsers(context.Context, repository.Transaction) ([]entity.User, error) {
+	return s.users, nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {

@@ -22,3 +22,11 @@ func (s *ClassService) GetClass(ctx context.Context, token string, id uuid.UUID)
 	defer func() { _ = tx.Rollback(ctx) }()
 	return s.domain.GetClass(ctx, tx, sessionTokenHash(token), id)
 }
+func (s *ClassService) ListClassStudents(ctx context.Context, token string, id uuid.UUID) ([]domain.ClassStudentView, error) {
+	tx, err := s.txManager.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	return s.domain.ListClassStudents(ctx, tx, sessionTokenHash(token), id)
+}

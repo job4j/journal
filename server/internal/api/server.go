@@ -64,4 +64,5 @@ type ClassService interface {
 	ListClasses(context.Context, string, uuid.UUID) ([]domain.ClassView, error)
 	GetClass(context.Context, string, uuid.UUID) (domain.ClassView, error)
 	CreateClass(context.Context, string, uuid.UUID, string, int16) (domain.ClassView, error)
+	ListClassStudents(context.Context, string, uuid.UUID) ([]domain.ClassStudentView, error)
 }
