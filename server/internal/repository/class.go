@@ -13,7 +13,7 @@ func (r *Repository) GetClass(ctx context.Context, tx Transaction, id uuid.UUID)
 	return queryOne[entity.Class](ctx, tx, "get class", `SELECT id, academic_year_id, name, grade_level, created_at, updated_at FROM classes WHERE id = $1`, id)
 }
 func (r *Repository) ListClasses(ctx context.Context, tx Transaction) ([]entity.Class, error) {
-	return queryMany[entity.Class](ctx, tx, "list classes", `SELECT id, academic_year_id, name, grade_level, created_at, updated_at FROM classes ORDER BY created_at, id`)
+	return queryMany[entity.Class](ctx, tx, "list classes", `SELECT id, academic_year_id, name, grade_level, created_at, updated_at FROM classes ORDER BY grade_level, name, id`)
 }
 func (r *Repository) UpdateClass(ctx context.Context, tx Transaction, value entity.Class) (entity.Class, error) {
 	return queryOne[entity.Class](ctx, tx, "update class", `UPDATE classes SET academic_year_id = $1, name = $2, grade_level = $3, updated_at = now() WHERE id = $4 RETURNING id, academic_year_id, name, grade_level, created_at, updated_at`, value.AcademicYearID, value.Name, value.GradeLevel, value.ID)

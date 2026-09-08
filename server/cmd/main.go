@@ -39,6 +39,7 @@ func main() {
 	userService := service.NewUserService(txManager, appRepository)
 	academicYearService := service.NewAcademicYearService(txManager, appRepository)
 	subjectService := service.NewSubjectService(txManager, appRepository)
+	classService := service.NewClassService(txManager, appRepository)
 	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
 		logger.Error("http request failed", "method", c.Method(), "path", c.Path(), "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "internal_error", "message": "Внутренняя ошибка сервера"})
@@ -49,6 +50,7 @@ func main() {
 	httpapi.NewUserHandler(userService, logger).Register(apiRouter)
 	httpapi.NewAcademicYearHandler(academicYearService, logger).Register(apiRouter)
 	httpapi.NewSubjectHandler(subjectService, logger).Register(apiRouter)
+	httpapi.NewClassHandler(classService, logger).Register(apiRouter)
 
 	// The root spec is served by the Swagger middleware at /api/openapi.yml.
 	// Expose its sibling path files so relative $ref values resolve in Swagger UI.

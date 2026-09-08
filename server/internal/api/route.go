@@ -29,3 +29,7 @@ func (h *SubjectHandler) Register(router fiber.Router) {
 	router.Get("/subjects", h.ListSubjects)
 	router.Post("/subjects", h.CreateSubject)
 }
+func (h *ClassHandler) Register(router fiber.Router) {
+	router.Get("/classes", h.ListClasses)
+	router.Get("/classes/:classId", h.GetClass)
+}

@@ -56,3 +56,11 @@ type SubjectService interface {
 	ListSubjects(context.Context, string) ([]entity.Subject, error)
 	CreateSubject(context.Context, string, string, string) (entity.Subject, error)
 }
+type ClassHandler struct {
+	service ClassService
+	logger  *slog.Logger
+}
+type ClassService interface {
+	ListClasses(context.Context, string, uuid.UUID) ([]domain.ClassView, error)
+	GetClass(context.Context, string, uuid.UUID) (domain.ClassView, error)
+}

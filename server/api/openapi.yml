@@ -484,7 +484,7 @@ components:
     Class:
       type: object
       additionalProperties: false
-      required: [id, academicYearId, name, gradeLevel]
+      required: [id, academicYearId, name, gradeLevel, studentCount]
       properties:
         id:
           type: string
@@ -498,6 +498,9 @@ components:
           type: integer
           minimum: 1
           maximum: 11
+        studentCount:
+          type: integer
+          minimum: 0
 
     ClassStudent:
       type: object

@@ -17,3 +17,6 @@ func NewAcademicYearHandler(service AcademicYearService, logger *slog.Logger) *A
 func NewSubjectHandler(service SubjectService, logger *slog.Logger) *SubjectHandler {
 	return &SubjectHandler{service: service, logger: logger}
 }
+func NewClassHandler(service ClassService, logger *slog.Logger) *ClassHandler {
+	return &ClassHandler{service: service, logger: logger}
+}

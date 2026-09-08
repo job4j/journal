@@ -73,6 +73,13 @@ type SubjectRepository interface {
 	CreateSubject(context.Context, Transaction, entity.Subject) (entity.Subject, error)
 	ListSubjects(context.Context, Transaction) ([]entity.Subject, error)
 }
+type ClassReadRepository interface {
+	CheckSessionPermission(context.Context, Transaction, string, string) (bool, bool, error)
+	CheckSessionPermissionForValue(context.Context, Transaction, string, string, string) (bool, bool, error)
+	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
+	ListClasses(context.Context, Transaction) ([]entity.Class, error)
+	ListClassStudents(context.Context, Transaction) ([]entity.ClassStudent, error)
+}
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
 	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)

@@ -47,6 +47,15 @@ func NewSubjectService(txManager repository.TransactionManager, repo repository.
 	return &SubjectService{txManager: txManager, domain: domain.NewSubjectDomain(repo)}
 }
 
+type ClassService struct {
+	txManager repository.TransactionManager
+	domain    *domain.ClassDomain
+}
+
+func NewClassService(txManager repository.TransactionManager, repo repository.ClassReadRepository) *ClassService {
+	return &ClassService{txManager: txManager, domain: domain.NewClassDomain(repo)}
+}
+
 func NewUserService(txManager repository.TransactionManager, repo repository.UserManagementRepository) *UserService {
 	return &UserService{txManager: txManager, domain: domain.NewUserDomain(repo)}
 }
