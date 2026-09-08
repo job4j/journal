@@ -21,3 +21,6 @@ func (h *UserHandler) Register(router fiber.Router) {
 	router.Put("/users/:userId", h.UpdateUser)
 	router.Delete("/users/:userId", h.DeleteUser)
 }
+func (h *AcademicYearHandler) Register(router fiber.Router) {
+	router.Get("/academic-years", h.ListAcademicYears)
+}

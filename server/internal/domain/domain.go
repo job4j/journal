@@ -36,3 +36,11 @@ func NewAuthDomain(repo repository.AuthRepository, sessionLifetime time.Duration
 type RoleDomain struct{ repo repository.RoleRepository }
 
 func NewRoleDomain(repo repository.RoleRepository) *RoleDomain { return &RoleDomain{repo: repo} }
+
+type AcademicYearDomain struct {
+	repo repository.AcademicYearRepository
+}
+
+func NewAcademicYearDomain(repo repository.AcademicYearRepository) *AcademicYearDomain {
+	return &AcademicYearDomain{repo: repo}
+}
