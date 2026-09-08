@@ -1,1 +1,1 @@
-{"root":["./src/app.test.tsx","./src/app.tsx","./src/classviews.tsx","./src/auth.ts","./src/main.tsx","./src/test/setup.ts"],"version":"5.9.2"}
+{"root":["./src/app.test.tsx","./src/app.tsx","./src/classviews.tsx","./src/rolesview.test.tsx","./src/rolesview.tsx","./src/usersview.test.tsx","./src/usersview.tsx","./src/auth.ts","./src/main.tsx","./src/roles.ts","./src/users.ts","./src/test/setup.ts"],"version":"5.9.2"}

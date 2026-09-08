@@ -1,0 +1,39 @@
+get:
+  tags: [Roles]
+  operationId: listRoles
+  summary: Получить роли
+  description: Требуется глобальное разрешение `can_manage_roles`.
+  x-required-permission: can_manage_roles
+  responses:
+    '200':
+      description: Список ролей.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListRolesResponse'
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+post:
+  tags: [Roles]
+  operationId: createRole
+  summary: Создать роль и назначить ей права
+  description: Требуется глобальное разрешение `can_manage_roles`.
+  x-required-permission: can_manage_roles
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateRoleRequest'
+  responses:
+    '201':
+      description: Роль создана.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateRoleResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }

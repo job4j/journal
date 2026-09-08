@@ -4,7 +4,7 @@ export interface User {
   firstName: string
   lastName: string
   status: 'active' | 'blocked'
-  roles: Array<'admin' | 'teacher' | 'parent' | 'student'>
+  roles: string[]
 }
 
 interface LoginResponse {

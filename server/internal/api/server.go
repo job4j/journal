@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"journal/server/internal/domain"
+	"journal/server/internal/repository/entity"
 	"log/slog"
 )
 
@@ -13,4 +15,26 @@ type AuthHandler struct {
 }
 type AuthService interface {
 	Login(context.Context, string, string) (domain.LoginResponse, error)
+}
+type RoleHandler struct {
+	service RoleService
+	logger  *slog.Logger
+}
+type RoleService interface {
+	CreateRole(context.Context, string, string, string, []string) (domain.CreateRoleResponse, error)
+	ListRoles(context.Context, string) (domain.ListRolesResponse, error)
+	ListPermissions(context.Context, string) (domain.ListPermissionsResponse, error)
+	UpdateRole(context.Context, string, uuid.UUID, string, string, []string) (domain.RoleView, error)
+	DeleteRole(context.Context, string, uuid.UUID) error
+}
+type UserHandler struct {
+	service UserService
+	logger  *slog.Logger
+}
+type UserService interface {
+	CreateUser(context.Context, string, domain.UserInput) (entity.User, error)
+	ListUsers(context.Context, string, string, int, int) (domain.ListUsersResult, error)
+	GetUser(context.Context, string, uuid.UUID) (entity.User, error)
+	UpdateUser(context.Context, string, uuid.UUID, domain.UserInput) (entity.User, error)
+	DeleteUser(context.Context, string, uuid.UUID) error
 }

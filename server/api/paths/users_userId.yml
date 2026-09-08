@@ -1,11 +1,11 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/UserIdPath'
 get:
   tags: [Users]
   operationId: getUser
   summary: Получить пользователя
   description: Требуется глобальное или персональное `can_view_user`.
   x-required-permission: can_view_user
-  parameters:
-    - $ref: '../openapi.yml#/components/parameters/UserIdPath'
   responses:
     '200':
       description: Пользователь найден.
@@ -13,9 +13,42 @@ get:
         application/json:
           schema:
             $ref: '../openapi.yml#/components/schemas/GetUserResponse'
-    '401':
-      $ref: '../openapi.yml#/components/responses/Unauthorized'
-    '403':
-      $ref: '../openapi.yml#/components/responses/Forbidden'
-    '404':
-      $ref: '../openapi.yml#/components/responses/NotFound'
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+put:
+  tags: [Users]
+  operationId: updateUser
+  summary: Изменить пользователя и его роли
+  description: Требуется глобальное разрешение `can_update_user`.
+  x-required-permission: can_update_user
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/UpdateUserRequest'
+  responses:
+    '200':
+      description: Пользователь изменён.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/UpdateUserResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
+delete:
+  tags: [Users]
+  operationId: deleteUser
+  summary: Удалить пользователя
+  description: Требуется глобальное разрешение `can_update_user`.
+  x-required-permission: can_update_user
+  responses:
+    '204': { description: Пользователь удалён. }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }

@@ -15,7 +15,9 @@ tags:
   - name: Auth
     description: Вход, выход и текущая сессия.
   - name: Users
-    description: Пользователи, роли и связи родителей с учениками.
+    description: Пользователи и связи родителей с учениками.
+  - name: Roles
+    description: Роли и назначенные им разрешения.
   - name: Academic years
     description: Учебные годы.
   - name: Subjects
@@ -40,6 +42,12 @@ paths:
     $ref: './paths/me.yml'
   /users:
     $ref: './paths/users.yml'
+  /roles:
+    $ref: './paths/roles.yml'
+  /roles/{roleId}:
+    $ref: './paths/roles_roleId.yml'
+  /permissions:
+    $ref: './paths/permissions.yml'
   /users/{userId}:
     $ref: './paths/users_userId.yml'
   /academic-years:
@@ -85,6 +93,13 @@ components:
   parameters:
     UserIdPath:
       name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleIdPath:
+      name: roleId
       in: path
       required: true
       schema:
@@ -228,7 +243,113 @@ components:
 
     RoleCode:
       type: string
-      enum: [admin, teacher, parent, student]
+      minLength: 2
+      maxLength: 50
+      pattern: '^[a-z][a-z0-9_]*$'
+
+    PermissionCode:
+      type: string
+      minLength: 2
+      maxLength: 100
+      pattern: '^[a-z][a-z0-9_]*$'
+
+    Role:
+      type: object
+      additionalProperties: false
+      required: [id, code, name, permissions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          $ref: '#/components/schemas/RoleCode'
+        name:
+          type: string
+        permissions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PermissionCode'
+
+    CreateRoleRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, permissions]
+      properties:
+        code:
+          $ref: '#/components/schemas/RoleCode'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        permissions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PermissionCode'
+
+    CreateRoleResponse:
+      type: object
+      additionalProperties: false
+      required: [role]
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+
+    UpdateRoleRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, permissions]
+      properties:
+        code:
+          $ref: '#/components/schemas/RoleCode'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        permissions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PermissionCode'
+
+    UpdateRoleResponse:
+      type: object
+      additionalProperties: false
+      required: [role]
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+
+    ListRolesResponse:
+      type: object
+      additionalProperties: false
+      required: [roles]
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+
+    Permission:
+      type: object
+      additionalProperties: false
+      required: [code, description]
+      properties:
+        code:
+          $ref: '#/components/schemas/PermissionCode'
+        description:
+          type: string
+
+    ListPermissionsResponse:
+      type: object
+      additionalProperties: false
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
 
     UserStatus:
       type: string
@@ -522,6 +643,39 @@ components:
           items:
             $ref: '#/components/schemas/RoleCode'
     CreateUserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    UpdateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email, firstName, lastName, status, roles]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RoleCode'
+    UpdateUserResponse:
       type: object
       additionalProperties: false
       required: [user]

@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react'
 import { login, LoginError, User } from './auth'
 import ClassesView from './ClassViews'
+import RolesView from './RolesView'
+import UsersView from './UsersView'
 import './styles.css'
 
 type Role = User['roles'][number]
@@ -22,7 +24,7 @@ const navigation: NavigationItem[] = [
   { id: 'journal', label: 'Мой журнал', icon: 'book', roles: ['student'] },
 ]
 
-const roleLabels: Record<Role, string> = {
+const roleLabels: Record<string, string> = {
   admin: 'Администратор',
   teacher: 'Учитель',
   parent: 'Родитель',
@@ -76,7 +78,7 @@ function Workspace({ user }: { user: User }) {
           <div className="avatar" aria-hidden="true">{initials}</div>
           <div className="user-copy">
             <strong>{user.firstName} {user.lastName}</strong>
-            <span>{user.roles.map((role) => roleLabels[role]).join(' · ')}</span>
+            <span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span>
           </div>
         </div>
       </aside>
@@ -91,6 +93,8 @@ function Workspace({ user }: { user: User }) {
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
           {activeItem?.id === 'classes' && <ClassesView />}
+          {activeItem?.id === 'roles' && <RolesView />}
+          {activeItem?.id === 'users' && <UsersView />}
         </section>
       </main>
     </div>

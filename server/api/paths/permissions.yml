@@ -1,0 +1,14 @@
+get:
+  tags: [Roles]
+  operationId: listPermissions
+  summary: Получить глобальные разрешения
+  x-required-permission: can_manage_roles
+  responses:
+    '200':
+      description: Список разрешений.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListPermissionsResponse'
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }

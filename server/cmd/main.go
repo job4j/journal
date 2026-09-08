@@ -31,13 +31,20 @@ func main() {
 	}
 	defer pool.Close()
 
+	txManager := repository.NewTransactionManager(pool)
 	authRepo := repository.NewAuthRepository()
-	authService := service.NewAuthService(repository.NewTransactionManager(pool), authRepo, 24*time.Hour)
+	authService := service.NewAuthService(txManager, authRepo, 24*time.Hour)
+	appRepository := repository.NewRepository()
+	roleService := service.NewRoleService(txManager, appRepository)
+	userService := service.NewUserService(txManager, appRepository)
 	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
 		logger.Error("http request failed", "method", c.Method(), "path", c.Path(), "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "internal_error", "message": "Внутренняя ошибка сервера"})
 	}})
-	httpapi.NewAuthHandler(authService, logger, os.Getenv("COOKIE_SECURE") != "false").Register(app.Group("/api/v1"))
+	apiRouter := app.Group("/api/v1")
+	httpapi.NewAuthHandler(authService, logger, os.Getenv("COOKIE_SECURE") != "false").Register(apiRouter)
+	httpapi.NewRoleHandler(roleService, logger).Register(apiRouter)
+	httpapi.NewUserHandler(userService, logger).Register(apiRouter)
 
 	// The root spec is served by the Swagger middleware at /api/openapi.yml.
 	// Expose its sibling path files so relative $ref values resolve in Swagger UI.

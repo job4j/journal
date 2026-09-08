@@ -1,0 +1,38 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/RoleIdPath'
+put:
+  tags: [Roles]
+  operationId: updateRole
+  summary: Изменить роль и её права
+  x-required-permission: can_manage_roles
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/UpdateRoleRequest'
+  responses:
+    '200':
+      description: Роль изменена.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/UpdateRoleResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
+delete:
+  tags: [Roles]
+  operationId: deleteRole
+  summary: Удалить роль
+  x-required-permission: can_manage_roles
+  responses:
+    '204': { description: Роль удалена. }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
+
+
