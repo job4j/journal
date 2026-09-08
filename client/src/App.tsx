@@ -5,6 +5,7 @@ import RolesView from './RolesView'
 import UsersView from './UsersView'
 import AcademicYearsView from './AcademicYearsView'
 import SubjectsView from './SubjectsView'
+import AdminClassesView from './AdminClassesView'
 import './styles.css'
 
 type Role = User['roles'][number]
@@ -95,7 +96,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
           <div className="header-avatar" aria-label={`${user.firstName} ${user.lastName}`}>{initials}</div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
-          {activeItem?.id === 'classes' && <ClassesView />}
+          {activeItem?.id === 'classes' && (user.roles.includes('admin') ? <AdminClassesView /> : <ClassesView />)}
           {activeItem?.id === 'roles' && <RolesView />}
           {activeItem?.id === 'users' && <UsersView />}
           {activeItem?.id === 'academic-years' && <AcademicYearsView />}
