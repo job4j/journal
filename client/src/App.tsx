@@ -3,6 +3,7 @@ import { currentUser, login, logout, LoginError, User } from './auth'
 import ClassesView from './ClassViews'
 import RolesView from './RolesView'
 import UsersView from './UsersView'
+import AcademicYearsView from './AcademicYearsView'
 import './styles.css'
 
 type Role = User['roles'][number]
@@ -96,6 +97,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
           {activeItem?.id === 'classes' && <ClassesView />}
           {activeItem?.id === 'roles' && <RolesView />}
           {activeItem?.id === 'users' && <UsersView />}
+          {activeItem?.id === 'academic-years' && <AcademicYearsView />}
         </section>
       </main>
     </div>
