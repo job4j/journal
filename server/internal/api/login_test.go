@@ -17,17 +17,17 @@ import (
 )
 
 type authServiceStub struct {
-	result domain.LoginResult
+	result domain.LoginResponse
 	err    error
 }
 
-func (s authServiceStub) Login(context.Context, string, string) (domain.LoginResult, error) {
+func (s authServiceStub) Login(context.Context, string, string) (domain.LoginResponse, error) {
 	return s.result, s.err
 }
 
 func TestLoginSetsSessionCookie(t *testing.T) {
 	expires := time.Now().Add(time.Hour)
-	service := authServiceStub{result: domain.LoginResult{
+	service := authServiceStub{result: domain.LoginResponse{
 		Token: "secret-token", ExpiresAt: expires,
 		User: repository.User{ID: uuid.New(), Email: "user@example.com", FirstName: "Иван", LastName: "Иванов", Status: "active", Roles: []string{"teacher"}},
 	}}

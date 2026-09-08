@@ -9,60 +9,53 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
-
-	"journal/server/internal/repository"
-
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
+	"journal/server/internal/repository"
+	"strings"
+	"time"
 )
 
-var (
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrUserBlocked        = errors.New("user blocked")
-)
-
-type LoginResult struct {
+type LoginRequest struct {
+	Email    string
+	Password string
+}
+type LoginResponse struct {
 	User      repository.User
 	Token     string
 	ExpiresAt time.Time
 }
 
-func Login(ctx context.Context, tx repository.Transaction, repo repository.AuthRepository, email, password string, now time.Time, sessionLifetime time.Duration) (LoginResult, error) {
-	email = strings.TrimSpace(strings.ToLower(email))
-	if email == "" || password == "" {
-		return LoginResult{}, ErrInvalidCredentials
+func (d *AuthDomain) Login(ctx context.Context, tx repository.Transaction, request LoginRequest) (LoginResponse, error) {
+	email := strings.TrimSpace(strings.ToLower(request.Email))
+	if email == "" || request.Password == "" {
+		return LoginResponse{}, ErrInvalidCredentials
 	}
-
-	user, err := repo.FindUserByEmail(ctx, tx, email)
+	user, err := d.repo.FindUserByEmail(ctx, tx, email)
 	if errors.Is(err, repository.ErrNotFound) {
-		return LoginResult{}, ErrInvalidCredentials
+		return LoginResponse{}, ErrInvalidCredentials
 	}
 	if err != nil {
-		return LoginResult{}, fmt.Errorf("load user: %w", err)
+		return LoginResponse{}, fmt.Errorf("load user: %w", err)
 	}
-	valid, err := verifyArgon2ID(password, user.PasswordHash)
+	valid, err := verifyArgon2ID(request.Password, user.PasswordHash)
 	if err != nil || !valid {
-		return LoginResult{}, ErrInvalidCredentials
+		return LoginResponse{}, ErrInvalidCredentials
 	}
 	if user.Status != "active" {
-		return LoginResult{}, ErrUserBlocked
+		return LoginResponse{}, ErrUserBlocked
 	}
-
 	tokenBytes := make([]byte, 32)
 	if _, err := rand.Read(tokenBytes); err != nil {
-		return LoginResult{}, fmt.Errorf("generate session token: %w", err)
+		return LoginResponse{}, fmt.Errorf("generate session token: %w", err)
 	}
 	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
 	tokenHash := sha256.Sum256([]byte(token))
-	expiresAt := now.Add(sessionLifetime)
-	if err := repo.InsertSession(ctx, tx, repository.Session{
-		ID: uuid.New(), UserID: user.ID, TokenHash: hex.EncodeToString(tokenHash[:]), ExpiresAt: expiresAt,
-	}); err != nil {
-		return LoginResult{}, fmt.Errorf("persist session: %w", err)
+	expiresAt := d.now().UTC().Add(d.sessionLifetime)
+	if err := d.repo.InsertSession(ctx, tx, repository.Session{ID: uuid.New(), UserID: user.ID, TokenHash: hex.EncodeToString(tokenHash[:]), ExpiresAt: expiresAt}); err != nil {
+		return LoginResponse{}, fmt.Errorf("persist session: %w", err)
 	}
-	return LoginResult{User: user, Token: token, ExpiresAt: expiresAt}, nil
+	return LoginResponse{User: user, Token: token, ExpiresAt: expiresAt}, nil
 }
 
 func verifyArgon2ID(password, encoded string) (bool, error) {

@@ -8,12 +8,7 @@ import (
 	"journal/server/internal/repository"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-type AuthRepository struct{}
-
-func NewAuthRepository() *AuthRepository { return &AuthRepository{} }
 
 func (r *AuthRepository) FindUserByEmail(ctx context.Context, transaction repository.Transaction, email string) (repository.User, error) {
 	tx, err := pgxTransaction(transaction)
@@ -53,26 +48,4 @@ func (r *AuthRepository) InsertSession(ctx context.Context, transaction reposito
 		return fmt.Errorf("insert session: %w", err)
 	}
 	return nil
-}
-
-type TransactionManager struct{ pool *pgxpool.Pool }
-
-func NewTransactionManager(pool *pgxpool.Pool) *TransactionManager {
-	return &TransactionManager{pool: pool}
-}
-
-func (m *TransactionManager) Begin(ctx context.Context) (repository.Transaction, error) {
-	tx, err := m.pool.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("begin transaction: %w", err)
-	}
-	return tx, nil
-}
-
-func pgxTransaction(transaction repository.Transaction) (pgx.Tx, error) {
-	tx, ok := transaction.(pgx.Tx)
-	if !ok {
-		return nil, errors.New("postgres repository requires pgx transaction")
-	}
-	return tx, nil
 }

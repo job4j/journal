@@ -37,7 +37,9 @@ func TestLoginCreatesSessionForActiveUser(t *testing.T) {
 	userID := uuid.New()
 	repo := &authRepoStub{user: repository.User{ID: userID, Email: "user@example.com", PasswordHash: testHash("secret"), Status: "active"}}
 	now := time.Date(2026, 9, 7, 10, 0, 0, 0, time.UTC)
-	result, err := Login(context.Background(), testTx{}, repo, " USER@example.com ", "secret", now, time.Hour)
+	domain := NewAuthDomain(repo, time.Hour)
+	domain.now = func() time.Time { return now }
+	result, err := domain.Login(context.Background(), testTx{}, LoginRequest{Email: " USER@example.com ", Password: "secret"})
 	if err != nil {
 		t.Fatalf("Login() error = %v", err)
 	}
@@ -51,7 +53,8 @@ func TestLoginCreatesSessionForActiveUser(t *testing.T) {
 
 func TestLoginRejectsInvalidPassword(t *testing.T) {
 	repo := &authRepoStub{user: repository.User{PasswordHash: testHash("secret"), Status: "active"}}
-	_, err := Login(context.Background(), testTx{}, repo, "user@example.com", "wrong", time.Now(), time.Hour)
+	domain := NewAuthDomain(repo, time.Hour)
+	_, err := domain.Login(context.Background(), testTx{}, LoginRequest{Email: "user@example.com", Password: "wrong"})
 	if !errors.Is(err, ErrInvalidCredentials) {
 		t.Fatalf("error = %v", err)
 	}
@@ -62,7 +65,8 @@ func TestLoginRejectsInvalidPassword(t *testing.T) {
 
 func TestLoginRejectsBlockedUser(t *testing.T) {
 	repo := &authRepoStub{user: repository.User{PasswordHash: testHash("secret"), Status: "blocked"}}
-	_, err := Login(context.Background(), testTx{}, repo, "user@example.com", "secret", time.Now(), time.Hour)
+	domain := NewAuthDomain(repo, time.Hour)
+	_, err := domain.Login(context.Background(), testTx{}, LoginRequest{Email: "user@example.com", Password: "secret"})
 	if !errors.Is(err, ErrUserBlocked) {
 		t.Fatalf("error = %v", err)
 	}
