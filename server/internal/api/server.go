@@ -6,6 +6,7 @@ import (
 	"journal/server/internal/domain"
 	"journal/server/internal/repository/entity"
 	"log/slog"
+	"time"
 )
 
 type AuthHandler struct {
@@ -65,4 +66,5 @@ type ClassService interface {
 	GetClass(context.Context, string, uuid.UUID) (domain.ClassView, error)
 	CreateClass(context.Context, string, uuid.UUID, string, int16) (domain.ClassView, error)
 	ListClassStudents(context.Context, string, uuid.UUID) ([]domain.ClassStudentView, error)
+	AddStudentToClass(context.Context, string, uuid.UUID, uuid.UUID, time.Time) (domain.ClassStudentView, error)
 }

@@ -15,10 +15,28 @@ type classRepoStub struct {
 	students               []entity.ClassStudent
 	users                  []entity.User
 	getErr                 error
+	year                   entity.AcademicYear
+	createdStudent         entity.ClassStudent
+	createStudentErr       error
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
-	return entity.AcademicYear{ID: uuid.New()}, s.getErr
+	return s.year, s.getErr
+}
+
+func (s classRepoStub) GetUser(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.User, error) {
+	for _, user := range s.users {
+		if user.ID == id {
+			return user, s.getErr
+		}
+	}
+	return entity.User{}, repository.ErrNotFound
+}
+func (s classRepoStub) CreateClassStudent(_ context.Context, _ repository.Transaction, item entity.ClassStudent) (entity.ClassStudent, error) {
+	if s.createdStudent.ClassID != uuid.Nil {
+		return s.createdStudent, s.createStudentErr
+	}
+	return item, s.createStudentErr
 }
 func (s classRepoStub) CreateClass(_ context.Context, _ repository.Transaction, item entity.Class) (entity.Class, error) {
 	item.ID = uuid.New()
