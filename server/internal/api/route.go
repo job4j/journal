@@ -36,4 +36,5 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Get("/classes/:classId/students", h.ListClassStudents)
 	router.Post("/classes/:classId/students", h.AddStudentToClass)
 	router.Patch("/classes/:classId/students/:studentId", h.UpdateClassStudent)
+	router.Get("/classes/:classId/subjects", h.ListClassSubjects)
 }

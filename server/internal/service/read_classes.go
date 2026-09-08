@@ -30,3 +30,12 @@ func (s *ClassService) ListClassStudents(ctx context.Context, token string, id u
 	defer func() { _ = tx.Rollback(ctx) }()
 	return s.domain.ListClassStudents(ctx, tx, sessionTokenHash(token), id)
 }
+
+func (s *ClassService) ListClassSubjects(ctx context.Context, token string, id uuid.UUID) ([]domain.ClassSubjectView, error) {
+	tx, err := s.txManager.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	return s.domain.ListClassSubjects(ctx, tx, sessionTokenHash(token), id)
+}

@@ -86,6 +86,8 @@ type ClassReadRepository interface {
 	ListClasses(context.Context, Transaction) ([]entity.Class, error)
 	ListClassStudents(context.Context, Transaction) ([]entity.ClassStudent, error)
 	ListUsers(context.Context, Transaction) ([]entity.User, error)
+	ListSubjects(context.Context, Transaction) ([]entity.Subject, error)
+	ListClassSubjects(context.Context, Transaction) ([]entity.ClassSubject, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

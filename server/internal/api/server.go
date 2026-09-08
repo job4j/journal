@@ -68,4 +68,5 @@ type ClassService interface {
 	ListClassStudents(context.Context, string, uuid.UUID) ([]domain.ClassStudentView, error)
 	AddStudentToClass(context.Context, string, uuid.UUID, uuid.UUID, time.Time) (domain.ClassStudentView, error)
 	UpdateClassStudent(context.Context, string, uuid.UUID, uuid.UUID, *time.Time) (domain.ClassStudentView, error)
+	ListClassSubjects(context.Context, string, uuid.UUID) ([]domain.ClassSubjectView, error)
 }
