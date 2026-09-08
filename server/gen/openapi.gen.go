@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"compress/flate"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"path"
@@ -15,7 +16,644 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gofiber/fiber/v2"
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// Defines values for AcademicYearStatus.
+const (
+	AcademicYearStatusActive    AcademicYearStatus = "active"
+	AcademicYearStatusCompleted AcademicYearStatus = "completed"
+	AcademicYearStatusPlanned   AcademicYearStatus = "planned"
+)
+
+// Valid indicates whether the value is a known member of the AcademicYearStatus enum.
+func (e AcademicYearStatus) Valid() bool {
+	switch e {
+	case AcademicYearStatusActive:
+		return true
+	case AcademicYearStatusCompleted:
+		return true
+	case AcademicYearStatusPlanned:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GradeItemKind.
+const (
+	Classwork      GradeItemKind = "classwork"
+	Homework       GradeItemKind = "homework"
+	KnowledgeCheck GradeItemKind = "knowledge_check"
+	Other          GradeItemKind = "other"
+)
+
+// Valid indicates whether the value is a known member of the GradeItemKind enum.
+func (e GradeItemKind) Valid() bool {
+	switch e {
+	case Classwork:
+		return true
+	case Homework:
+		return true
+	case KnowledgeCheck:
+		return true
+	case Other:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GradingScale.
+const (
+	FivePoint GradingScale = "five_point"
+	PassFail  GradingScale = "pass_fail"
+	Points    GradingScale = "points"
+)
+
+// Valid indicates whether the value is a known member of the GradingScale enum.
+func (e GradingScale) Valid() bool {
+	switch e {
+	case FivePoint:
+		return true
+	case PassFail:
+		return true
+	case Points:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GrantParentStudentAccessRequestCanViewJournal.
+const (
+	GrantParentStudentAccessRequestCanViewJournalTrue GrantParentStudentAccessRequestCanViewJournal = true
+)
+
+// Valid indicates whether the value is a known member of the GrantParentStudentAccessRequestCanViewJournal enum.
+func (e GrantParentStudentAccessRequestCanViewJournal) Valid() bool {
+	switch e {
+	case GrantParentStudentAccessRequestCanViewJournalTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GrantParentStudentAccessRequestCanViewProfile.
+const (
+	GrantParentStudentAccessRequestCanViewProfileTrue GrantParentStudentAccessRequestCanViewProfile = true
+)
+
+// Valid indicates whether the value is a known member of the GrantParentStudentAccessRequestCanViewProfile enum.
+func (e GrantParentStudentAccessRequestCanViewProfile) Valid() bool {
+	switch e {
+	case GrantParentStudentAccessRequestCanViewProfileTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for LogoutResponseLoggedOut.
+const (
+	LogoutResponseLoggedOutTrue LogoutResponseLoggedOut = true
+)
+
+// Valid indicates whether the value is a known member of the LogoutResponseLoggedOut enum.
+func (e LogoutResponseLoggedOut) Valid() bool {
+	switch e {
+	case LogoutResponseLoggedOutTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RevokeParentStudentAccessResponseRevoked.
+const (
+	RevokeParentStudentAccessResponseRevokedTrue RevokeParentStudentAccessResponseRevoked = true
+)
+
+// Valid indicates whether the value is a known member of the RevokeParentStudentAccessResponseRevoked enum.
+func (e RevokeParentStudentAccessResponseRevoked) Valid() bool {
+	switch e {
+	case RevokeParentStudentAccessResponseRevokedTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoleCode.
+const (
+	Admin   RoleCode = "admin"
+	Parent  RoleCode = "parent"
+	Student RoleCode = "student"
+	Teacher RoleCode = "teacher"
+)
+
+// Valid indicates whether the value is a known member of the RoleCode enum.
+func (e RoleCode) Valid() bool {
+	switch e {
+	case Admin:
+		return true
+	case Parent:
+		return true
+	case Student:
+		return true
+	case Teacher:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UserStatus.
+const (
+	UserStatusActive  UserStatus = "active"
+	UserStatusBlocked UserStatus = "blocked"
+)
+
+// Valid indicates whether the value is a known member of the UserStatus enum.
+func (e UserStatus) Valid() bool {
+	switch e {
+	case UserStatusActive:
+		return true
+	case UserStatusBlocked:
+		return true
+	default:
+		return false
+	}
+}
+
+// AcademicYear defines model for AcademicYear.
+type AcademicYear struct {
+	EndsOn   openapi_types.Date `json:"endsOn"`
+	Id       openapi_types.UUID `json:"id"`
+	Name     string             `json:"name"`
+	StartsOn openapi_types.Date `json:"startsOn"`
+	Status   AcademicYearStatus `json:"status"`
+}
+
+// AcademicYearStatus defines model for AcademicYearStatus.
+type AcademicYearStatus string
+
+// AddStudentToClassRequest defines model for AddStudentToClassRequest.
+type AddStudentToClassRequest struct {
+	EnrolledOn openapi_types.Date `json:"enrolledOn"`
+	StudentId  openapi_types.UUID `json:"studentId"`
+}
+
+// AddStudentToClassResponse defines model for AddStudentToClassResponse.
+type AddStudentToClassResponse struct {
+	ClassStudent ClassStudent `json:"classStudent"`
+}
+
+// AssignSubjectToClassRequest defines model for AssignSubjectToClassRequest.
+type AssignSubjectToClassRequest struct {
+	ResponsibleTeacherId openapi_types.UUID `json:"responsibleTeacherId"`
+	SubjectId            openapi_types.UUID `json:"subjectId"`
+}
+
+// AssignSubjectToClassResponse defines model for AssignSubjectToClassResponse.
+type AssignSubjectToClassResponse struct {
+	ClassSubject ClassSubject `json:"classSubject"`
+}
+
+// Class defines model for Class.
+type Class struct {
+	AcademicYearId openapi_types.UUID `json:"academicYearId"`
+	GradeLevel     int                `json:"gradeLevel"`
+	Id             openapi_types.UUID `json:"id"`
+	Name           string             `json:"name"`
+}
+
+// ClassStudent defines model for ClassStudent.
+type ClassStudent struct {
+	EnrolledOn openapi_types.Date  `json:"enrolledOn"`
+	LeftOn     *openapi_types.Date `json:"leftOn,omitempty"`
+	Student    UserSummary         `json:"student"`
+}
+
+// ClassSubject defines model for ClassSubject.
+type ClassSubject struct {
+	ClassId            openapi_types.UUID `json:"classId"`
+	Id                 openapi_types.UUID `json:"id"`
+	ResponsibleTeacher UserSummary        `json:"responsibleTeacher"`
+	Subject            Subject            `json:"subject"`
+}
+
+// CreateAcademicYearRequest defines model for CreateAcademicYearRequest.
+type CreateAcademicYearRequest struct {
+	EndsOn openapi_types.Date `json:"endsOn"`
+
+	// Name Example: 2026/2027
+	Name     string             `json:"name"`
+	StartsOn openapi_types.Date `json:"startsOn"`
+	Status   AcademicYearStatus `json:"status"`
+}
+
+// CreateAcademicYearResponse defines model for CreateAcademicYearResponse.
+type CreateAcademicYearResponse struct {
+	AcademicYear AcademicYear `json:"academicYear"`
+}
+
+// CreateClassRequest defines model for CreateClassRequest.
+type CreateClassRequest struct {
+	AcademicYearId openapi_types.UUID `json:"academicYearId"`
+	GradeLevel     int                `json:"gradeLevel"`
+	Name           string             `json:"name"`
+}
+
+// CreateClassResponse defines model for CreateClassResponse.
+type CreateClassResponse struct {
+	Class Class `json:"class"`
+}
+
+// CreateGradeItemRequest defines model for CreateGradeItemRequest.
+type CreateGradeItemRequest struct {
+	GradingScale GradingScale  `json:"gradingScale"`
+	Kind         GradeItemKind `json:"kind"`
+	MaxScore     *float64      `json:"maxScore,omitempty"`
+	Title        string        `json:"title"`
+}
+
+// CreateGradeItemResponse defines model for CreateGradeItemResponse.
+type CreateGradeItemResponse struct {
+	GradeItem GradeItem `json:"gradeItem"`
+}
+
+// CreateLessonMaterialInput defines model for CreateLessonMaterialInput.
+type CreateLessonMaterialInput struct {
+	Position int    `json:"position"`
+	Title    string `json:"title"`
+	Url      string `json:"url"`
+}
+
+// CreateLessonRequest defines model for CreateLessonRequest.
+type CreateLessonRequest struct {
+	Homework   *string                     `json:"homework,omitempty"`
+	LessonDate openapi_types.Date          `json:"lessonDate"`
+	Materials  []CreateLessonMaterialInput `json:"materials"`
+	Position   int                         `json:"position"`
+	Topic      string                      `json:"topic"`
+}
+
+// CreateLessonResponse defines model for CreateLessonResponse.
+type CreateLessonResponse struct {
+	Lesson Lesson `json:"lesson"`
+}
+
+// CreateSubjectRequest defines model for CreateSubjectRequest.
+type CreateSubjectRequest struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+// CreateSubjectResponse defines model for CreateSubjectResponse.
+type CreateSubjectResponse struct {
+	Subject Subject `json:"subject"`
+}
+
+// CreateUserRequest defines model for CreateUserRequest.
+type CreateUserRequest struct {
+	Email     openapi_types.Email `json:"email"`
+	FirstName string              `json:"firstName"`
+	LastName  string              `json:"lastName"`
+	Password  string              `json:"password"`
+	Roles     []RoleCode          `json:"roles"`
+}
+
+// CreateUserResponse defines model for CreateUserResponse.
+type CreateUserResponse struct {
+	User User `json:"user"`
+}
+
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	// Code Example: validation_failed
+	Code   string             `json:"code"`
+	Fields *map[string]string `json:"fields,omitempty"`
+
+	// Message Example: Request contains invalid data
+	Message string `json:"message"`
+}
+
+// GetClassResponse defines model for GetClassResponse.
+type GetClassResponse struct {
+	Class Class `json:"class"`
+}
+
+// GetCurrentUserResponse defines model for GetCurrentUserResponse.
+type GetCurrentUserResponse struct {
+	User User `json:"user"`
+}
+
+// GetParentStudentJournalResponse defines model for GetParentStudentJournalResponse.
+type GetParentStudentJournalResponse struct {
+	AcademicYear AcademicYear     `json:"academicYear"`
+	Class        Class            `json:"class"`
+	Student      UserSummary      `json:"student"`
+	Subjects     []JournalSubject `json:"subjects"`
+}
+
+// GetUserResponse defines model for GetUserResponse.
+type GetUserResponse struct {
+	User User `json:"user"`
+}
+
+// GradeItem defines model for GradeItem.
+type GradeItem struct {
+	GradingScale GradingScale       `json:"gradingScale"`
+	Id           openapi_types.UUID `json:"id"`
+	Kind         GradeItemKind      `json:"kind"`
+	LessonId     openapi_types.UUID `json:"lessonId"`
+	MaxScore     *float64           `json:"maxScore,omitempty"`
+	Title        string             `json:"title"`
+}
+
+// GradeItemKind defines model for GradeItemKind.
+type GradeItemKind string
+
+// GradingScale defines model for GradingScale.
+type GradingScale string
+
+// GrantParentStudentAccessRequest defines model for GrantParentStudentAccessRequest.
+type GrantParentStudentAccessRequest struct {
+	CanViewJournal GrantParentStudentAccessRequestCanViewJournal `json:"canViewJournal"`
+	CanViewProfile GrantParentStudentAccessRequestCanViewProfile `json:"canViewProfile"`
+}
+
+// GrantParentStudentAccessRequestCanViewJournal defines model for GrantParentStudentAccessRequest.CanViewJournal.
+type GrantParentStudentAccessRequestCanViewJournal bool
+
+// GrantParentStudentAccessRequestCanViewProfile defines model for GrantParentStudentAccessRequest.CanViewProfile.
+type GrantParentStudentAccessRequestCanViewProfile bool
+
+// GrantParentStudentAccessResponse defines model for GrantParentStudentAccessResponse.
+type GrantParentStudentAccessResponse struct {
+	ParentId openapi_types.UUID `json:"parentId"`
+
+	// Permissions Example: ["can_view_user","can_view_journal"]
+	Permissions []string           `json:"permissions"`
+	StudentId   openapi_types.UUID `json:"studentId"`
+}
+
+// JournalLesson defines model for JournalLesson.
+type JournalLesson struct {
+	Lesson Lesson         `json:"lesson"`
+	Scores []JournalScore `json:"scores"`
+}
+
+// JournalScore defines model for JournalScore.
+type JournalScore struct {
+	GradeItem GradeItem `json:"gradeItem"`
+	Score     Score     `json:"score"`
+}
+
+// JournalSubject defines model for JournalSubject.
+type JournalSubject struct {
+	ClassSubject ClassSubject    `json:"classSubject"`
+	Lessons      []JournalLesson `json:"lessons"`
+}
+
+// Lesson defines model for Lesson.
+type Lesson struct {
+	ClassSubjectId openapi_types.UUID `json:"classSubjectId"`
+	GradeItems     []GradeItem        `json:"gradeItems"`
+	Homework       *string            `json:"homework,omitempty"`
+	Id             openapi_types.UUID `json:"id"`
+	LessonDate     openapi_types.Date `json:"lessonDate"`
+	Materials      []LessonMaterial   `json:"materials"`
+	Position       int                `json:"position"`
+	Topic          string             `json:"topic"`
+}
+
+// LessonMaterial defines model for LessonMaterial.
+type LessonMaterial struct {
+	Id       openapi_types.UUID `json:"id"`
+	Position int                `json:"position"`
+	Title    string             `json:"title"`
+	Url      string             `json:"url"`
+}
+
+// ListAcademicYearsResponse defines model for ListAcademicYearsResponse.
+type ListAcademicYearsResponse struct {
+	Items []AcademicYear `json:"items"`
+}
+
+// ListClassStudentsResponse defines model for ListClassStudentsResponse.
+type ListClassStudentsResponse struct {
+	Items []ClassStudent `json:"items"`
+}
+
+// ListClassSubjectLessonsResponse defines model for ListClassSubjectLessonsResponse.
+type ListClassSubjectLessonsResponse struct {
+	Items []Lesson `json:"items"`
+}
+
+// ListClassSubjectsResponse defines model for ListClassSubjectsResponse.
+type ListClassSubjectsResponse struct {
+	Items []ClassSubject `json:"items"`
+}
+
+// ListClassesResponse defines model for ListClassesResponse.
+type ListClassesResponse struct {
+	Items []Class `json:"items"`
+}
+
+// ListParentStudentsResponse defines model for ListParentStudentsResponse.
+type ListParentStudentsResponse struct {
+	Items []UserSummary `json:"items"`
+}
+
+// ListSubjectsResponse defines model for ListSubjectsResponse.
+type ListSubjectsResponse struct {
+	Items []Subject `json:"items"`
+}
+
+// ListTeacherClassSubjectsResponse defines model for ListTeacherClassSubjectsResponse.
+type ListTeacherClassSubjectsResponse struct {
+	Items []ClassSubject `json:"items"`
+}
+
+// ListTeacherClassesResponse defines model for ListTeacherClassesResponse.
+type ListTeacherClassesResponse struct {
+	Items []Class `json:"items"`
+}
+
+// ListUsersResponse defines model for ListUsersResponse.
+type ListUsersResponse struct {
+	Items []User `json:"items"`
+	Total int    `json:"total"`
+}
+
+// LoginRequest defines model for LoginRequest.
+type LoginRequest struct {
+	Email    openapi_types.Email `json:"email"`
+	Password string              `json:"password"`
+}
+
+// LoginResponse defines model for LoginResponse.
+type LoginResponse struct {
+	User User `json:"user"`
+}
+
+// LogoutResponse defines model for LogoutResponse.
+type LogoutResponse struct {
+	LoggedOut LogoutResponseLoggedOut `json:"loggedOut"`
+}
+
+// LogoutResponseLoggedOut defines model for LogoutResponse.LoggedOut.
+type LogoutResponseLoggedOut bool
+
+// PutNumericStudentScoreRequest defines model for PutNumericStudentScoreRequest.
+type PutNumericStudentScoreRequest struct {
+	NumericValue   float64 `json:"numericValue"`
+	TeacherComment *string `json:"teacherComment,omitempty"`
+}
+
+// PutStudentScoreRequest defines model for PutStudentScoreRequest.
+type PutStudentScoreRequest struct {
+	union json.RawMessage
+}
+
+// PutStudentScoreResponse defines model for PutStudentScoreResponse.
+type PutStudentScoreResponse struct {
+	Score Score `json:"score"`
+}
+
+// PutTextStudentScoreRequest defines model for PutTextStudentScoreRequest.
+type PutTextStudentScoreRequest struct {
+	TeacherComment *string `json:"teacherComment,omitempty"`
+	TextValue      string  `json:"textValue"`
+}
+
+// RevokeParentStudentAccessResponse defines model for RevokeParentStudentAccessResponse.
+type RevokeParentStudentAccessResponse struct {
+	ParentId  openapi_types.UUID                       `json:"parentId"`
+	Revoked   RevokeParentStudentAccessResponseRevoked `json:"revoked"`
+	StudentId openapi_types.UUID                       `json:"studentId"`
+}
+
+// RevokeParentStudentAccessResponseRevoked defines model for RevokeParentStudentAccessResponse.Revoked.
+type RevokeParentStudentAccessResponseRevoked bool
+
+// RoleCode defines model for RoleCode.
+type RoleCode string
+
+// Score defines model for Score.
+type Score struct {
+	GradeItemId    openapi_types.UUID `json:"gradeItemId"`
+	Id             openapi_types.UUID `json:"id"`
+	NumericValue   *float64           `json:"numericValue,omitempty"`
+	StudentId      openapi_types.UUID `json:"studentId"`
+	TeacherComment *string            `json:"teacherComment,omitempty"`
+	TextValue      *string            `json:"textValue,omitempty"`
+}
+
+// Subject defines model for Subject.
+type Subject struct {
+	Code string             `json:"code"`
+	Id   openapi_types.UUID `json:"id"`
+	Name string             `json:"name"`
+}
+
+// UpdateClassStudentRequest defines model for UpdateClassStudentRequest.
+type UpdateClassStudentRequest struct {
+	LeftOn *openapi_types.Date `json:"leftOn"`
+}
+
+// UpdateClassStudentResponse defines model for UpdateClassStudentResponse.
+type UpdateClassStudentResponse struct {
+	ClassStudent ClassStudent `json:"classStudent"`
+}
+
+// UpdateClassSubjectRequest defines model for UpdateClassSubjectRequest.
+type UpdateClassSubjectRequest struct {
+	ResponsibleTeacherId openapi_types.UUID `json:"responsibleTeacherId"`
+}
+
+// UpdateClassSubjectResponse defines model for UpdateClassSubjectResponse.
+type UpdateClassSubjectResponse struct {
+	ClassSubject ClassSubject `json:"classSubject"`
+}
+
+// User defines model for User.
+type User struct {
+	Email     openapi_types.Email `json:"email"`
+	FirstName string              `json:"firstName"`
+	Id        openapi_types.UUID  `json:"id"`
+	LastName  string              `json:"lastName"`
+	Roles     []RoleCode          `json:"roles"`
+	Status    UserStatus          `json:"status"`
+}
+
+// UserStatus defines model for UserStatus.
+type UserStatus string
+
+// UserSummary defines model for UserSummary.
+type UserSummary struct {
+	FirstName string             `json:"firstName"`
+	Id        openapi_types.UUID `json:"id"`
+	LastName  string             `json:"lastName"`
+	Roles     []RoleCode         `json:"roles"`
+}
+
+// AcademicYearIdQuery defines model for AcademicYearIdQuery.
+type AcademicYearIdQuery = openapi_types.UUID
+
+// ClassIdPath defines model for ClassIdPath.
+type ClassIdPath = openapi_types.UUID
+
+// ClassSubjectIdPath defines model for ClassSubjectIdPath.
+type ClassSubjectIdPath = openapi_types.UUID
+
+// DateFromQuery defines model for DateFromQuery.
+type DateFromQuery = openapi_types.Date
+
+// DateToQuery defines model for DateToQuery.
+type DateToQuery = openapi_types.Date
+
+// GradeItemIdPath defines model for GradeItemIdPath.
+type GradeItemIdPath = openapi_types.UUID
+
+// LessonIdPath defines model for LessonIdPath.
+type LessonIdPath = openapi_types.UUID
+
+// LimitQuery defines model for LimitQuery.
+type LimitQuery = int
+
+// OffsetQuery defines model for OffsetQuery.
+type OffsetQuery = int
+
+// ParentIdPath defines model for ParentIdPath.
+type ParentIdPath = openapi_types.UUID
+
+// RoleQuery defines model for RoleQuery.
+type RoleQuery = RoleCode
+
+// StudentIdPath defines model for StudentIdPath.
+type StudentIdPath = openapi_types.UUID
+
+// UserIdPath defines model for UserIdPath.
+type UserIdPath = openapi_types.UUID
+
+// BadRequest defines model for BadRequest.
+type BadRequest = ErrorResponse
+
+// Conflict defines model for Conflict.
+type Conflict = ErrorResponse
+
+// Forbidden defines model for Forbidden.
+type Forbidden = ErrorResponse
+
+// NotFound defines model for NotFound.
+type NotFound = ErrorResponse
+
+// Unauthorized defines model for Unauthorized.
+type Unauthorized = ErrorResponse
 
 // ListClassSubjectLessonsParams defines parameters for ListClassSubjectLessons.
 type ListClassSubjectLessonsParams struct {
@@ -78,6 +716,68 @@ type CreateSubjectJSONRequestBody = CreateSubjectRequest
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody = CreateUserRequest
+
+// AsPutNumericStudentScoreRequest returns the union data inside the PutStudentScoreRequest as a PutNumericStudentScoreRequest
+func (t PutStudentScoreRequest) AsPutNumericStudentScoreRequest() (PutNumericStudentScoreRequest, error) {
+	var body PutNumericStudentScoreRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutNumericStudentScoreRequest overwrites any union data inside the PutStudentScoreRequest as the provided PutNumericStudentScoreRequest
+func (t *PutStudentScoreRequest) FromPutNumericStudentScoreRequest(v PutNumericStudentScoreRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutNumericStudentScoreRequest performs a merge with any union data inside the PutStudentScoreRequest, using the provided PutNumericStudentScoreRequest
+func (t *PutStudentScoreRequest) MergePutNumericStudentScoreRequest(v PutNumericStudentScoreRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPutTextStudentScoreRequest returns the union data inside the PutStudentScoreRequest as a PutTextStudentScoreRequest
+func (t PutStudentScoreRequest) AsPutTextStudentScoreRequest() (PutTextStudentScoreRequest, error) {
+	var body PutTextStudentScoreRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutTextStudentScoreRequest overwrites any union data inside the PutStudentScoreRequest as the provided PutTextStudentScoreRequest
+func (t *PutStudentScoreRequest) FromPutTextStudentScoreRequest(v PutTextStudentScoreRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutTextStudentScoreRequest performs a merge with any union data inside the PutStudentScoreRequest, using the provided PutTextStudentScoreRequest
+func (t *PutStudentScoreRequest) MergePutTextStudentScoreRequest(v PutTextStudentScoreRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PutStudentScoreRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PutStudentScoreRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {

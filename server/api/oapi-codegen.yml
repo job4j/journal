@@ -4,5 +4,7 @@ generate:
   models: true
   embedded-spec: true
 output: gen/openapi.gen.go
+output-options:
+  skip-prune: true
 import-mapping:
   ../openapi.yml: '-'
