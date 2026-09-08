@@ -46,6 +46,12 @@ func (h *ClassHandler) writeClassError(c *fiber.Ctx, err error) error {
 		return writeError(c, 403, "forbidden", "Недостаточно прав")
 	case errors.Is(err, domain.ErrClassNotFound):
 		return writeError(c, 404, "class_not_found", "Класс не найден")
+	case errors.Is(err, domain.ErrAcademicYearNotFound):
+		return writeError(c, 404, "academic_year_not_found", "Учебный год не найден")
+	case errors.Is(err, domain.ErrInvalidClass):
+		return writeError(c, 400, "validation_failed", "Некорректные данные класса")
+	case errors.Is(err, domain.ErrClassExists):
+		return writeError(c, 409, "class_exists", "Класс уже существует")
 	default:
 		h.logger.Error("read classes failed", "error", err)
 		return writeError(c, 500, "internal_error", "Внутренняя ошибка сервера")

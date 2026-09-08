@@ -16,6 +16,14 @@ type classRepoStub struct {
 	getErr                 error
 }
 
+func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
+	return entity.AcademicYear{ID: uuid.New()}, s.getErr
+}
+func (s classRepoStub) CreateClass(_ context.Context, _ repository.Transaction, item entity.Class) (entity.Class, error) {
+	item.ID = uuid.New()
+	return item, s.getErr
+}
+
 func (s classRepoStub) CheckSessionPermission(context.Context, repository.Transaction, string, string) (bool, bool, error) {
 	return s.authenticated, s.allowed, nil
 }
