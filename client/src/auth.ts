@@ -11,44 +11,22 @@ interface LoginResponse {
   user: User
 }
 
-interface ErrorResponse {
-  code?: string
-  message?: string
-}
-
-export class LoginError extends Error {}
+export { ApiError as LoginError }
 
 
 export async function login(email: string, password: string): Promise<User> {
-  let response: Response
-  try {
-    response = await fetch('/api/v1/auth/login', {
+  return (await request<LoginResponse>('/api/v1/auth/login', {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
-    })
-  } catch {
-    throw new LoginError('Не удалось связаться с сервером')
-  }
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => null) as ErrorResponse | null
-    throw new LoginError(error?.message ?? 'Не удалось войти')
-  }
-
-  const payload = await response.json() as LoginResponse
-  return payload.user
+    })).user
 }
 
 export async function currentUser(): Promise<User | null> {
-  const response = await fetch('/api/v1/me', { credentials: 'include' })
-  if (response.status === 401) return null
-  if (!response.ok) throw new LoginError('Не удалось восстановить сессию')
-  return ((await response.json()) as LoginResponse).user
+  try { return (await request<LoginResponse>('/api/v1/me')).user }
+  catch (error) { if (error instanceof ApiError && error.status === 401) return null; throw error }
 }
 
 export async function logout(): Promise<void> {
-  const response = await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' })
-  if (!response.ok) throw new LoginError('Не удалось выйти')
+  await request('/api/v1/auth/logout', { method: 'POST' })
 }
+import { ApiError, request } from './api'
