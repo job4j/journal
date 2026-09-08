@@ -38,6 +38,15 @@ func NewAcademicYearService(txManager repository.TransactionManager, repo reposi
 	return &AcademicYearService{txManager: txManager, domain: domain.NewAcademicYearDomain(repo)}
 }
 
+type SubjectService struct {
+	txManager repository.TransactionManager
+	domain    *domain.SubjectDomain
+}
+
+func NewSubjectService(txManager repository.TransactionManager, repo repository.SubjectRepository) *SubjectService {
+	return &SubjectService{txManager: txManager, domain: domain.NewSubjectDomain(repo)}
+}
+
 func NewUserService(txManager repository.TransactionManager, repo repository.UserManagementRepository) *UserService {
 	return &UserService{txManager: txManager, domain: domain.NewUserDomain(repo)}
 }

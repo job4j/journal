@@ -25,3 +25,7 @@ func (h *AcademicYearHandler) Register(router fiber.Router) {
 	router.Get("/academic-years", h.ListAcademicYears)
 	router.Post("/academic-years", h.CreateAcademicYear)
 }
+func (h *SubjectHandler) Register(router fiber.Router) {
+	router.Get("/subjects", h.ListSubjects)
+	router.Post("/subjects", h.CreateSubject)
+}

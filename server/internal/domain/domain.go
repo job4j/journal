@@ -23,12 +23,20 @@ var (
 	ErrUserInUse           = errors.New("user is in use")
 	ErrInvalidAcademicYear = errors.New("invalid academic year")
 	ErrAcademicYearExists  = errors.New("academic year already exists")
+	ErrInvalidSubject      = errors.New("invalid subject")
+	ErrSubjectExists       = errors.New("subject already exists")
 )
 
 type AuthDomain struct {
 	repo            repository.AuthRepository
 	sessionLifetime time.Duration
 	now             func() time.Time
+}
+
+type SubjectDomain struct{ repo repository.SubjectRepository }
+
+func NewSubjectDomain(repo repository.SubjectRepository) *SubjectDomain {
+	return &SubjectDomain{repo: repo}
 }
 
 func NewAuthDomain(repo repository.AuthRepository, sessionLifetime time.Duration) *AuthDomain {

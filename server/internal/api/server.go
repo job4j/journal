@@ -48,3 +48,11 @@ type AcademicYearService interface {
 	ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error)
 	CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error)
 }
+type SubjectHandler struct {
+	service SubjectService
+	logger  *slog.Logger
+}
+type SubjectService interface {
+	ListSubjects(context.Context, string) ([]entity.Subject, error)
+	CreateSubject(context.Context, string, string, string) (entity.Subject, error)
+}

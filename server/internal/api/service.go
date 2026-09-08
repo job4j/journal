@@ -14,3 +14,6 @@ func NewUserHandler(service UserService, logger *slog.Logger) *UserHandler {
 func NewAcademicYearHandler(service AcademicYearService, logger *slog.Logger) *AcademicYearHandler {
 	return &AcademicYearHandler{service: service, logger: logger}
 }
+func NewSubjectHandler(service SubjectService, logger *slog.Logger) *SubjectHandler {
+	return &SubjectHandler{service: service, logger: logger}
+}

@@ -13,7 +13,7 @@ func (r *Repository) GetSubject(ctx context.Context, tx Transaction, id uuid.UUI
 	return queryOne[entity.Subject](ctx, tx, "get subject", `SELECT id, code, name, created_at, updated_at FROM subjects WHERE id = $1`, id)
 }
 func (r *Repository) ListSubjects(ctx context.Context, tx Transaction) ([]entity.Subject, error) {
-	return queryMany[entity.Subject](ctx, tx, "list subjects", `SELECT id, code, name, created_at, updated_at FROM subjects ORDER BY created_at, id`)
+	return queryMany[entity.Subject](ctx, tx, "list subjects", `SELECT id, code, name, created_at, updated_at FROM subjects ORDER BY name, id`)
 }
 func (r *Repository) UpdateSubject(ctx context.Context, tx Transaction, value entity.Subject) (entity.Subject, error) {
 	return queryOne[entity.Subject](ctx, tx, "update subject", `UPDATE subjects SET code = $1, name = $2, updated_at = now() WHERE id = $3 RETURNING id, code, name, created_at, updated_at`, value.Code, value.Name, value.ID)

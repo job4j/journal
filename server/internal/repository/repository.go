@@ -68,6 +68,11 @@ type AcademicYearRepository interface {
 	ListAcademicYears(context.Context, Transaction) ([]entity.AcademicYear, error)
 	ListAcademicYearQuarters(context.Context, Transaction) ([]entity.AcademicYearQuarter, error)
 }
+type SubjectRepository interface {
+	CheckSessionPermission(context.Context, Transaction, string, string) (bool, bool, error)
+	CreateSubject(context.Context, Transaction, entity.Subject) (entity.Subject, error)
+	ListSubjects(context.Context, Transaction) ([]entity.Subject, error)
+}
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
 	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
