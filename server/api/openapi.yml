@@ -411,7 +411,7 @@ components:
     AcademicYear:
       type: object
       additionalProperties: false
-      required: [id, name, startsOn, endsOn, status]
+      required: [id, name, startsOn, endsOn, status, quarters]
       properties:
         id:
           type: string
@@ -426,6 +426,47 @@ components:
           format: date
         status:
           $ref: '#/components/schemas/AcademicYearStatus'
+        quarters:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/AcademicYearQuarter'
+
+    AcademicYearQuarter:
+      type: object
+      additionalProperties: false
+      required: [id, number, startsOn, endsOn]
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          minimum: 1
+          maximum: 4
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+
+    AcademicYearQuarterInput:
+      type: object
+      additionalProperties: false
+      required: [number, startsOn, endsOn]
+      properties:
+        number:
+          type: integer
+          minimum: 1
+          maximum: 4
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
 
     Subject:
       type: object
@@ -705,7 +746,7 @@ components:
     CreateAcademicYearRequest:
       type: object
       additionalProperties: false
-      required: [name, startsOn, endsOn, status]
+      required: [name, startsOn, endsOn, status, quarters]
       properties:
         name:
           type: string
@@ -719,6 +760,12 @@ components:
           format: date
         status:
           $ref: '#/components/schemas/AcademicYearStatus'
+        quarters:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/AcademicYearQuarterInput'
     CreateAcademicYearResponse:
       type: object
       additionalProperties: false
