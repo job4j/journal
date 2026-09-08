@@ -25,6 +25,7 @@ type classRepoStub struct {
 	createClassSubjectErr  error
 	permissions            *[]entity.Permission
 	userPermissions        *[]entity.UserPermission
+	deletedUserPermissions *[]entity.UserPermission
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
@@ -99,6 +100,13 @@ func (s classRepoStub) CreateClassSubject(_ context.Context, _ repository.Transa
 	return item, nil
 }
 func (s classRepoStub) EnsurePermission(_ context.Context, _ repository.Transaction, item entity.Permission) (entity.Permission, error) {
+	if s.permissions != nil {
+		for _, current := range *s.permissions {
+			if current.Code == item.Code && current.Value != nil && item.Value != nil && *current.Value == *item.Value {
+				return current, nil
+			}
+		}
+	}
 	item.ID = uuid.New()
 	if s.permissions != nil {
 		*s.permissions = append(*s.permissions, item)
@@ -110,6 +118,29 @@ func (s classRepoStub) EnsureUserPermission(_ context.Context, _ repository.Tran
 		*s.userPermissions = append(*s.userPermissions, item)
 	}
 	return item, nil
+}
+func (s classRepoStub) GetClassSubject(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.ClassSubject, error) {
+	for _, item := range s.classSubjects {
+		if item.ID == id {
+			return item, nil
+		}
+	}
+	return entity.ClassSubject{}, repository.ErrNotFound
+}
+func (s classRepoStub) UpdateClassSubject(_ context.Context, _ repository.Transaction, item entity.ClassSubject) (entity.ClassSubject, error) {
+	return item, nil
+}
+func (s classRepoStub) ListPermissions(context.Context, repository.Transaction) ([]entity.Permission, error) {
+	if s.permissions == nil {
+		return nil, nil
+	}
+	return *s.permissions, nil
+}
+func (s classRepoStub) DeleteUserPermission(_ context.Context, _ repository.Transaction, userID, permissionID uuid.UUID) error {
+	if s.deletedUserPermissions != nil {
+		*s.deletedUserPermissions = append(*s.deletedUserPermissions, entity.UserPermission{UserID: userID, PermissionID: permissionID})
+	}
+	return nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {

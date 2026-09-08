@@ -35,6 +35,7 @@ var (
 	ErrClassStudentNotFound = errors.New("class student not found")
 	ErrInvalidTeacher       = errors.New("invalid teacher")
 	ErrClassSubjectExists   = errors.New("class subject already exists")
+	ErrClassSubjectNotFound = errors.New("class subject not found")
 )
 
 type AuthDomain struct {

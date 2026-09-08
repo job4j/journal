@@ -92,6 +92,10 @@ type ClassReadRepository interface {
 	CreateClassSubject(context.Context, Transaction, entity.ClassSubject) (entity.ClassSubject, error)
 	EnsurePermission(context.Context, Transaction, entity.Permission) (entity.Permission, error)
 	EnsureUserPermission(context.Context, Transaction, entity.UserPermission) (entity.UserPermission, error)
+	GetClassSubject(context.Context, Transaction, uuid.UUID) (entity.ClassSubject, error)
+	UpdateClassSubject(context.Context, Transaction, entity.ClassSubject) (entity.ClassSubject, error)
+	ListPermissions(context.Context, Transaction) ([]entity.Permission, error)
+	DeleteUserPermission(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
