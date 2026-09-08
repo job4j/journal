@@ -25,17 +25,7 @@ type CreateRoleResponse struct {
 }
 
 func (d *RoleDomain) authorize(ctx context.Context, tx repository.Transaction, tokenHash string) error {
-	authenticated, allowed, err := d.repo.CheckSessionPermission(ctx, tx, tokenHash, "can_manage_roles")
-	if err != nil {
-		return fmt.Errorf("check access: %w", err)
-	}
-	if !authenticated {
-		return ErrUnauthenticated
-	}
-	if !allowed {
-		return ErrForbidden
-	}
-	return nil
+	return Authorize(ctx, tx, d.repo, tokenHash, "can_manage_roles")
 }
 func normalizeRole(code, name string, rawCodes []string) (string, string, []string, error) {
 	code = strings.ToLower(strings.TrimSpace(code))

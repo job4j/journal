@@ -54,17 +54,7 @@ type ListUsersResult struct {
 }
 
 func (d *UserDomain) authorize(ctx context.Context, tx repository.Transaction, hash, permission string) error {
-	authenticated, allowed, err := d.repo.CheckSessionPermission(ctx, tx, hash, permission)
-	if err != nil {
-		return fmt.Errorf("check access: %w", err)
-	}
-	if !authenticated {
-		return ErrUnauthenticated
-	}
-	if !allowed {
-		return ErrForbidden
-	}
-	return nil
+	return Authorize(ctx, tx, d.repo, hash, permission)
 }
 func normalizeUser(input UserInput, passwordRequired bool) (UserInput, error) {
 	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
@@ -178,15 +168,8 @@ func (d *UserDomain) ListUsers(ctx context.Context, tx repository.Transaction, r
 	return ListUsersResult{Items: filtered[start:end], Total: total}, nil
 }
 func (d *UserDomain) GetUser(ctx context.Context, tx repository.Transaction, request GetUserRequest) (entity.User, error) {
-	authenticated, allowed, err := d.repo.CheckSessionPermissionForValue(ctx, tx, request.SessionTokenHash, "can_view_user", request.ID.String())
-	if err != nil {
-		return entity.User{}, fmt.Errorf("check access: %w", err)
-	}
-	if !authenticated {
-		return entity.User{}, ErrUnauthenticated
-	}
-	if !allowed {
-		return entity.User{}, ErrForbidden
+	if err := AuthorizeObject(ctx, tx, d.repo, request.SessionTokenHash, "can_view_user", request.ID.String()); err != nil {
+		return entity.User{}, err
 	}
 	user, err := d.repo.GetUser(ctx, tx, request.ID)
 	if errors.Is(err, repository.ErrNotFound) {
