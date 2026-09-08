@@ -80,6 +80,18 @@ func (r *userRepoStub) EnsureUserPermission(_ context.Context, _ repository.Tran
 	r.userPermissions = append(r.userPermissions, item)
 	return item, nil
 }
+func (r *userRepoStub) ListPermissions(context.Context, repository.Transaction) ([]entity.Permission, error) {
+	return r.permissions, nil
+}
+func (r *userRepoStub) DeleteUserPermission(_ context.Context, _ repository.Transaction, userID, permissionID uuid.UUID) error {
+	for i, item := range r.userPermissions {
+		if item.UserID == userID && item.PermissionID == permissionID {
+			r.userPermissions = append(r.userPermissions[:i], r.userPermissions[i+1:]...)
+			return nil
+		}
+	}
+	return repository.ErrNotFound
+}
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}
 	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Email: " TEACHER@example.com ", Password: "password", FirstName: " Анна ", LastName: " Иванова ", Status: "active", Roles: []string{"teacher"}}})
