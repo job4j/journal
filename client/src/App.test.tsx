@@ -10,12 +10,12 @@ afterEach(() => {
 
 describe('login', () => {
   it('opens the empty workspace after successful login', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'admin@example.ru', firstName: 'Admin', lastName: 'User', status: 'active', roles: ['admin'] },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(screen.getByLabelText('Электронная почта'), 'admin@example.ru')
+    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'admin@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -28,13 +28,13 @@ describe('login', () => {
   })
 
   it('shows the server error and keeps the form', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ message: 'Неверный email или пароль' }), {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({ message: 'Неверный email или пароль' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     }))
 
     render(<App />)
-    await userEvent.type(screen.getByLabelText('Электронная почта'), 'admin@example.ru')
+    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'admin@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'wrong-password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -43,12 +43,12 @@ describe('login', () => {
   })
 
   it('shows only classes to a teacher', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'teacher@example.ru', firstName: 'Анна', lastName: 'Иванова', status: 'active', roles: ['teacher'] },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(screen.getByLabelText('Электронная почта'), 'teacher@example.ru')
+    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -58,12 +58,12 @@ describe('login', () => {
   })
 
   it('shows only students to a parent', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'parent@example.ru', firstName: 'Пётр', lastName: 'Иванов', status: 'active', roles: ['parent'] },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(screen.getByLabelText('Электронная почта'), 'parent@example.ru')
+    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'parent@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -72,12 +72,12 @@ describe('login', () => {
   })
 
   it('opens a class journal and adds a mock grade', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'teacher@example.ru', firstName: 'Анна', lastName: 'Иванова', status: 'active', roles: ['teacher'] },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(screen.getByLabelText('Электронная почта'), 'teacher@example.ru')
+    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
     await userEvent.click(await screen.findByRole('button', { name: /7А/ }))

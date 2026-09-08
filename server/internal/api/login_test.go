@@ -24,6 +24,10 @@ type authServiceStub struct {
 func (s authServiceStub) Login(context.Context, string, string) (domain.LoginResponse, error) {
 	return s.result, s.err
 }
+func (s authServiceStub) CurrentUser(context.Context, string) (entity.User, error) {
+	return s.result.User, s.err
+}
+func (s authServiceStub) Logout(context.Context, string) error { return s.err }
 
 func TestLoginSetsSessionCookie(t *testing.T) {
 	expires := time.Now().Add(time.Hour)

@@ -33,6 +33,12 @@ func (r *authRepoStub) InsertSession(_ context.Context, _ repository.Transaction
 	r.inserted = &session
 	return nil
 }
+func (r *authRepoStub) FindUserBySessionTokenHash(context.Context, repository.Transaction, string, time.Time) (entity.User, error) {
+	return r.user, r.findErr
+}
+func (r *authRepoStub) RevokeSession(context.Context, repository.Transaction, string, time.Time) error {
+	return nil
+}
 
 func TestLoginCreatesSessionForActiveUser(t *testing.T) {
 	userID := uuid.New()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"journal/server/internal/repository/entity"
+	"time"
 )
 
 type authRepository struct{}
@@ -12,7 +13,9 @@ func NewAuthRepository() *authRepository { return &authRepository{} }
 
 type AuthRepository interface {
 	FindUserByEmail(context.Context, Transaction, string) (entity.User, error)
+	FindUserBySessionTokenHash(context.Context, Transaction, string, time.Time) (entity.User, error)
 	InsertSession(context.Context, Transaction, entity.Session) error
+	RevokeSession(context.Context, Transaction, string, time.Time) error
 }
 
 type UserRepository interface {

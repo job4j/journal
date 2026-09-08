@@ -2,7 +2,11 @@ package api
 
 import "github.com/gofiber/fiber/v2"
 
-func (h *AuthHandler) Register(router fiber.Router) { router.Post("/auth/login", h.Login) }
+func (h *AuthHandler) Register(router fiber.Router) {
+	router.Post("/auth/login", h.Login)
+	router.Post("/auth/logout", h.Logout)
+	router.Get("/me", h.CurrentUser)
+}
 func (h *RoleHandler) Register(router fiber.Router) {
 	router.Get("/roles", h.ListRoles)
 	router.Post("/roles", h.CreateRole)

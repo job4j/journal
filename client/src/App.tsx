@@ -1,5 +1,5 @@
-import { FormEvent, useState } from 'react'
-import { login, LoginError, User } from './auth'
+import { FormEvent, useEffect, useState } from 'react'
+import { currentUser, login, logout, LoginError, User } from './auth'
 import ClassesView from './ClassViews'
 import RolesView from './RolesView'
 import UsersView from './UsersView'
@@ -44,7 +44,7 @@ function NavigationIcon({ name }: { name: NavigationItem['icon'] }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
 }
 
-function Workspace({ user }: { user: User }) {
+function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const items = navigation.filter((item) => item.roles.some((role) => user.roles.includes(role)))
   const [activeID, setActiveID] = useState(items[0]?.id ?? '')
   const activeItem = items.find((item) => item.id === activeID) ?? items[0]
@@ -80,6 +80,7 @@ function Workspace({ user }: { user: User }) {
             <strong>{user.firstName} {user.lastName}</strong>
             <span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span>
           </div>
+          <button type="button" aria-label="Выйти" onClick={onLogout}>↪</button>
         </div>
       </aside>
 
@@ -105,6 +106,11 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(true)
+
+  useEffect(() => {
+    currentUser().then(setUser).catch(() => setError('Не удалось восстановить сессию')).finally(() => setIsRestoring(false))
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -121,9 +127,8 @@ export default function App() {
     }
   }
 
-  if (user) {
-    return <Workspace user={user} />
-  }
+  if (isRestoring) return <main className="login-page" aria-label="Загрузка">Загрузка…</main>
+  if (user) return <Workspace user={user} onLogout={() => { void logout().then(() => setUser(null)).catch(() => setError('Не удалось выйти')) }} />
 
   return (
     <main className="login-page">

@@ -18,6 +18,7 @@ interface ErrorResponse {
 
 export class LoginError extends Error {}
 
+
 export async function login(email: string, password: string): Promise<User> {
   let response: Response
   try {
@@ -38,4 +39,16 @@ export async function login(email: string, password: string): Promise<User> {
 
   const payload = await response.json() as LoginResponse
   return payload.user
+}
+
+export async function currentUser(): Promise<User | null> {
+  const response = await fetch('/api/v1/me', { credentials: 'include' })
+  if (response.status === 401) return null
+  if (!response.ok) throw new LoginError('Не удалось восстановить сессию')
+  return ((await response.json()) as LoginResponse).user
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' })
+  if (!response.ok) throw new LoginError('Не удалось выйти')
 }

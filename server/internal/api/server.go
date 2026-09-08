@@ -15,6 +15,8 @@ type AuthHandler struct {
 }
 type AuthService interface {
 	Login(context.Context, string, string) (domain.LoginResponse, error)
+	CurrentUser(context.Context, string) (entity.User, error)
+	Logout(context.Context, string) error
 }
 type RoleHandler struct {
 	service RoleService
