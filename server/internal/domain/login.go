@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
 	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 	"strings"
 	"time"
 )
@@ -21,7 +22,7 @@ type LoginRequest struct {
 	Password string
 }
 type LoginResponse struct {
-	User      repository.User
+	User      entity.User
 	Token     string
 	ExpiresAt time.Time
 }
@@ -52,7 +53,7 @@ func (d *AuthDomain) Login(ctx context.Context, tx repository.Transaction, reque
 	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
 	tokenHash := sha256.Sum256([]byte(token))
 	expiresAt := d.now().UTC().Add(d.sessionLifetime)
-	if err := d.repo.InsertSession(ctx, tx, repository.Session{ID: uuid.New(), UserID: user.ID, TokenHash: hex.EncodeToString(tokenHash[:]), ExpiresAt: expiresAt}); err != nil {
+	if err := d.repo.InsertSession(ctx, tx, entity.Session{ID: uuid.New(), UserID: user.ID, TokenHash: hex.EncodeToString(tokenHash[:]), ExpiresAt: expiresAt}); err != nil {
 		return LoginResponse{}, fmt.Errorf("persist session: %w", err)
 	}
 	return LoginResponse{User: user, Token: token, ExpiresAt: expiresAt}, nil

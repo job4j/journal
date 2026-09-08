@@ -1,22 +1,22 @@
-package postgres
+package repository
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *AuthRepository) FindUserByEmail(ctx context.Context, transaction repository.Transaction, email string) (repository.User, error) {
+func (r *authRepository) FindUserByEmail(ctx context.Context, transaction Transaction, email string) (entity.User, error) {
 	tx, err := pgxTransaction(transaction)
 	if err != nil {
-		return repository.User{}, err
+		return entity.User{}, err
 	}
 
-	var user repository.User
+	var user entity.User
 	err = tx.QueryRow(ctx, `
 		SELECT u.id, u.email, u.password_hash, u.first_name, u.last_name, u.status,
 		       COALESCE(array_agg(r.code ORDER BY r.code) FILTER (WHERE r.code IS NOT NULL), '{}')
@@ -27,15 +27,15 @@ func (r *AuthRepository) FindUserByEmail(ctx context.Context, transaction reposi
 		GROUP BY u.id
 	`, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.FirstName, &user.LastName, &user.Status, &user.Roles)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return repository.User{}, repository.ErrNotFound
+		return entity.User{}, ErrNotFound
 	}
 	if err != nil {
-		return repository.User{}, fmt.Errorf("find user by email: %w", err)
+		return entity.User{}, fmt.Errorf("find user by email: %w", err)
 	}
 	return user, nil
 }
 
-func (r *AuthRepository) InsertSession(ctx context.Context, transaction repository.Transaction, session repository.Session) error {
+func (r *authRepository) InsertSession(ctx context.Context, transaction Transaction, session entity.Session) error {
 	tx, err := pgxTransaction(transaction)
 	if err != nil {
 		return err

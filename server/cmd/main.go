@@ -9,7 +9,7 @@ import (
 	"time"
 
 	httpapi "journal/server/internal/api"
-	"journal/server/internal/repository/postgres"
+	"journal/server/internal/repository"
 	"journal/server/internal/service"
 
 	"github.com/gofiber/contrib/swagger"
@@ -31,8 +31,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	authRepo := postgres.NewAuthRepository()
-	authService := service.NewAuthService(postgres.NewTransactionManager(pool), authRepo, 24*time.Hour)
+	authRepo := repository.NewAuthRepository()
+	authService := service.NewAuthService(repository.NewTransactionManager(pool), authRepo, 24*time.Hour)
 	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
 		logger.Error("http request failed", "method", c.Method(), "path", c.Path(), "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "internal_error", "message": "Внутренняя ошибка сервера"})

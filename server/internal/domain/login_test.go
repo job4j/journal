@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
@@ -20,22 +21,22 @@ func (testTx) Commit(context.Context) error   { return nil }
 func (testTx) Rollback(context.Context) error { return nil }
 
 type authRepoStub struct {
-	user     repository.User
+	user     entity.User
 	findErr  error
-	inserted *repository.Session
+	inserted *entity.Session
 }
 
-func (r *authRepoStub) FindUserByEmail(context.Context, repository.Transaction, string) (repository.User, error) {
+func (r *authRepoStub) FindUserByEmail(context.Context, repository.Transaction, string) (entity.User, error) {
 	return r.user, r.findErr
 }
-func (r *authRepoStub) InsertSession(_ context.Context, _ repository.Transaction, session repository.Session) error {
+func (r *authRepoStub) InsertSession(_ context.Context, _ repository.Transaction, session entity.Session) error {
 	r.inserted = &session
 	return nil
 }
 
 func TestLoginCreatesSessionForActiveUser(t *testing.T) {
 	userID := uuid.New()
-	repo := &authRepoStub{user: repository.User{ID: userID, Email: "user@example.com", PasswordHash: testHash("secret"), Status: "active"}}
+	repo := &authRepoStub{user: entity.User{ID: userID, Email: "user@example.com", PasswordHash: testHash("secret"), Status: "active"}}
 	now := time.Date(2026, 9, 7, 10, 0, 0, 0, time.UTC)
 	domain := NewAuthDomain(repo, time.Hour)
 	domain.now = func() time.Time { return now }
@@ -52,7 +53,7 @@ func TestLoginCreatesSessionForActiveUser(t *testing.T) {
 }
 
 func TestLoginRejectsInvalidPassword(t *testing.T) {
-	repo := &authRepoStub{user: repository.User{PasswordHash: testHash("secret"), Status: "active"}}
+	repo := &authRepoStub{user: entity.User{PasswordHash: testHash("secret"), Status: "active"}}
 	domain := NewAuthDomain(repo, time.Hour)
 	_, err := domain.Login(context.Background(), testTx{}, LoginRequest{Email: "user@example.com", Password: "wrong"})
 	if !errors.Is(err, ErrInvalidCredentials) {
@@ -64,7 +65,7 @@ func TestLoginRejectsInvalidPassword(t *testing.T) {
 }
 
 func TestLoginRejectsBlockedUser(t *testing.T) {
-	repo := &authRepoStub{user: repository.User{PasswordHash: testHash("secret"), Status: "blocked"}}
+	repo := &authRepoStub{user: entity.User{PasswordHash: testHash("secret"), Status: "blocked"}}
 	domain := NewAuthDomain(repo, time.Hour)
 	_, err := domain.Login(context.Background(), testTx{}, LoginRequest{Email: "user@example.com", Password: "secret"})
 	if !errors.Is(err, ErrUserBlocked) {

@@ -11,6 +11,7 @@ import (
 
 	"journal/server/internal/domain"
 	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ func TestLoginSetsSessionCookie(t *testing.T) {
 	expires := time.Now().Add(time.Hour)
 	service := authServiceStub{result: domain.LoginResponse{
 		Token: "secret-token", ExpiresAt: expires,
-		User: repository.User{ID: uuid.New(), Email: "user@example.com", FirstName: "Иван", LastName: "Иванов", Status: "active", Roles: []string{"teacher"}},
+		User: entity.User{ID: uuid.New(), Email: "user@example.com", FirstName: "Иван", LastName: "Иванов", Status: "active", Roles: []string{"teacher"}},
 	}}
 	app := fiber.New()
 	NewAuthHandler(service, slog.New(slog.NewTextHandler(io.Discard, nil)), true).Register(app)
