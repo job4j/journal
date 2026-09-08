@@ -22,11 +22,15 @@ func (h *AcademicYearHandler) ListAcademicYears(c *fiber.Ctx) error {
 	}
 	result := make([]gen.AcademicYear, len(items))
 	for i, item := range items {
-		quarters := make([]gen.AcademicYearQuarter, len(item.Quarters))
-		for j, q := range item.Quarters {
-			quarters[j] = gen.AcademicYearQuarter{Id: openapi_types.UUID(q.ID), Number: int(q.Number), StartsOn: openapi_types.Date{Time: q.StartsOn}, EndsOn: openapi_types.Date{Time: q.EndsOn}}
-		}
-		result[i] = gen.AcademicYear{Id: openapi_types.UUID(item.Year.ID), Name: item.Year.Name, StartsOn: openapi_types.Date{Time: item.Year.StartsOn}, EndsOn: openapi_types.Date{Time: item.Year.EndsOn}, Status: gen.AcademicYearStatus(item.Year.Status), Quarters: quarters}
+		result[i] = academicYearResponse(item)
 	}
 	return c.JSON(gen.ListAcademicYearsResponse{Items: result})
+}
+
+func academicYearResponse(item domain.AcademicYearView) gen.AcademicYear {
+	quarters := make([]gen.AcademicYearQuarter, len(item.Quarters))
+	for j, q := range item.Quarters {
+		quarters[j] = gen.AcademicYearQuarter{Id: openapi_types.UUID(q.ID), Number: int(q.Number), StartsOn: openapi_types.Date{Time: q.StartsOn}, EndsOn: openapi_types.Date{Time: q.EndsOn}}
+	}
+	return gen.AcademicYear{Id: openapi_types.UUID(item.Year.ID), Name: item.Year.Name, StartsOn: openapi_types.Date{Time: item.Year.StartsOn}, EndsOn: openapi_types.Date{Time: item.Year.EndsOn}, Status: gen.AcademicYearStatus(item.Year.Status), Quarters: quarters}
 }

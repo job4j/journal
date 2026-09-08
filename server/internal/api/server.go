@@ -46,4 +46,5 @@ type AcademicYearHandler struct {
 }
 type AcademicYearService interface {
 	ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error)
+	CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error)
 }

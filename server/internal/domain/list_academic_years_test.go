@@ -18,6 +18,14 @@ type academicYearRepoStub struct {
 func (s academicYearRepoStub) CheckSessionPermission(context.Context, repository.Transaction, string, string) (bool, bool, error) {
 	return s.authenticated, s.allowed, nil
 }
+func (s academicYearRepoStub) CreateAcademicYear(_ context.Context, _ repository.Transaction, value entity.AcademicYear) (entity.AcademicYear, error) {
+	value.ID = uuid.New()
+	return value, nil
+}
+func (s academicYearRepoStub) CreateAcademicYearQuarter(_ context.Context, _ repository.Transaction, value entity.AcademicYearQuarter) (entity.AcademicYearQuarter, error) {
+	value.ID = uuid.New()
+	return value, nil
+}
 func (s academicYearRepoStub) ListAcademicYears(context.Context, repository.Transaction) ([]entity.AcademicYear, error) {
 	return s.years, nil
 }

@@ -63,6 +63,8 @@ type AcademicRepository interface {
 }
 type AcademicYearRepository interface {
 	CheckSessionPermission(context.Context, Transaction, string, string) (bool, bool, error)
+	CreateAcademicYear(context.Context, Transaction, entity.AcademicYear) (entity.AcademicYear, error)
+	CreateAcademicYearQuarter(context.Context, Transaction, entity.AcademicYearQuarter) (entity.AcademicYearQuarter, error)
 	ListAcademicYears(context.Context, Transaction) ([]entity.AcademicYear, error)
 	ListAcademicYearQuarters(context.Context, Transaction) ([]entity.AcademicYearQuarter, error)
 }

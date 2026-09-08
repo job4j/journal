@@ -9,6 +9,7 @@ import (
 	"journal/server/internal/repository/entity"
 	"log/slog"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -20,6 +21,9 @@ type academicYearServiceStub struct {
 
 func (s academicYearServiceStub) ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error) {
 	return s.items, s.err
+}
+func (s academicYearServiceStub) CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error) {
+	return domain.AcademicYearView{}, s.err
 }
 
 func TestListAcademicYearsReturnsQuarters(t *testing.T) {
@@ -47,6 +51,21 @@ func TestListAcademicYearsRejectsMissingSession(t *testing.T) {
 		t.Fatal(err)
 	}
 	if response.StatusCode != 401 {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+}
+
+func TestCreateAcademicYearMapsValidationError(t *testing.T) {
+	app := fiber.New()
+	NewAcademicYearHandler(academicYearServiceStub{err: domain.ErrInvalidAcademicYear}, slog.New(slog.NewTextHandler(io.Discard, nil))).Register(app)
+	body := `{"name":"2026/2027","startsOn":"2026-09-01","endsOn":"2027-05-31","status":"planned","quarters":[]}`
+	request := httptest.NewRequest("POST", "/academic-years", strings.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := app.Test(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response.StatusCode != 400 {
 		t.Fatalf("status = %d", response.StatusCode)
 	}
 }

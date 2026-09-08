@@ -23,4 +23,5 @@ func (h *UserHandler) Register(router fiber.Router) {
 }
 func (h *AcademicYearHandler) Register(router fiber.Router) {
 	router.Get("/academic-years", h.ListAcademicYears)
+	router.Post("/academic-years", h.CreateAcademicYear)
 }
