@@ -178,4 +178,6 @@ type UserManagementRepository interface {
 	CreateUserRole(context.Context, Transaction, entity.UserRole) (entity.UserRole, error)
 	ListUserRolesByUserID(context.Context, Transaction, uuid.UUID) ([]entity.UserRole, error)
 	DeleteUserRole(context.Context, Transaction, uuid.UUID, uuid.UUID) error
+	EnsurePermission(context.Context, Transaction, entity.Permission) (entity.Permission, error)
+	EnsureUserPermission(context.Context, Transaction, entity.UserPermission) (entity.UserPermission, error)
 }

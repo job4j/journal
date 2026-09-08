@@ -40,6 +40,7 @@ type UserService interface {
 	GetUser(context.Context, string, uuid.UUID) (entity.User, error)
 	UpdateUser(context.Context, string, uuid.UUID, domain.UserInput) (entity.User, error)
 	DeleteUser(context.Context, string, uuid.UUID) error
+	GrantParentStudentAccess(context.Context, string, uuid.UUID, uuid.UUID) (domain.ParentStudentAccess, error)
 }
 type AcademicYearHandler struct {
 	service AcademicYearService

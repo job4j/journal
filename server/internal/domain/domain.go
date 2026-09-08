@@ -34,6 +34,7 @@ var (
 	ErrClassStudentExists   = errors.New("class student already exists")
 	ErrClassStudentNotFound = errors.New("class student not found")
 	ErrInvalidTeacher       = errors.New("invalid teacher")
+	ErrInvalidParentStudent = errors.New("invalid parent student link")
 	ErrClassSubjectExists   = errors.New("class subject already exists")
 	ErrClassSubjectNotFound = errors.New("class subject not found")
 )

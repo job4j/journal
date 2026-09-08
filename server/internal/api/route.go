@@ -20,6 +20,7 @@ func (h *UserHandler) Register(router fiber.Router) {
 	router.Get("/users/:userId", h.GetUser)
 	router.Put("/users/:userId", h.UpdateUser)
 	router.Delete("/users/:userId", h.DeleteUser)
+	router.Put("/parents/:parentId/students/:studentId", h.GrantParentStudentAccess)
 }
 func (h *AcademicYearHandler) Register(router fiber.Router) {
 	router.Get("/academic-years", h.ListAcademicYears)

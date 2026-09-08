@@ -15,6 +15,9 @@ type userRepoStub struct {
 	roles                  []entity.Role
 	created                entity.User
 	assigned               []entity.UserRole
+	users                  map[uuid.UUID]entity.User
+	permissions            []entity.Permission
+	userPermissions        []entity.UserPermission
 }
 
 func (r *userRepoStub) CheckSessionPermission(context.Context, repository.Transaction, string, string) (bool, bool, error) {
@@ -25,7 +28,14 @@ func (r *userRepoStub) CreateUser(_ context.Context, _ repository.Transaction, v
 	r.created = v
 	return v, nil
 }
-func (r *userRepoStub) GetUser(context.Context, repository.Transaction, uuid.UUID) (entity.User, error) {
+
+func (r *userRepoStub) GetUser(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.User, error) {
+	if user, ok := r.users[id]; ok {
+		return user, nil
+	}
+	if r.created.ID == uuid.Nil {
+		return entity.User{}, repository.ErrNotFound
+	}
 	return r.created, nil
 }
 func (r *userRepoStub) ListUsers(context.Context, repository.Transaction) ([]entity.User, error) {
@@ -50,6 +60,25 @@ func (r *userRepoStub) ListUserRolesByUserID(context.Context, repository.Transac
 }
 func (r *userRepoStub) DeleteUserRole(context.Context, repository.Transaction, uuid.UUID, uuid.UUID) error {
 	return nil
+}
+func (r *userRepoStub) EnsurePermission(_ context.Context, _ repository.Transaction, item entity.Permission) (entity.Permission, error) {
+	for _, current := range r.permissions {
+		if current.Code == item.Code && current.Value != nil && item.Value != nil && *current.Value == *item.Value {
+			return current, nil
+		}
+	}
+	item.ID = uuid.New()
+	r.permissions = append(r.permissions, item)
+	return item, nil
+}
+func (r *userRepoStub) EnsureUserPermission(_ context.Context, _ repository.Transaction, item entity.UserPermission) (entity.UserPermission, error) {
+	for _, current := range r.userPermissions {
+		if current == item {
+			return current, nil
+		}
+	}
+	r.userPermissions = append(r.userPermissions, item)
+	return item, nil
 }
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}

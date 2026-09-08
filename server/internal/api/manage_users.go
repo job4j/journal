@@ -130,6 +130,8 @@ func (h *UserHandler) writeUserError(c *fiber.Ctx, err error) error {
 		return writeError(c, 403, "forbidden", "Недостаточно прав")
 	case errors.Is(err, domain.ErrInvalidUser):
 		return writeError(c, 400, "validation_failed", "Некорректные данные пользователя")
+	case errors.Is(err, domain.ErrInvalidParentStudent):
+		return writeError(c, 400, "invalid_parent_student", "Требуются пользователи с ролями родителя и ученика")
 	case errors.Is(err, domain.ErrRoleNotFound):
 		return writeError(c, 404, "role_not_found", "Одна или несколько ролей не найдены")
 	case errors.Is(err, domain.ErrUserNotFound):
