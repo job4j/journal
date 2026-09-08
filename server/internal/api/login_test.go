@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"journal/server/internal/domain"
-	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
 
 	"github.com/gofiber/fiber/v2"
