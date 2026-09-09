@@ -59,7 +59,7 @@ make run
 postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable
 ```
 
-Чтобы использовать другую базу данных или адрес сервера, задайте переменные `DATABASE_URL` и `HTTP_ADDR` перед запуском.
+Чтобы использовать другую базу данных или адрес сервера, задайте переменные `DATABASE_URL` и `HTTP_ADDR` перед запуском. `SHUTDOWN_TIMEOUT` задаёт срок корректного завершения (по умолчанию `10s`). Некорректные значения конфигурации останавливают запуск с понятной ошибкой.
 
 ### 3. Запустить клиент
 
@@ -92,8 +92,9 @@ cd server
 make test
 make lint
 make build
-make migrate-validate
 make generate
+make migrate-validate
+make integration-test
 ```
 
 Клиент:
@@ -134,3 +135,4 @@ make generate
 - Если браузер после входа снова показывает форму авторизации, проверьте, что сервер запущен с `COOKIE_SECURE=false`.
 - Если Vite, Vitest или ESLint сообщают об ошибках синтаксиса Node.js, проверьте версию командой `node --version`.
 - Команды `make migrate-up` и `make run` нужно выполнять из каталога `server`.
+- Каждый HTTP-ответ содержит `X-Request-ID`; тот же идентификатор присутствует в структурированном JSON-логе сервера. Тела запросов, query-параметры, cookie и заголовки авторизации не логируются.

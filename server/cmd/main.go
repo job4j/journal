@@ -9,6 +9,7 @@ import (
 	"time"
 
 	httpapi "journal/server/internal/api"
+	"journal/server/internal/config"
 	"journal/server/internal/repository"
 	"journal/server/internal/service"
 
@@ -19,12 +20,13 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		databaseURL = "postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable"
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Error("invalid configuration", "error", err)
+		os.Exit(1)
 	}
 
-	pool, err := pgxpool.New(context.Background(), databaseURL)
+	pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 	if err != nil {
 		logger.Error("create database pool", "error", err)
 		os.Exit(1)
@@ -41,11 +43,12 @@ func main() {
 	subjectService := service.NewSubjectService(txManager, appRepository)
 	classService := service.NewClassService(txManager, appRepository)
 	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		logger.Error("http request failed", "method", c.Method(), "path", c.Path(), "error", err)
+		logger.Error("http request failed", "request_id", c.GetRespHeader("X-Request-ID"), "method", c.Method(), "path", c.Path(), "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": "internal_error", "message": "Внутренняя ошибка сервера"})
 	}})
+	app.Use(httpapi.RequestLog(logger))
 	apiRouter := app.Group("/api/v1")
-	httpapi.NewAuthHandler(authService, logger, os.Getenv("COOKIE_SECURE") != "false").Register(apiRouter)
+	httpapi.NewAuthHandler(authService, logger, cfg.CookieSecure).Register(apiRouter)
 	httpapi.NewRoleHandler(roleService, logger).Register(apiRouter)
 	httpapi.NewUserHandler(userService, logger).Register(apiRouter)
 	httpapi.NewAcademicYearHandler(academicYearService, logger).Register(apiRouter)
@@ -61,20 +64,21 @@ func main() {
 		Path:     "docs",
 		Title:    "API documentation",
 	}))
-	address := os.Getenv("HTTP_ADDR")
-	if address == "" {
-		address = ":8080"
-	}
+	listenErrors := make(chan error, 1)
 	go func() {
-		if err := app.Listen(address); err != nil {
-			logger.Info("http server stopped", "error", err)
-		}
+		listenErrors <- app.Listen(cfg.HTTPAddress)
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	<-stop
-	if err := app.ShutdownWithTimeout(10 * time.Second); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	select {
+	case err := <-listenErrors:
+		logger.Error("listen HTTP", "error", err)
+		return
+	case <-ctx.Done():
+	}
+	logger.Info("shutting down HTTP server", "timeout", cfg.ShutdownTimeout)
+	if err := app.ShutdownWithTimeout(cfg.ShutdownTimeout); err != nil {
 		logger.Error("shutdown http server", "error", err)
 	}
 }
