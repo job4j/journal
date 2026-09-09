@@ -12,6 +12,7 @@ import (
 type ClassView struct {
 	Class        entity.Class
 	StudentCount int
+	Quarters     []entity.AcademicYearQuarter
 }
 
 func (d *ClassDomain) ListClasses(ctx context.Context, tx repository.Transaction, hash string, yearID uuid.UUID) ([]ClassView, error) {

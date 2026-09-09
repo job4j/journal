@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 )
 
 func (d *ClassDomain) currentTeacher(ctx context.Context, tx repository.Transaction, hash string) (uuid.UUID, error) {
@@ -54,6 +55,10 @@ func (d *ClassDomain) ListTeacherClasses(ctx context.Context, tx repository.Tran
 	if err != nil {
 		return nil, fmt.Errorf("list class students: %w", err)
 	}
+	quarters, err := d.repo.ListAcademicYearQuarters(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("list quarters: %w", err)
+	}
 	counts := map[uuid.UUID]int{}
 	for _, item := range students {
 		if item.LeftOn == nil {
@@ -63,7 +68,13 @@ func (d *ClassDomain) ListTeacherClasses(ctx context.Context, tx repository.Tran
 	result := []ClassView{}
 	for _, item := range classes {
 		if _, ok := allowedClasses[item.ID]; ok {
-			result = append(result, ClassView{Class: item, StudentCount: counts[item.ID]})
+			view := ClassView{Class: item, StudentCount: counts[item.ID], Quarters: []entity.AcademicYearQuarter{}}
+			for _, quarter := range quarters {
+				if quarter.AcademicYearID == item.AcademicYearID {
+					view.Quarters = append(view.Quarters, quarter)
+				}
+			}
+			result = append(result, view)
 		}
 	}
 	return result, nil

@@ -20,7 +20,8 @@ type ParentJournal struct {
 }
 type ParentJournalSubject struct {
 	ClassSubjectView
-	Lessons []LessonView
+	Lessons       []LessonView
+	QuarterGrades []entity.QuarterGrade
 }
 
 func (d *ClassDomain) GetParentStudentJournal(ctx context.Context, tx repository.Transaction, hash string, studentID, yearID uuid.UUID) (ParentJournal, error) {
@@ -123,12 +124,21 @@ func (d *ClassDomain) GetParentStudentJournal(ctx context.Context, tx repository
 	if err != nil {
 		return ParentJournal{}, fmt.Errorf("list absences: %w", err)
 	}
+	quarterGrades, err := d.repo.ListQuarterGrades(ctx, tx)
+	if err != nil {
+		return ParentJournal{}, fmt.Errorf("list quarter grades: %w", err)
+	}
 	result := ParentJournal{Student: student, AcademicYear: yearView, Class: ClassView{Class: selected}, Subjects: []ParentJournalSubject{}}
 	for _, assignment := range assignments {
 		if assignment.ClassID != selected.ID {
 			continue
 		}
 		view := ParentJournalSubject{ClassSubjectView: ClassSubjectView{Assignment: assignment}, Lessons: []LessonView{}}
+		for _, grade := range quarterGrades {
+			if grade.ClassSubjectID == assignment.ID && grade.UserID == studentID {
+				view.QuarterGrades = append(view.QuarterGrades, grade)
+			}
+		}
 		for _, s := range subjects {
 			if s.ID == assignment.SubjectID {
 				view.Subject = s

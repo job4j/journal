@@ -520,6 +520,10 @@ components:
         studentCount:
           type: integer
           minimum: 0
+        quarters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicYearQuarter'
 
     ClassStudent:
       type: object

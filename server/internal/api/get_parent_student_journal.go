@@ -32,7 +32,11 @@ func (h *ClassHandler) GetParentStudentJournal(c *fiber.Ctx) error {
 			}
 			lessons[j] = gen.JournalLesson{Lesson: response, Scores: scores}
 		}
-		subjects[i] = gen.JournalSubject{ClassSubject: classSubjectResponse(subject.ClassSubjectView), Lessons: lessons}
+		quarterGrades := make([]gen.QuarterGrade, len(subject.QuarterGrades))
+		for j, item := range subject.QuarterGrades {
+			quarterGrades[j] = quarterGradeResponse(item)
+		}
+		subjects[i] = gen.JournalSubject{ClassSubject: classSubjectResponse(subject.ClassSubjectView), Lessons: lessons, QuarterGrades: &quarterGrades}
 	}
 	return c.JSON(gen.GetParentStudentJournalResponse{Student: userSummary(journal.Student), AcademicYear: academicYearResponse(journal.AcademicYear), Class: classResponse(journal.Class), Subjects: subjects})
 }
