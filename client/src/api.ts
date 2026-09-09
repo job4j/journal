@@ -13,6 +13,7 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => null) as ErrorResponse | null
+    if (response.status === 401) window.dispatchEvent(new CustomEvent('journal:session-expired'))
     throw new ApiError(payload?.message ?? 'Не удалось выполнить запрос', response.status, payload?.code, payload?.fields)
   }
   if (response.status === 204) return undefined as T

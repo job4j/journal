@@ -20,3 +20,5 @@ describe('request', () => {
     await expect(request('/test')).rejects.toThrow('Не удалось связаться с сервером')
   })
 })
+
+it('announces an expired session',async()=>{const listener=vi.fn();window.addEventListener('journal:session-expired',listener);vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({message:'expired'}),{status:401}));await expect(request('/test')).rejects.toThrow('expired');expect(listener).toHaveBeenCalled();window.removeEventListener('journal:session-expired',listener)})

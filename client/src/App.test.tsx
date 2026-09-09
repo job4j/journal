@@ -6,7 +6,10 @@ import App from './App'
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  location.hash=''
 })
+
+describe('role routes',()=>{it('shows 403 for a known inaccessible route',async()=>{location.hash='roles';vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({user:{id:'s-1',email:'s@test',firstName:'А',lastName:'Б',status:'active',roles:['student']}}),{status:200}));render(<App/>);expect(await screen.findByText('403')).toBeInTheDocument()});it('shows 404 for an unknown route',async()=>{location.hash='missing';vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({user:{id:'a-1',email:'a@test',firstName:'А',lastName:'Б',status:'active',roles:['admin']}}),{status:200}));render(<App/>);expect(await screen.findByText('404')).toBeInTheDocument()})})
 
 describe('login', () => {
   it('opens the empty workspace after successful login', async () => {
@@ -24,7 +27,7 @@ describe('login', () => {
     expect(screen.getByRole('button', { name: 'Пользователи' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Роли' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Классы' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Ученики' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Предметы' })).toBeInTheDocument()
   })
 
   it('shows the server error and keeps the form', async () => {
@@ -67,7 +70,7 @@ describe('login', () => {
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
-    expect(await screen.findByRole('button', { name: 'Ученики' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Мои дети' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Классы' })).not.toBeInTheDocument()
   })
 

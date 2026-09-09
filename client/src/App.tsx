@@ -22,8 +22,7 @@ const navigation: NavigationItem[] = [
   { id: 'roles', label: 'Роли', icon: 'shield', roles: ['admin'] },
   { id: 'academic-years', label: 'Учебные годы', icon: 'calendar', roles: ['admin'] },
   { id: 'classes', label: 'Классы', icon: 'classes', roles: ['admin', 'teacher'] },
-  { id: 'students', label: 'Ученики', icon: 'student', roles: ['admin', 'parent'] },
-  { id: 'teachers', label: 'Учителя', icon: 'teacher', roles: ['admin'] },
+  { id: 'students', label: 'Мои дети', icon: 'student', roles: ['parent'] },
   { id: 'subjects', label: 'Предметы', icon: 'book', roles: ['admin'] },
   { id: 'journal', label: 'Мой журнал', icon: 'book', roles: ['student'] },
 ]
@@ -50,9 +49,11 @@ function NavigationIcon({ name }: { name: NavigationItem['icon'] }) {
 
 function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const items = navigation.filter((item) => item.roles.some((role) => user.roles.includes(role)))
-  const [activeID, setActiveID] = useState(items[0]?.id ?? '')
-  const activeItem = items.find((item) => item.id === activeID) ?? items[0]
+  const [activeID, setActiveID] = useState(()=>location.hash.slice(1)||items[0]?.id||'')
+  const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1)||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
+  function navigate(id:string){location.hash=id;setActiveID(id)}
 
   return (
     <div className="app-shell">
@@ -70,7 +71,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
               key={item.id}
               type="button"
               aria-current={item.id === activeItem?.id ? 'page' : undefined}
-              onClick={() => setActiveID(item.id)}
+              onClick={() => navigate(item.id)}
             >
               <NavigationIcon name={item.icon} />
               <span>{item.label}</span>
@@ -97,17 +98,22 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
           <div className="header-avatar" aria-label={`${user.firstName} ${user.lastName}`}>{initials}</div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
+          {!knownItem&&<RouteState code="404" title="Страница не найдена" action={()=>navigate(items[0]?.id??'')}/>} 
+          {knownItem&&!activeItem&&<RouteState code="403" title="Этот раздел недоступен вашей роли" action={()=>navigate(items[0]?.id??'')}/>} 
           {activeItem?.id === 'classes' && (user.roles.includes('admin') ? <AdminClassesView /> : <TeacherClassesView />)}
           {activeItem?.id === 'roles' && <RolesView />}
           {activeItem?.id === 'users' && <UsersView />}
           {activeItem?.id === 'academic-years' && <AcademicYearsView />}
           {activeItem?.id === 'subjects' && <SubjectsView />}
           {activeItem?.id === 'students' && user.roles.includes('parent') && <ParentJournalView />}
+          {activeItem?.id === 'journal' && <div className="empty-card">Для ученика пока нет доступных действий.</div>}
         </section>
       </main>
     </div>
   )
 }
+
+function RouteState({code,title,action}:{code:string;title:string;action:()=>void}){return <div className="route-state"><strong>{code}</strong><h2>{title}</h2><button className="primary-action" onClick={action}>В рабочую область</button></div>}
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -118,6 +124,7 @@ export default function App() {
   useEffect(() => {
     currentUser().then(setUser).catch(() => setError('Не удалось восстановить сессию')).finally(() => setIsRestoring(false))
   }, [])
+  useEffect(()=>{const expired=()=>{setUser(null);setError('Сессия завершена. Войдите снова.')};window.addEventListener('journal:session-expired',expired);return()=>window.removeEventListener('journal:session-expired',expired)},[])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
