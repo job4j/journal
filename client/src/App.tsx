@@ -49,10 +49,10 @@ function NavigationIcon({ name }: { name: NavigationItem['icon'] }) {
 
 function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const items = navigation.filter((item) => item.roles.some((role) => user.roles.includes(role)))
-  const [activeID, setActiveID] = useState(()=>location.hash.slice(1)||items[0]?.id||'')
+  const [activeID, setActiveID] = useState(()=>location.hash.slice(1).split('/')[0]||items[0]?.id||'')
   const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-  useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1)||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
+  useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
   function navigate(id:string){location.hash=id;setActiveID(id)}
 
   return (
@@ -133,7 +133,7 @@ export default function App() {
     setIsSubmitting(true)
 
     try {
-      setUser(await login(String(form.get('email')), String(form.get('password'))))
+      setUser(await login(String(form.get('login')), String(form.get('password'))))
     } catch (cause) {
       setError(cause instanceof LoginError ? cause.message : 'Не удалось войти')
     } finally {
@@ -154,8 +154,8 @@ export default function App() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          <label htmlFor="email">Электронная почта</label>
-          <input id="email" name="email" type="email" autoComplete="username" placeholder="name@example.ru" required autoFocus />
+          <label htmlFor="login">Логин</label>
+          <input id="login" name="login" type="text" autoComplete="username" placeholder="Введите логин" required autoFocus />
 
           <label htmlFor="password">Пароль</label>
           <input id="password" name="password" type="password" autoComplete="current-password" placeholder="Введите пароль" required />

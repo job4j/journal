@@ -18,7 +18,7 @@ describe('login', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'admin@example.ru')
+    await userEvent.type(await screen.findByLabelText('Логин'), 'admin@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -37,7 +37,7 @@ describe('login', () => {
     }))
 
     render(<App />)
-    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'admin@example.ru')
+    await userEvent.type(await screen.findByLabelText('Логин'), 'admin@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'wrong-password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -51,7 +51,7 @@ describe('login', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockResolvedValue(new Response(JSON.stringify({ items: [] }), { status: 200 }))
 
     render(<App />)
-    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
+    await userEvent.type(await screen.findByLabelText('Логин'), 'teacher@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -66,7 +66,7 @@ describe('login', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
 
     render(<App />)
-    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'parent@example.ru')
+    await userEvent.type(await screen.findByLabelText('Логин'), 'parent@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
@@ -81,7 +81,7 @@ describe('login', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockResolvedValueOnce(new Response(JSON.stringify({ items: [klass] }), { status: 200 })).mockResolvedValueOnce(new Response(JSON.stringify({ items: [{ id: 'link-1', classId: 'class-1', subject: { id: 'subject-1', code: 'MATH', name: 'Математика' }, responsibleTeacher: { id: 'teacher-1', firstName: 'Анна', lastName: 'Иванова', roles: ['teacher'] } }] }), { status: 200 }))
 
     render(<App />)
-    await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
+    await userEvent.type(await screen.findByLabelText('Логин'), 'teacher@example.ru')
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
     await userEvent.click(await screen.findByRole('button', { name: /7А/ }))

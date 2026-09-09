@@ -1,6 +1,8 @@
 export interface User {
   id: string
-  email: string
+  login: string
+  email?: string | null
+  phone?: string | null
   firstName: string
   lastName: string
   status: 'active' | 'blocked'
@@ -14,10 +16,10 @@ interface LoginResponse {
 export { ApiError as LoginError }
 
 
-export async function login(email: string, password: string): Promise<User> {
+export async function login(login: string, password: string): Promise<User> {
   return (await request<LoginResponse>('/api/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ login, password }),
     })).user
 }
 
