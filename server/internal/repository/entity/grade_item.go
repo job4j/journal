@@ -11,7 +11,7 @@ type GradeItem struct {
 	Title        string    `db:"title"`
 	Kind         string    `db:"kind"`
 	GradingScale string    `db:"grading_scale"`
-	MaxScore     *int8     `db:"max_score"`
+	MaxScore     *float64  `db:"max_score"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }

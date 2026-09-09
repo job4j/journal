@@ -37,6 +37,8 @@ var (
 	ErrInvalidParentStudent = errors.New("invalid parent student link")
 	ErrInvalidLesson        = errors.New("invalid lesson")
 	ErrLessonExists         = errors.New("lesson already exists")
+	ErrLessonNotFound       = errors.New("lesson not found")
+	ErrInvalidGradeItem     = errors.New("invalid grade item")
 	ErrClassSubjectExists   = errors.New("class subject already exists")
 	ErrClassSubjectNotFound = errors.New("class subject not found")
 )
