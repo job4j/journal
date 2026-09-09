@@ -1,0 +1,26 @@
+put:
+  tags: [Scores]
+  operationId: putQuarterGrade
+  summary: Поставить или изменить итог за четверть
+  x-required-permission: can_create_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassSubjectIdPath'
+    - $ref: '../openapi.yml#/components/parameters/QuarterIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/PutQuarterGradeRequest'
+  responses:
+    '200':
+      description: Итог сохранён.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/PutQuarterGradeResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }

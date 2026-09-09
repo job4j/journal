@@ -1,0 +1,19 @@
+get:
+  tags: [Scores]
+  operationId: listQuarterGrades
+  summary: Получить итоги класса по предмету и четверти
+  x-required-permission: can_view_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ClassSubjectIdPath'
+    - $ref: '../openapi.yml#/components/parameters/QuarterIdPath'
+  responses:
+    '200':
+      description: Итоговые оценки четверти.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListQuarterGradesResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }

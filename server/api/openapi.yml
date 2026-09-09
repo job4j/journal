@@ -90,6 +90,10 @@ paths:
     $ref: './paths/parent_students_studentId_journal.yml'
   /parent/students/{studentId}/periods:
     $ref: './paths/parent_students_studentId_periods.yml'
+  /class-subjects/{classSubjectId}/quarters/{quarterId}/grades:
+    $ref: './paths/class-subjects_classSubjectId_quarters_quarterId_grades.yml'
+  /class-subjects/{classSubjectId}/quarters/{quarterId}/grades/{studentId}:
+    $ref: './paths/class-subjects_classSubjectId_quarters_quarterId_grades_studentId.yml'
 
 components:
   securitySchemes:
@@ -150,6 +154,13 @@ components:
         format: uuid
     GradeItemIdPath:
       name: gradeItemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    QuarterIdPath:
+      name: quarterId
       in: path
       required: true
       schema:
@@ -1228,6 +1239,53 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/JournalLesson'
+        quarterGrades:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuarterGrade'
+
+    QuarterGrade:
+      type: object
+      additionalProperties: false
+      required: [id, quarterId, classSubjectId, studentId, gradingScale]
+      properties:
+        id: { type: string, format: uuid }
+        quarterId: { type: string, format: uuid }
+        classSubjectId: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        gradingScale:
+          $ref: '#/components/schemas/GradingScale'
+        maxScore: { type: number, format: double, nullable: true }
+        numericValue: { type: number, format: double, nullable: true }
+        textValue: { type: string, nullable: true }
+        teacherComment: { type: string, nullable: true }
+    PutQuarterGradeRequest:
+      type: object
+      additionalProperties: false
+      required: [gradingScale]
+      properties:
+        gradingScale:
+          $ref: '#/components/schemas/GradingScale'
+        maxScore: { type: number, format: double, nullable: true }
+        numericValue: { type: number, format: double, nullable: true }
+        textValue: { type: string, nullable: true }
+        teacherComment: { type: string, nullable: true }
+    PutQuarterGradeResponse:
+      type: object
+      additionalProperties: false
+      required: [quarterGrade]
+      properties:
+        quarterGrade:
+          $ref: '#/components/schemas/QuarterGrade'
+    ListQuarterGradesResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuarterGrade'
     GetParentStudentJournalResponse:
       type: object
       additionalProperties: false
