@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-type GradeKind = 'homework' | 'classwork' | 'test' | 'absence'
+type GradeKind = 'homework' | 'classwork' | 'test'
 type Grade = { value: string; kind: GradeKind }
 
 const classes = [
@@ -44,7 +44,6 @@ const initialGrades: Record<string, Grade[]> = {
   '09-07:maria': [{ value: '5', kind: 'classwork' }],
   '09-07:sofia': [{ value: '4', kind: 'homework' }],
   '09-08:anna': [{ value: '4', kind: 'homework' }],
-  '09-08:ivan': [{ value: 'Н', kind: 'absence' }],
   '09-08:maria': [{ value: '5', kind: 'homework' }],
   '09-08:pavel': [{ value: '4', kind: 'classwork' }],
   '09-08:sofia': [{ value: '5', kind: 'classwork' }],
@@ -63,9 +62,6 @@ const initialGrades: Record<string, Grade[]> = {
 }
 
 function GradeIcon({ kind }: { kind: GradeKind }) {
-  if (kind === 'absence') {
-    return <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m5 5 10 10" /></svg>
-  }
   if (kind === 'homework') {
     return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m3 9 7-6 7 6v8h-5v-5H8v5H3V9Z" /></svg>
   }
@@ -79,13 +75,12 @@ const gradeLabels: Record<GradeKind, string> = {
   homework: 'Домашняя работа',
   classwork: 'Работа на уроке',
   test: 'Проверочная работа',
-  absence: 'Пропуск',
 }
 
 const gradeKinds = Object.keys(gradeLabels) as GradeKind[]
 
 function GradeControl({ grade, kind, label, onChange }: { grade?: Grade; kind: GradeKind; label: string; onChange: (value: string) => void }) {
-  const options = kind === 'absence' ? ['Н'] : ['5', '4', '3', '2']
+  const options = ['5', '4', '3', '2']
   return (
     <label className={`grade-control${grade ? ` grade-control--${kind}` : ''}`} title={gradeLabels[kind]}>
       <GradeIcon kind={kind} />
