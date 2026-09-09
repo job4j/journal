@@ -16,7 +16,7 @@ OPENAPI_OUTPUT := $(CURDIR)/gen/openapi.gen.go
 GOOSE_DRIVER ?= postgres
 GOOSE_DBSTRING ?= postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable
 
-.PHONY: deps generate migration-create migrate-up migrate-down migrate-status migrate-validate test build lint
+.PHONY: deps generate migration-create migrate-up migrate-down migrate-status migrate-validate test integration-test build lint
 
 deps:
 	mkdir -p "$(TOOLS_DIR)"
@@ -50,6 +50,9 @@ migrate-validate:
 
 test:
 	go test ./...
+
+integration-test: migrate-up
+	INTEGRATION_DATABASE_URL="$(GOOSE_DBSTRING)" go test -tags=integration ./internal/integration -count=1
 
 build:
 	go build ./...
