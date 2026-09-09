@@ -31,6 +31,8 @@ type classRepoStub struct {
 	materials              []entity.LessonMaterial
 	gradeItems             []entity.GradeItem
 	scores                 []entity.Score
+	absences               []entity.Absence
+	changedAbsence         *entity.Absence
 	createdMaterials       *[]entity.LessonMaterial
 	createLessonErr        error
 	createdGradeItem       *entity.GradeItem
@@ -168,6 +170,22 @@ func (s classRepoStub) ListGradeItems(context.Context, repository.Transaction) (
 }
 func (s classRepoStub) ListScores(context.Context, repository.Transaction) ([]entity.Score, error) {
 	return s.scores, nil
+}
+func (s classRepoStub) ListAbsences(context.Context, repository.Transaction) ([]entity.Absence, error) {
+	return s.absences, nil
+}
+func (s classRepoStub) EnsureAbsence(_ context.Context, _ repository.Transaction, item entity.Absence) (entity.Absence, error) {
+	item.ID = uuid.New()
+	if s.changedAbsence != nil {
+		*s.changedAbsence = item
+	}
+	return item, nil
+}
+func (s classRepoStub) DeleteAbsence(_ context.Context, _ repository.Transaction, lessonID, studentID uuid.UUID) error {
+	if s.changedAbsence != nil {
+		*s.changedAbsence = entity.Absence{LessonID: lessonID, UserID: studentID}
+	}
+	return nil
 }
 func (s classRepoStub) CreateLesson(_ context.Context, _ repository.Transaction, item entity.Lesson) (entity.Lesson, error) {
 	if s.createLessonErr != nil {

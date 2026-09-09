@@ -585,7 +585,7 @@ components:
     Lesson:
       type: object
       additionalProperties: false
-      required: [id, classSubjectId, lessonDate, position, topic, materials, gradeItems]
+      required: [id, classSubjectId, lessonDate, position, topic, materials, gradeItems, absences]
       properties:
         id:
           type: string
@@ -612,6 +612,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GradeItem'
+        absences:
+          type: array
+          items:
+            $ref: '#/components/schemas/Absence'
 
     Score:
       type: object

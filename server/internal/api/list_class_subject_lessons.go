@@ -27,7 +27,11 @@ func lessonResponse(item domain.LessonView) gen.Lesson {
 		}
 		grades[i] = gen.GradeItem{Id: openapi_types.UUID(value.ID), LessonId: openapi_types.UUID(value.LessonID), Title: value.Title, Kind: gen.GradeItemKind(value.Kind), GradingScale: gen.GradingScale(value.GradingScale), MaxScore: max, Scores: scores}
 	}
-	return gen.Lesson{Id: openapi_types.UUID(item.Lesson.ID), ClassSubjectId: openapi_types.UUID(item.Lesson.ClassSubjectID), LessonDate: openapi_types.Date{Time: item.Lesson.LessonDate}, Position: int(item.Lesson.Position), Topic: item.Lesson.Topic, Homework: item.Lesson.Homework, Materials: materials, GradeItems: grades}
+	absences := make([]gen.Absence, len(item.Absences))
+	for i, value := range item.Absences {
+		absences[i] = gen.Absence{Id: openapi_types.UUID(value.ID), LessonId: openapi_types.UUID(value.LessonID), StudentId: openapi_types.UUID(value.UserID)}
+	}
+	return gen.Lesson{Id: openapi_types.UUID(item.Lesson.ID), ClassSubjectId: openapi_types.UUID(item.Lesson.ClassSubjectID), LessonDate: openapi_types.Date{Time: item.Lesson.LessonDate}, Position: int(item.Lesson.Position), Topic: item.Lesson.Topic, Homework: item.Lesson.Homework, Materials: materials, GradeItems: grades, Absences: absences}
 }
 func parseOptionalDate(raw string) (*time.Time, error) {
 	if raw == "" {

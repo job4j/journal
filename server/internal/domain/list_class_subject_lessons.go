@@ -16,6 +16,7 @@ type LessonView struct {
 	Materials  []entity.LessonMaterial
 	GradeItems []entity.GradeItem
 	Scores     map[uuid.UUID][]entity.Score
+	Absences   []entity.Absence
 }
 
 func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository.Transaction, hash string, assignmentID uuid.UUID, dateFrom, dateTo *time.Time) ([]LessonView, error) {
@@ -55,6 +56,10 @@ func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository
 	if err != nil {
 		return nil, fmt.Errorf("list scores: %w", err)
 	}
+	absences, err := d.repo.ListAbsences(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("list absences: %w", err)
+	}
 	result := []LessonView{}
 	for _, lesson := range lessons {
 		if lesson.ClassSubjectID != assignmentID || (dateFrom != nil && lesson.LessonDate.Before(*dateFrom)) || (dateTo != nil && lesson.LessonDate.After(*dateTo)) {
@@ -74,6 +79,11 @@ func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository
 						view.Scores[item.ID] = append(view.Scores[item.ID], score)
 					}
 				}
+			}
+		}
+		for _, absence := range absences {
+			if absence.LessonID == lesson.ID {
+				view.Absences = append(view.Absences, absence)
 			}
 		}
 		sort.Slice(view.Materials, func(i, j int) bool { return view.Materials[i].Position < view.Materials[j].Position })

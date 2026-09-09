@@ -48,4 +48,6 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Post("/class-subjects/:classSubjectId/lessons", h.CreateLesson)
 	router.Post("/lessons/:lessonId/grade-items", h.CreateGradeItem)
 	router.Put("/grade-items/:gradeItemId/scores/:studentId", h.PutStudentScore)
+	router.Put("/lessons/:lessonId/absences/:studentId", h.PutStudentAbsence)
+	router.Delete("/lessons/:lessonId/absences/:studentId", h.DeleteStudentAbsence)
 }
