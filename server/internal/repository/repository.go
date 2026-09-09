@@ -78,6 +78,7 @@ type ClassReadRepository interface {
 	CheckSessionPermissionForValue(context.Context, Transaction, string, string, string) (bool, bool, error)
 	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
 	GetAcademicYear(context.Context, Transaction, uuid.UUID) (entity.AcademicYear, error)
+	ListAcademicYearQuarters(context.Context, Transaction) ([]entity.AcademicYearQuarter, error)
 	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
 	CreateClassStudent(context.Context, Transaction, entity.ClassStudent) (entity.ClassStudent, error)

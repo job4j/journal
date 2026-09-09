@@ -83,4 +83,5 @@ type ClassService interface {
 	PutStudentScore(context.Context, string, uuid.UUID, uuid.UUID, *float64, *string, *string) (entity.Score, error)
 	PutStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) (entity.Absence, error)
 	DeleteStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) error
+	GetParentStudentJournal(context.Context, string, uuid.UUID, uuid.UUID) (domain.ParentJournal, error)
 }

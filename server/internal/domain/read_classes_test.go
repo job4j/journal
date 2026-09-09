@@ -11,6 +11,7 @@ import (
 
 type classRepoStub struct {
 	authenticated, allowed bool
+	objectAllowed          map[string]bool
 	classes                []entity.Class
 	students               []entity.ClassStudent
 	classSubjects          []entity.ClassSubject
@@ -18,6 +19,7 @@ type classRepoStub struct {
 	users                  []entity.User
 	getErr                 error
 	year                   entity.AcademicYear
+	quarters               []entity.AcademicYearQuarter
 	createdStudent         entity.ClassStudent
 	createStudentErr       error
 	updateStudentErr       error
@@ -41,6 +43,9 @@ type classRepoStub struct {
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
 	return s.year, s.getErr
+}
+func (s classRepoStub) ListAcademicYearQuarters(context.Context, repository.Transaction) ([]entity.AcademicYearQuarter, error) {
+	return s.quarters, nil
 }
 
 func (s classRepoStub) GetUser(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.User, error) {
@@ -76,7 +81,11 @@ func (s classRepoStub) CreateClass(_ context.Context, _ repository.Transaction, 
 func (s classRepoStub) CheckSessionPermission(context.Context, repository.Transaction, string, string) (bool, bool, error) {
 	return s.authenticated, s.allowed, nil
 }
-func (s classRepoStub) CheckSessionPermissionForValue(context.Context, repository.Transaction, string, string, string) (bool, bool, error) {
+
+func (s classRepoStub) CheckSessionPermissionForValue(_ context.Context, _ repository.Transaction, _ string, permission, _ string) (bool, bool, error) {
+	if s.objectAllowed != nil {
+		return s.authenticated, s.objectAllowed[permission], nil
+	}
 	return s.authenticated, s.allowed, nil
 }
 func (s classRepoStub) ListClasses(context.Context, repository.Transaction) ([]entity.Class, error) {
