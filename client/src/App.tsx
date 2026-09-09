@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { currentUser, login, logout, LoginError, User } from './auth'
-import ClassesView from './ClassViews'
+import TeacherClassesView from './TeacherClassesView'
 import RolesView from './RolesView'
 import UsersView from './UsersView'
 import AcademicYearsView from './AcademicYearsView'
@@ -96,7 +96,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
           <div className="header-avatar" aria-label={`${user.firstName} ${user.lastName}`}>{initials}</div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
-          {activeItem?.id === 'classes' && (user.roles.includes('admin') ? <AdminClassesView /> : <ClassesView />)}
+          {activeItem?.id === 'classes' && (user.roles.includes('admin') ? <AdminClassesView /> : <TeacherClassesView />)}
           {activeItem?.id === 'roles' && <RolesView />}
           {activeItem?.id === 'users' && <UsersView />}
           {activeItem?.id === 'academic-years' && <AcademicYearsView />}

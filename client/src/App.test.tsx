@@ -43,9 +43,9 @@ describe('login', () => {
   })
 
   it('shows only classes to a teacher', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValueOnce(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'teacher@example.ru', firstName: 'Анна', lastName: 'Иванова', status: 'active', roles: ['teacher'] },
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockResolvedValue(new Response(JSON.stringify({ items: [] }), { status: 200 }))
 
     render(<App />)
     await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
@@ -71,10 +71,11 @@ describe('login', () => {
     expect(screen.queryByRole('button', { name: 'Классы' })).not.toBeInTheDocument()
   })
 
-  it('opens a class journal and adds a mock grade', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
+  it('opens the real teacher class subjects', async () => {
+    const klass = { id: 'class-1', academicYearId: 'year-1', name: '7А', gradeLevel: 7, studentCount: 12 }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValueOnce(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'teacher@example.ru', firstName: 'Анна', lastName: 'Иванова', status: 'active', roles: ['teacher'] },
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockResolvedValueOnce(new Response(JSON.stringify({ items: [klass] }), { status: 200 })).mockResolvedValueOnce(new Response(JSON.stringify({ items: [{ id: 'link-1', classId: 'class-1', subject: { id: 'subject-1', code: 'MATH', name: 'Математика' }, responsibleTeacher: { id: 'teacher-1', firstName: 'Анна', lastName: 'Иванова', roles: ['teacher'] } }] }), { status: 200 }))
 
     render(<App />)
     await userEvent.type(await screen.findByLabelText('Электронная почта'), 'teacher@example.ru')
@@ -82,16 +83,7 @@ describe('login', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
     await userEvent.click(await screen.findByRole('button', { name: /7А/ }))
 
-    expect(screen.getByRole('heading', { name: 'Предметы класса' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Математика/ }))
-
-    expect(screen.getByRole('heading', { name: 'Журнал класса' })).toBeInTheDocument()
-    expect(screen.getByRole('rowheader', { name: 'Анна Белова' })).toBeInTheDocument()
-    expect(screen.getByRole('columnheader', { name: /7 сентября/ })).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Пропуск: Иван Громов, 8 сентября' })).toHaveValue('Н')
-    const gradeSelect = screen.getByRole('combobox', { name: 'Домашняя работа: Павел Орлов, 7 сентября' })
-    expect(gradeSelect).toHaveValue('')
-    await userEvent.selectOptions(gradeSelect, '5')
-    expect(gradeSelect).toHaveValue('5')
+    expect(await screen.findByRole('heading', { name: 'Мои предметы' })).toBeInTheDocument()
+    expect(screen.getByText('Математика')).toBeInTheDocument()
   })
 })
