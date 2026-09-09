@@ -100,6 +100,8 @@ type ClassReadRepository interface {
 	ListLessons(context.Context, Transaction) ([]entity.Lesson, error)
 	ListLessonMaterials(context.Context, Transaction) ([]entity.LessonMaterial, error)
 	ListGradeItems(context.Context, Transaction) ([]entity.GradeItem, error)
+	CreateLesson(context.Context, Transaction, entity.Lesson) (entity.Lesson, error)
+	CreateLessonMaterial(context.Context, Transaction, entity.LessonMaterial) (entity.LessonMaterial, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

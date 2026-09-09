@@ -30,6 +30,8 @@ type classRepoStub struct {
 	lessons                []entity.Lesson
 	materials              []entity.LessonMaterial
 	gradeItems             []entity.GradeItem
+	createdMaterials       *[]entity.LessonMaterial
+	createLessonErr        error
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
@@ -160,6 +162,20 @@ func (s classRepoStub) ListLessonMaterials(context.Context, repository.Transacti
 }
 func (s classRepoStub) ListGradeItems(context.Context, repository.Transaction) ([]entity.GradeItem, error) {
 	return s.gradeItems, nil
+}
+func (s classRepoStub) CreateLesson(_ context.Context, _ repository.Transaction, item entity.Lesson) (entity.Lesson, error) {
+	if s.createLessonErr != nil {
+		return entity.Lesson{}, s.createLessonErr
+	}
+	item.ID = uuid.New()
+	return item, nil
+}
+func (s classRepoStub) CreateLessonMaterial(_ context.Context, _ repository.Transaction, item entity.LessonMaterial) (entity.LessonMaterial, error) {
+	item.ID = uuid.New()
+	if s.createdMaterials != nil {
+		*s.createdMaterials = append(*s.createdMaterials, item)
+	}
+	return item, nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {
