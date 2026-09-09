@@ -30,6 +30,8 @@ tags:
     description: Уроки, материалы и оцениваемые работы.
   - name: Scores
     description: Оценки учеников и комментарии учителя.
+  - name: Attendance
+    description: Посещаемость учеников на уроках.
   - name: Parent
     description: Дети текущего родителя и их табели.
 
@@ -80,6 +82,8 @@ paths:
     $ref: './paths/lessons_lessonId_grade-items.yml'
   /grade-items/{gradeItemId}/scores/{studentId}:
     $ref: './paths/grade-items_gradeItemId_scores_studentId.yml'
+  /lessons/{lessonId}/absences/{studentId}:
+    $ref: './paths/lessons_lessonId_absences_studentId.yml'
   /parent/students:
     $ref: './paths/parent_students.yml'
   /parent/students/{studentId}/journal:
@@ -633,6 +637,37 @@ components:
         teacherComment:
           type: string
           nullable: true
+
+    Absence:
+      type: object
+      additionalProperties: false
+      required: [id, lessonId, studentId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        lessonId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+
+    PutStudentAbsenceResponse:
+      type: object
+      additionalProperties: false
+      required: [absence]
+      properties:
+        absence:
+          $ref: '#/components/schemas/Absence'
+
+    DeleteStudentAbsenceResponse:
+      type: object
+      additionalProperties: false
+      required: [removed]
+      properties:
+        removed:
+          type: boolean
 
     LoginRequest:
       type: object

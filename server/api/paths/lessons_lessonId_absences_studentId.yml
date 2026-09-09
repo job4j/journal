@@ -1,0 +1,39 @@
+put:
+  tags: [Attendance]
+  operationId: putStudentAbsence
+  summary: Отметить пропуск ученика
+  description: Ученик должен состоять в классе на дату урока.
+  x-required-permission: can_create_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/LessonIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  responses:
+    '200':
+      description: Пропуск отмечен.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/PutStudentAbsenceResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+delete:
+  tags: [Attendance]
+  operationId: deleteStudentAbsence
+  summary: Снять отметку о пропуске
+  x-required-permission: can_create_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/LessonIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  responses:
+    '200':
+      description: Отметка снята или уже отсутствовала.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/DeleteStudentAbsenceResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
