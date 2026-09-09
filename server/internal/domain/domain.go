@@ -39,6 +39,8 @@ var (
 	ErrLessonExists         = errors.New("lesson already exists")
 	ErrLessonNotFound       = errors.New("lesson not found")
 	ErrInvalidGradeItem     = errors.New("invalid grade item")
+	ErrGradeItemNotFound    = errors.New("grade item not found")
+	ErrInvalidScore         = errors.New("invalid score")
 	ErrClassSubjectExists   = errors.New("class subject already exists")
 	ErrClassSubjectNotFound = errors.New("class subject not found")
 )

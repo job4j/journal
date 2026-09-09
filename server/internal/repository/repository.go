@@ -104,6 +104,8 @@ type ClassReadRepository interface {
 	CreateLessonMaterial(context.Context, Transaction, entity.LessonMaterial) (entity.LessonMaterial, error)
 	GetLesson(context.Context, Transaction, uuid.UUID) (entity.Lesson, error)
 	CreateGradeItem(context.Context, Transaction, entity.GradeItem) (entity.GradeItem, error)
+	GetGradeItem(context.Context, Transaction, uuid.UUID) (entity.GradeItem, error)
+	UpsertScore(context.Context, Transaction, entity.Score) (entity.Score, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

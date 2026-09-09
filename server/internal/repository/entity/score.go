@@ -9,7 +9,7 @@ type Score struct {
 	ID             uuid.UUID `db:"id"`
 	GradeItemID    uuid.UUID `db:"grade_item_id"`
 	UserID         uuid.UUID `db:"user_id"`
-	NumericValue   *int8     `db:"numeric_value"`
+	NumericValue   *float64  `db:"numeric_value"`
 	TextValue      *string   `db:"text_value"`
 	TeacherComment *string   `db:"teacher_comment"`
 	CreatedBy      uuid.UUID `db:"created_by"`

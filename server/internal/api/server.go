@@ -79,4 +79,5 @@ type ClassService interface {
 	ListClassSubjectLessons(context.Context, string, uuid.UUID, *time.Time, *time.Time) ([]domain.LessonView, error)
 	CreateLesson(context.Context, string, uuid.UUID, domain.CreateLessonInput) (domain.LessonView, error)
 	CreateGradeItem(context.Context, string, uuid.UUID, string, string, string, *float64) (entity.GradeItem, error)
+	PutStudentScore(context.Context, string, uuid.UUID, uuid.UUID, *float64, *string, *string) (entity.Score, error)
 }

@@ -72,6 +72,10 @@ func (h *ClassHandler) writeClassError(c *fiber.Ctx, err error) error {
 		return writeError(c, 404, "lesson_not_found", "Урок не найден")
 	case errors.Is(err, domain.ErrInvalidGradeItem):
 		return writeError(c, 400, "invalid_grade_item", "Некорректные данные оцениваемой работы")
+	case errors.Is(err, domain.ErrGradeItemNotFound):
+		return writeError(c, 404, "grade_item_not_found", "Оцениваемая работа не найдена")
+	case errors.Is(err, domain.ErrInvalidScore):
+		return writeError(c, 400, "invalid_score", "Некорректная оценка")
 	case errors.Is(err, domain.ErrInvalidClass):
 		return writeError(c, 400, "validation_failed", "Некорректные данные класса")
 	case errors.Is(err, domain.ErrClassExists):

@@ -47,4 +47,5 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Get("/class-subjects/:classSubjectId/lessons", h.ListClassSubjectLessons)
 	router.Post("/class-subjects/:classSubjectId/lessons", h.CreateLesson)
 	router.Post("/lessons/:lessonId/grade-items", h.CreateGradeItem)
+	router.Put("/grade-items/:gradeItemId/scores/:studentId", h.PutStudentScore)
 }
