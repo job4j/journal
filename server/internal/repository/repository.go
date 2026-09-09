@@ -104,6 +104,7 @@ type ClassReadRepository interface {
 	ListGradeItems(context.Context, Transaction) ([]entity.GradeItem, error)
 	ListScores(context.Context, Transaction) ([]entity.Score, error)
 	CreateLesson(context.Context, Transaction, entity.Lesson) (entity.Lesson, error)
+	UpdateLesson(context.Context, Transaction, entity.Lesson) (entity.Lesson, error)
 	CreateLessonMaterial(context.Context, Transaction, entity.LessonMaterial) (entity.LessonMaterial, error)
 	GetLesson(context.Context, Transaction, uuid.UUID) (entity.Lesson, error)
 	CreateGradeItem(context.Context, Transaction, entity.GradeItem) (entity.GradeItem, error)

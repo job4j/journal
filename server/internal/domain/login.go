@@ -18,7 +18,7 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string
+	Login    string
 	Password string
 }
 type LoginResponse struct {
@@ -28,11 +28,11 @@ type LoginResponse struct {
 }
 
 func (d *AuthDomain) Login(ctx context.Context, tx repository.Transaction, request LoginRequest) (LoginResponse, error) {
-	email := strings.TrimSpace(strings.ToLower(request.Email))
-	if email == "" || request.Password == "" {
+	login := strings.TrimSpace(strings.ToLower(request.Login))
+	if login == "" || request.Password == "" {
 		return LoginResponse{}, ErrInvalidCredentials
 	}
-	user, err := d.repo.FindUserByEmail(ctx, tx, email)
+	user, err := d.repo.FindUserByEmail(ctx, tx, login)
 	if errors.Is(err, repository.ErrNotFound) {
 		return LoginResponse{}, ErrInvalidCredentials
 	}

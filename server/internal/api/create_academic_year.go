@@ -12,11 +12,7 @@ func (h *AcademicYearHandler) CreateAcademicYear(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		return writeError(c, 400, "invalid_request", "Некорректное тело запроса")
 	}
-	quarters := make([]domain.AcademicYearQuarterInput, len(request.Quarters))
-	for i, q := range request.Quarters {
-		quarters[i] = domain.AcademicYearQuarterInput{Number: int16(q.Number), StartsOn: q.StartsOn.Time, EndsOn: q.EndsOn.Time}
-	}
-	result, err := h.service.CreateAcademicYear(c.UserContext(), c.Cookies("journal_session"), domain.CreateAcademicYearRequest{Name: request.Name, Status: string(request.Status), StartsOn: request.StartsOn.Time, EndsOn: request.EndsOn.Time, Quarters: quarters})
+	result, err := h.service.CreateAcademicYear(c.UserContext(), c.Cookies("journal_session"), domain.CreateAcademicYearRequest{Name: request.Name, Status: string(request.Status), StartsOn: request.StartsOn.Time, EndsOn: request.EndsOn.Time})
 	switch {
 	case errors.Is(err, domain.ErrUnauthenticated):
 		return writeError(c, 401, "unauthorized", "Сессия недействительна")

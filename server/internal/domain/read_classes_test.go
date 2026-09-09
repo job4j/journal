@@ -229,6 +229,9 @@ func (s classRepoStub) CreateLesson(_ context.Context, _ repository.Transaction,
 	item.ID = uuid.New()
 	return item, nil
 }
+func (s classRepoStub) UpdateLesson(_ context.Context, _ repository.Transaction, item entity.Lesson) (entity.Lesson, error) {
+	return item, nil
+}
 func (s classRepoStub) CreateLessonMaterial(_ context.Context, _ repository.Transaction, item entity.LessonMaterial) (entity.LessonMaterial, error) {
 	item.ID = uuid.New()
 	if s.createdMaterials != nil {

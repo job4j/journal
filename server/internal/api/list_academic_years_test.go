@@ -25,6 +25,9 @@ func (s academicYearServiceStub) ListAcademicYears(context.Context, string) ([]d
 func (s academicYearServiceStub) CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error) {
 	return domain.AcademicYearView{}, s.err
 }
+func (s academicYearServiceStub) CreateAcademicYearQuarter(context.Context, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error) {
+	return entity.AcademicYearQuarter{}, s.err
+}
 
 func TestListAcademicYearsReturnsQuarters(t *testing.T) {
 	id, quarterID := uuid.New(), uuid.New()

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
-	"sort"
 	"strings"
 	"time"
 )
@@ -27,18 +26,8 @@ func (d *AcademicYearDomain) CreateAcademicYear(ctx context.Context, tx reposito
 		return AcademicYearView{}, err
 	}
 	request.Name = strings.TrimSpace(request.Name)
-	if request.Name == "" || !request.EndsOn.After(request.StartsOn) || (request.Status != "planned" && request.Status != "active" && request.Status != "completed") || len(request.Quarters) != 4 {
+	if request.Name == "" || !request.EndsOn.After(request.StartsOn) || (request.Status != "planned" && request.Status != "active" && request.Status != "completed") {
 		return AcademicYearView{}, ErrInvalidAcademicYear
-	}
-	quarters := append([]AcademicYearQuarterInput(nil), request.Quarters...)
-	sort.Slice(quarters, func(i, j int) bool { return quarters[i].Number < quarters[j].Number })
-	for i, q := range quarters {
-		if q.Number != int16(i+1) || q.StartsOn.Before(request.StartsOn) || q.EndsOn.After(request.EndsOn) || q.EndsOn.Before(q.StartsOn) {
-			return AcademicYearView{}, ErrInvalidAcademicYear
-		}
-		if i > 0 && !q.StartsOn.After(quarters[i-1].EndsOn) {
-			return AcademicYearView{}, ErrInvalidAcademicYear
-		}
 	}
 	year, err := d.repo.CreateAcademicYear(ctx, tx, entity.AcademicYear{Name: request.Name, StartsOn: request.StartsOn, EndsOn: request.EndsOn, Status: request.Status})
 	if errors.Is(err, repository.ErrConflict) {
@@ -47,13 +36,5 @@ func (d *AcademicYearDomain) CreateAcademicYear(ctx context.Context, tx reposito
 	if err != nil {
 		return AcademicYearView{}, fmt.Errorf("create academic year: %w", err)
 	}
-	created := make([]entity.AcademicYearQuarter, 0, 4)
-	for _, q := range quarters {
-		quarter, err := d.repo.CreateAcademicYearQuarter(ctx, tx, entity.AcademicYearQuarter{AcademicYearID: year.ID, Number: q.Number, StartsOn: q.StartsOn, EndsOn: q.EndsOn})
-		if err != nil {
-			return AcademicYearView{}, fmt.Errorf("create academic year quarter: %w", err)
-		}
-		created = append(created, quarter)
-	}
-	return AcademicYearView{Year: year, Quarters: created}, nil
+	return AcademicYearView{Year: year, Quarters: []entity.AcademicYearQuarter{}}, nil
 }

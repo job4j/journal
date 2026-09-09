@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 )
@@ -14,21 +13,12 @@ func validAcademicYearRequest() CreateAcademicYearRequest {
 	}}
 }
 
-func TestCreateAcademicYearCreatesFourQuarters(t *testing.T) {
+func TestCreateAcademicYearWithoutPeriods(t *testing.T) {
 	result, err := NewAcademicYearDomain(academicYearRepoStub{authenticated: true, allowed: true}).CreateAcademicYear(context.Background(), testTx{}, validAcademicYearRequest())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Year.ID.String() == "00000000-0000-0000-0000-000000000000" || len(result.Quarters) != 4 {
+	if result.Year.ID.String() == "00000000-0000-0000-0000-000000000000" || len(result.Quarters) != 0 {
 		t.Fatalf("result = %+v", result)
-	}
-}
-
-func TestCreateAcademicYearRejectsOverlappingQuarters(t *testing.T) {
-	request := validAcademicYearRequest()
-	request.Quarters[1].StartsOn = request.Quarters[0].EndsOn
-	_, err := NewAcademicYearDomain(academicYearRepoStub{authenticated: true, allowed: true}).CreateAcademicYear(context.Background(), testTx{}, request)
-	if !errors.Is(err, ErrInvalidAcademicYear) {
-		t.Fatalf("error = %v", err)
 	}
 }

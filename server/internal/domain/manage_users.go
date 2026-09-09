@@ -24,8 +24,8 @@ func NewUserDomain(repo repository.UserManagementRepository) *UserDomain {
 }
 
 type UserInput struct {
-	Email, Password, FirstName, LastName, Status string
-	Roles                                        []string
+	Login, Email, Phone, Password, FirstName, LastName, Status string
+	Roles                                                      []string
 }
 type CreateUserRequest struct {
 	SessionTokenHash string
@@ -57,11 +57,17 @@ func (d *UserDomain) authorize(ctx context.Context, tx repository.Transaction, h
 	return Authorize(ctx, tx, d.repo, hash, permission)
 }
 func normalizeUser(input UserInput, passwordRequired bool) (UserInput, error) {
+	input.Login = strings.ToLower(strings.TrimSpace(input.Login))
 	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
+	input.Phone = strings.TrimSpace(input.Phone)
 	input.FirstName = strings.TrimSpace(input.FirstName)
 	input.LastName = strings.TrimSpace(input.LastName)
-	address, err := mail.ParseAddress(input.Email)
-	if err != nil || address.Address != input.Email || input.FirstName == "" || input.LastName == "" || len([]rune(input.FirstName)) > 100 || len([]rune(input.LastName)) > 100 {
+	var emailValid = true
+	if input.Email != "" {
+		address, err := mail.ParseAddress(input.Email)
+		emailValid = err == nil && address.Address == input.Email
+	}
+	if input.Login == "" || !roleCodePattern.MatchString(input.Login) || !emailValid || input.FirstName == "" || input.LastName == "" || len([]rune(input.FirstName)) > 100 || len([]rune(input.LastName)) > 100 {
 		return UserInput{}, ErrInvalidUser
 	}
 	if input.Status != "active" && input.Status != "blocked" {
@@ -127,7 +133,7 @@ func (d *UserDomain) CreateUser(ctx context.Context, tx repository.Transaction, 
 	if err != nil {
 		return entity.User{}, fmt.Errorf("hash password: %w", err)
 	}
-	user, err := d.repo.CreateUser(ctx, tx, entity.User{Email: input.Email, PasswordHash: passwordHash, FirstName: input.FirstName, LastName: input.LastName, Status: input.Status})
+	user, err := d.repo.CreateUser(ctx, tx, entity.User{Login: input.Login, Email: input.Email, Phone: input.Phone, PasswordHash: passwordHash, FirstName: input.FirstName, LastName: input.LastName, Status: input.Status})
 	if errors.Is(err, repository.ErrConflict) {
 		return entity.User{}, ErrUserExists
 	}
@@ -206,7 +212,7 @@ func (d *UserDomain) UpdateUser(ctx context.Context, tx repository.Transaction, 
 			return entity.User{}, fmt.Errorf("hash password: %w", err)
 		}
 	}
-	user, err := d.repo.UpdateUser(ctx, tx, entity.User{ID: current.ID, Email: input.Email, PasswordHash: passwordHash, FirstName: input.FirstName, LastName: input.LastName, Status: input.Status})
+	user, err := d.repo.UpdateUser(ctx, tx, entity.User{ID: current.ID, Login: input.Login, Email: input.Email, Phone: input.Phone, PasswordHash: passwordHash, FirstName: input.FirstName, LastName: input.LastName, Status: input.Status})
 	if errors.Is(err, repository.ErrConflict) {
 		return entity.User{}, ErrUserExists
 	}

@@ -12,9 +12,9 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		return writeError(c, fiber.StatusBadRequest, "invalid_request", "Некорректное тело запроса")
 	}
-	result, err := h.service.Login(c.UserContext(), string(request.Email), request.Password)
+	result, err := h.service.Login(c.UserContext(), request.Login, request.Password)
 	if errors.Is(err, domain.ErrInvalidCredentials) {
-		return writeError(c, fiber.StatusUnauthorized, "invalid_credentials", "Неверный email или пароль")
+		return writeError(c, fiber.StatusUnauthorized, "invalid_credentials", "Неверный логин или пароль")
 	}
 	if errors.Is(err, domain.ErrUserBlocked) {
 		return writeError(c, fiber.StatusUnauthorized, "user_blocked", "Пользователь заблокирован")

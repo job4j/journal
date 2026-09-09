@@ -28,6 +28,7 @@ func (h *UserHandler) Register(router fiber.Router) {
 func (h *AcademicYearHandler) Register(router fiber.Router) {
 	router.Get("/academic-years", h.ListAcademicYears)
 	router.Post("/academic-years", h.CreateAcademicYear)
+	router.Post("/academic-years/:academicYearId/quarters", h.CreateAcademicYearQuarter)
 }
 func (h *SubjectHandler) Register(router fiber.Router) {
 	router.Get("/subjects", h.ListSubjects)
@@ -47,6 +48,7 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Get("/teacher/classes/:classId/subjects", h.ListTeacherClassSubjects)
 	router.Get("/class-subjects/:classSubjectId/lessons", h.ListClassSubjectLessons)
 	router.Post("/class-subjects/:classSubjectId/lessons", h.CreateLesson)
+	router.Patch("/lessons/:lessonId", h.UpdateLesson)
 	router.Post("/lessons/:lessonId/grade-items", h.CreateGradeItem)
 	router.Put("/grade-items/:gradeItemId/scores/:studentId", h.PutStudentScore)
 	router.Put("/lessons/:lessonId/absences/:studentId", h.PutStudentAbsence)

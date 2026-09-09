@@ -12,7 +12,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (result
 		return domain.LoginResponse{}, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	result, err = s.domain.Login(ctx, tx, domain.LoginRequest{Email: email, Password: password})
+	result, err = s.domain.Login(ctx, tx, domain.LoginRequest{Login: email, Password: password})
 	if err != nil {
 		return domain.LoginResponse{}, err
 	}

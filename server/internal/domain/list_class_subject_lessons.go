@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
+	"slices"
 	"sort"
 	"time"
 )
@@ -20,9 +21,12 @@ type LessonView struct {
 }
 
 func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository.Transaction, hash string, assignmentID uuid.UUID, dateFrom, dateTo *time.Time) ([]LessonView, error) {
-	teacherID, err := d.currentTeacher(ctx, tx, hash)
+	user, err := d.repo.FindActiveUserBySessionHash(ctx, tx, hash)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, ErrUnauthenticated
+	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("find session user: %w", err)
 	}
 	assignment, err := d.repo.GetClassSubject(ctx, tx, assignmentID)
 	if errors.Is(err, repository.ErrNotFound) {
@@ -31,7 +35,7 @@ func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository
 	if err != nil {
 		return nil, fmt.Errorf("get class subject: %w", err)
 	}
-	if assignment.ResponsibleTeacherID != teacherID {
+	if slices.Contains(user.Roles, "teacher") && assignment.ResponsibleTeacherID != user.ID {
 		return nil, ErrForbidden
 	}
 	if err = AuthorizeObject(ctx, tx, d.repo, hash, "can_view_lesson", assignmentID.String()); err != nil {

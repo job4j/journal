@@ -52,6 +52,7 @@ type AcademicYearHandler struct {
 type AcademicYearService interface {
 	ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error)
 	CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error)
+	CreateAcademicYearQuarter(context.Context, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error)
 }
 type SubjectHandler struct {
 	service SubjectService
@@ -79,6 +80,7 @@ type ClassService interface {
 	ListTeacherClassSubjects(context.Context, string, uuid.UUID) ([]domain.ClassSubjectView, error)
 	ListClassSubjectLessons(context.Context, string, uuid.UUID, *time.Time, *time.Time) ([]domain.LessonView, error)
 	CreateLesson(context.Context, string, uuid.UUID, domain.CreateLessonInput) (domain.LessonView, error)
+	UpdateLesson(context.Context, string, uuid.UUID, domain.CreateLessonInput) (domain.LessonView, error)
 	CreateGradeItem(context.Context, string, uuid.UUID, string, string, string, *float64) (entity.GradeItem, error)
 	PutStudentScore(context.Context, string, uuid.UUID, uuid.UUID, *float64, *string, *string) (entity.Score, error)
 	PutStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) (entity.Absence, error)
