@@ -30,6 +30,7 @@ type classRepoStub struct {
 	lessons                []entity.Lesson
 	materials              []entity.LessonMaterial
 	gradeItems             []entity.GradeItem
+	scores                 []entity.Score
 	createdMaterials       *[]entity.LessonMaterial
 	createLessonErr        error
 	createdGradeItem       *entity.GradeItem
@@ -164,6 +165,9 @@ func (s classRepoStub) ListLessonMaterials(context.Context, repository.Transacti
 }
 func (s classRepoStub) ListGradeItems(context.Context, repository.Transaction) ([]entity.GradeItem, error) {
 	return s.gradeItems, nil
+}
+func (s classRepoStub) ListScores(context.Context, repository.Transaction) ([]entity.Score, error) {
+	return s.scores, nil
 }
 func (s classRepoStub) CreateLesson(_ context.Context, _ repository.Transaction, item entity.Lesson) (entity.Lesson, error) {
 	if s.createLessonErr != nil {

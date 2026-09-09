@@ -21,7 +21,11 @@ func lessonResponse(item domain.LessonView) gen.Lesson {
 			number := float64(*value.MaxScore)
 			max = &number
 		}
-		grades[i] = gen.GradeItem{Id: openapi_types.UUID(value.ID), LessonId: openapi_types.UUID(value.LessonID), Title: value.Title, Kind: gen.GradeItemKind(value.Kind), GradingScale: gen.GradingScale(value.GradingScale), MaxScore: max}
+		scores := make([]gen.Score, len(item.Scores[value.ID]))
+		for j, score := range item.Scores[value.ID] {
+			scores[j] = gen.Score{Id: openapi_types.UUID(score.ID), GradeItemId: openapi_types.UUID(score.GradeItemID), StudentId: openapi_types.UUID(score.UserID), NumericValue: score.NumericValue, TextValue: score.TextValue, TeacherComment: score.TeacherComment}
+		}
+		grades[i] = gen.GradeItem{Id: openapi_types.UUID(value.ID), LessonId: openapi_types.UUID(value.LessonID), Title: value.Title, Kind: gen.GradeItemKind(value.Kind), GradingScale: gen.GradingScale(value.GradingScale), MaxScore: max, Scores: scores}
 	}
 	return gen.Lesson{Id: openapi_types.UUID(item.Lesson.ID), ClassSubjectId: openapi_types.UUID(item.Lesson.ClassSubjectID), LessonDate: openapi_types.Date{Time: item.Lesson.LessonDate}, Position: int(item.Lesson.Position), Topic: item.Lesson.Topic, Homework: item.Lesson.Homework, Materials: materials, GradeItems: grades}
 }

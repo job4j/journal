@@ -20,5 +20,5 @@ func (h *ClassHandler) CreateGradeItem(c *fiber.Ctx) error {
 	if err != nil {
 		return h.writeClassError(c, err)
 	}
-	return c.Status(201).JSON(gen.CreateGradeItemResponse{GradeItem: gen.GradeItem{Id: openapi_types.UUID(item.ID), LessonId: openapi_types.UUID(item.LessonID), Title: item.Title, Kind: gen.GradeItemKind(item.Kind), GradingScale: gen.GradingScale(item.GradingScale), MaxScore: item.MaxScore}})
+	return c.Status(201).JSON(gen.CreateGradeItemResponse{GradeItem: gen.GradeItem{Id: openapi_types.UUID(item.ID), LessonId: openapi_types.UUID(item.LessonID), Title: item.Title, Kind: gen.GradeItemKind(item.Kind), GradingScale: gen.GradingScale(item.GradingScale), MaxScore: item.MaxScore, Scores: []gen.Score{}}})
 }

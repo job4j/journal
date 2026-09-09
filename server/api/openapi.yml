@@ -555,7 +555,7 @@ components:
     GradeItem:
       type: object
       additionalProperties: false
-      required: [id, lessonId, title, kind, gradingScale]
+      required: [id, lessonId, title, kind, gradingScale, scores]
       properties:
         id:
           type: string
@@ -573,6 +573,10 @@ components:
           type: number
           format: double
           nullable: true
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
 
     Lesson:
       type: object

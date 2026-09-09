@@ -15,6 +15,7 @@ type LessonView struct {
 	Lesson     entity.Lesson
 	Materials  []entity.LessonMaterial
 	GradeItems []entity.GradeItem
+	Scores     map[uuid.UUID][]entity.Score
 }
 
 func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository.Transaction, hash string, assignmentID uuid.UUID, dateFrom, dateTo *time.Time) ([]LessonView, error) {
@@ -50,12 +51,16 @@ func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository
 	if err != nil {
 		return nil, fmt.Errorf("list grade items: %w", err)
 	}
+	scores, err := d.repo.ListScores(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("list scores: %w", err)
+	}
 	result := []LessonView{}
 	for _, lesson := range lessons {
 		if lesson.ClassSubjectID != assignmentID || (dateFrom != nil && lesson.LessonDate.Before(*dateFrom)) || (dateTo != nil && lesson.LessonDate.After(*dateTo)) {
 			continue
 		}
-		view := LessonView{Lesson: lesson, Materials: []entity.LessonMaterial{}, GradeItems: []entity.GradeItem{}}
+		view := LessonView{Lesson: lesson, Materials: []entity.LessonMaterial{}, GradeItems: []entity.GradeItem{}, Scores: map[uuid.UUID][]entity.Score{}}
 		for _, item := range materials {
 			if item.LessonID == lesson.ID {
 				view.Materials = append(view.Materials, item)
@@ -64,6 +69,11 @@ func (d *ClassDomain) ListClassSubjectLessons(ctx context.Context, tx repository
 		for _, item := range gradeItems {
 			if item.LessonID == lesson.ID {
 				view.GradeItems = append(view.GradeItems, item)
+				for _, score := range scores {
+					if score.GradeItemID == item.ID {
+						view.Scores[item.ID] = append(view.Scores[item.ID], score)
+					}
+				}
 			}
 		}
 		sort.Slice(view.Materials, func(i, j int) bool { return view.Materials[i].Position < view.Materials[j].Position })
