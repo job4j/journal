@@ -85,4 +85,6 @@ type ClassService interface {
 	DeleteStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) error
 	GetParentStudentJournal(context.Context, string, uuid.UUID, uuid.UUID) (domain.ParentJournal, error)
 	ListParentStudentPeriods(context.Context, string, uuid.UUID) ([]domain.ParentStudentPeriod, error)
+	PutQuarterGrade(context.Context, string, uuid.UUID, uuid.UUID, uuid.UUID, domain.QuarterGradeInput) (entity.QuarterGrade, error)
+	ListQuarterGrades(context.Context, string, uuid.UUID, uuid.UUID) ([]entity.QuarterGrade, error)
 }

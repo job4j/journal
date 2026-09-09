@@ -112,6 +112,9 @@ type ClassReadRepository interface {
 	EnsureAbsence(context.Context, Transaction, entity.Absence) (entity.Absence, error)
 	DeleteAbsence(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 	ListAbsences(context.Context, Transaction) ([]entity.Absence, error)
+	GetAcademicYearQuarter(context.Context, Transaction, uuid.UUID) (entity.AcademicYearQuarter, error)
+	UpsertQuarterGrade(context.Context, Transaction, entity.QuarterGrade) (entity.QuarterGrade, error)
+	ListQuarterGrades(context.Context, Transaction) ([]entity.QuarterGrade, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

@@ -35,6 +35,8 @@ type classRepoStub struct {
 	scores                 []entity.Score
 	absences               []entity.Absence
 	changedAbsence         *entity.Absence
+	quarterGrades          []entity.QuarterGrade
+	changedQuarterGrade    *entity.QuarterGrade
 	createdMaterials       *[]entity.LessonMaterial
 	createLessonErr        error
 	createdGradeItem       *entity.GradeItem
@@ -201,6 +203,24 @@ func (s classRepoStub) DeleteAbsence(_ context.Context, _ repository.Transaction
 		*s.changedAbsence = entity.Absence{LessonID: lessonID, UserID: studentID}
 	}
 	return nil
+}
+func (s classRepoStub) GetAcademicYearQuarter(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.AcademicYearQuarter, error) {
+	for _, item := range s.quarters {
+		if item.ID == id {
+			return item, nil
+		}
+	}
+	return entity.AcademicYearQuarter{}, repository.ErrNotFound
+}
+func (s classRepoStub) UpsertQuarterGrade(_ context.Context, _ repository.Transaction, item entity.QuarterGrade) (entity.QuarterGrade, error) {
+	item.ID = uuid.New()
+	if s.changedQuarterGrade != nil {
+		*s.changedQuarterGrade = item
+	}
+	return item, nil
+}
+func (s classRepoStub) ListQuarterGrades(context.Context, repository.Transaction) ([]entity.QuarterGrade, error) {
+	return s.quarterGrades, nil
 }
 func (s classRepoStub) CreateLesson(_ context.Context, _ repository.Transaction, item entity.Lesson) (entity.Lesson, error) {
 	if s.createLessonErr != nil {
