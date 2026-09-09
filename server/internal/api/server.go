@@ -43,6 +43,7 @@ type UserService interface {
 	GrantParentStudentAccess(context.Context, string, uuid.UUID, uuid.UUID) (domain.ParentStudentAccess, error)
 	RevokeParentStudentAccess(context.Context, string, uuid.UUID, uuid.UUID) (domain.ParentStudentAccess, error)
 	ListManagedParentStudents(context.Context, string, uuid.UUID) ([]entity.User, error)
+	ListParentStudents(context.Context, string) ([]entity.User, error)
 }
 type AcademicYearHandler struct {
 	service AcademicYearService

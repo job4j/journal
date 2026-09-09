@@ -197,4 +197,5 @@ type UserManagementRepository interface {
 	ListPermissions(context.Context, Transaction) ([]entity.Permission, error)
 	DeleteUserPermission(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 	ListUserPermissions(context.Context, Transaction) ([]entity.UserPermission, error)
+	FindActiveUserBySessionHash(context.Context, Transaction, string) (entity.User, error)
 }

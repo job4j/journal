@@ -18,6 +18,7 @@ type userRepoStub struct {
 	users                  map[uuid.UUID]entity.User
 	permissions            []entity.Permission
 	userPermissions        []entity.UserPermission
+	currentUser            entity.User
 }
 
 func (r *userRepoStub) CheckSessionPermission(context.Context, repository.Transaction, string, string) (bool, bool, error) {
@@ -39,7 +40,20 @@ func (r *userRepoStub) GetUser(_ context.Context, _ repository.Transaction, id u
 	return r.created, nil
 }
 func (r *userRepoStub) ListUsers(context.Context, repository.Transaction) ([]entity.User, error) {
+	if len(r.users) > 0 {
+		result := make([]entity.User, 0, len(r.users))
+		for _, user := range r.users {
+			result = append(result, user)
+		}
+		return result, nil
+	}
 	return []entity.User{r.created}, nil
+}
+func (r *userRepoStub) FindActiveUserBySessionHash(context.Context, repository.Transaction, string) (entity.User, error) {
+	if r.currentUser.ID == uuid.Nil {
+		return entity.User{}, repository.ErrNotFound
+	}
+	return r.currentUser, nil
 }
 func (r *userRepoStub) UpdateUser(_ context.Context, _ repository.Transaction, v entity.User) (entity.User, error) {
 	r.created = v
