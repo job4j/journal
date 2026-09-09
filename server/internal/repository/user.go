@@ -16,6 +16,9 @@ func (r *Repository) CreateUser(ctx context.Context, tx Transaction, value entit
 func (r *Repository) GetUser(ctx context.Context, tx Transaction, id uuid.UUID) (entity.User, error) {
 	return queryOne[entity.User](ctx, tx, "get user", `SELECT `+userColumns+` FROM users u WHERE u.id=$1`, id)
 }
+func (r *Repository) FindActiveUserBySessionHash(ctx context.Context, tx Transaction, hash string) (entity.User, error) {
+	return queryOne[entity.User](ctx, tx, "find active user by session", `SELECT `+userColumns+` FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND u.status='active'`, hash)
+}
 func (r *Repository) ListUsers(ctx context.Context, tx Transaction) ([]entity.User, error) {
 	return queryMany[entity.User](ctx, tx, "list users", `SELECT `+userColumns+` FROM users u ORDER BY u.created_at,u.id`)
 }

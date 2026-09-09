@@ -26,6 +26,7 @@ type classRepoStub struct {
 	permissions            *[]entity.Permission
 	userPermissions        *[]entity.UserPermission
 	deletedUserPermissions *[]entity.UserPermission
+	currentUser            entity.User
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
@@ -141,6 +142,12 @@ func (s classRepoStub) DeleteUserPermission(_ context.Context, _ repository.Tran
 		*s.deletedUserPermissions = append(*s.deletedUserPermissions, entity.UserPermission{UserID: userID, PermissionID: permissionID})
 	}
 	return nil
+}
+func (s classRepoStub) FindActiveUserBySessionHash(context.Context, repository.Transaction, string) (entity.User, error) {
+	if s.currentUser.ID == uuid.Nil {
+		return entity.User{}, repository.ErrNotFound
+	}
+	return s.currentUser, nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {

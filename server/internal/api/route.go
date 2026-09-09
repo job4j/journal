@@ -42,4 +42,6 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Get("/classes/:classId/subjects", h.ListClassSubjects)
 	router.Post("/classes/:classId/subjects", h.AssignSubjectToClass)
 	router.Patch("/class-subjects/:classSubjectId", h.UpdateClassSubject)
+	router.Get("/teacher/classes", h.ListTeacherClasses)
+	router.Get("/teacher/classes/:classId/subjects", h.ListTeacherClassSubjects)
 }
