@@ -7,4 +7,7 @@ export async function listUsers():Promise<UserRecord[]>{return(await request<{it
 export async function createUser(draft:UserDraft):Promise<UserRecord>{const body={email:draft.email,password:draft.password,firstName:draft.firstName,lastName:draft.lastName,roles:draft.roles};return(await request<{user:UserRecord}>('/api/v1/users',{method:'POST',body:JSON.stringify(body)})).user}
 export async function updateUser(id:string,draft:UserDraft):Promise<UserRecord>{const body={...draft,password:draft.password||undefined};return(await request<{user:UserRecord}>(`/api/v1/users/${id}`,{method:'PUT',body:JSON.stringify(body)})).user}
 export async function deleteUser(id:string):Promise<void>{await request<void>(`/api/v1/users/${id}`,{method:'DELETE'})}
+export async function listParentStudents(parentID:string):Promise<UserRecord[]>{return(await request<{items:UserRecord[]}>(`/api/v1/parents/${parentID}/students`)).items as UserRecord[]}
+export async function grantParentStudent(parentID:string,studentID:string):Promise<void>{await request(`/api/v1/parents/${parentID}/students/${studentID}`,{method:'PUT',body:JSON.stringify({canViewProfile:true,canViewJournal:true})})}
+export async function revokeParentStudent(parentID:string,studentID:string):Promise<void>{await request(`/api/v1/parents/${parentID}/students/${studentID}`,{method:'DELETE'})}
 

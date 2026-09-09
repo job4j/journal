@@ -92,6 +92,9 @@ func (r *userRepoStub) DeleteUserPermission(_ context.Context, _ repository.Tran
 	}
 	return repository.ErrNotFound
 }
+func (r *userRepoStub) ListUserPermissions(context.Context, repository.Transaction) ([]entity.UserPermission, error) {
+	return r.userPermissions, nil
+}
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}
 	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Email: " TEACHER@example.com ", Password: "password", FirstName: " Анна ", LastName: " Иванова ", Status: "active", Roles: []string{"teacher"}}})

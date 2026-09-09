@@ -1,0 +1,23 @@
+get:
+  tags: [Users]
+  operationId: listManagedParentStudents
+  summary: Получить учеников выбранного родителя
+  description: Возвращает учеников из персональных `can_view_user` родителя.
+  x-required-permission: can_update_user
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/ParentIdPath'
+  responses:
+    '200':
+      description: Ученики, доступные родителю.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListParentStudentsResponse'
+    '400':
+      $ref: '../openapi.yml#/components/responses/BadRequest'
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'

@@ -68,6 +68,8 @@ paths:
     $ref: './paths/class-subjects_classSubjectId.yml'
   /parents/{parentId}/students/{studentId}:
     $ref: './paths/parents_parentId_students_studentId.yml'
+  /parents/{parentId}/students:
+    $ref: './paths/parents_parentId_students.yml'
   /teacher/classes:
     $ref: './paths/teacher_classes.yml'
   /teacher/classes/{classId}/subjects:
