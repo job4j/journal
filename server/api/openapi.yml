@@ -54,6 +54,8 @@ paths:
     $ref: './paths/users_userId.yml'
   /academic-years:
     $ref: './paths/academic-years.yml'
+  /academic-years/{academicYearId}/quarters:
+    $ref: './paths/academic-years_academicYearId_quarters.yml'
   /subjects:
     $ref: './paths/subjects.yml'
   /classes:
@@ -78,6 +80,8 @@ paths:
     $ref: './paths/teacher_classes_classId_subjects.yml'
   /class-subjects/{classSubjectId}/lessons:
     $ref: './paths/class-subjects_classSubjectId_lessons.yml'
+  /lessons/{lessonId}:
+    $ref: './paths/lessons_lessonId.yml'
   /lessons/{lessonId}/grade-items:
     $ref: './paths/lessons_lessonId_grade-items.yml'
   /grade-items/{gradeItemId}/scores/{studentId}:
@@ -389,14 +393,20 @@ components:
     User:
       type: object
       additionalProperties: false
-      required: [id, email, firstName, lastName, status, roles]
+      required: [id, login, firstName, lastName, status, roles]
       properties:
         id:
           type: string
           format: uuid
+        login:
+          type: string
         email:
           type: string
           format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
         firstName:
           type: string
         lastName:
@@ -487,6 +497,20 @@ components:
           type: string
           format: date
 
+    CreateAcademicYearQuarterRequest:
+      type: object
+      additionalProperties: false
+      required: [startsOn, endsOn]
+      properties:
+        startsOn: { type: string, format: date }
+        endsOn: { type: string, format: date }
+    CreateAcademicYearQuarterResponse:
+      type: object
+      additionalProperties: false
+      required: [quarter]
+      properties:
+        quarter:
+          $ref: '#/components/schemas/AcademicYearQuarter'
     Subject:
       type: object
       additionalProperties: false
@@ -693,11 +717,11 @@ components:
     LoginRequest:
       type: object
       additionalProperties: false
-      required: [email, password]
+      required: [login, password]
       properties:
-        email:
+        login:
           type: string
-          format: email
+          minLength: 1
         password:
           type: string
           format: password
@@ -727,11 +751,11 @@ components:
     CreateUserRequest:
       type: object
       additionalProperties: false
-      required: [email, password, firstName, lastName, roles]
+      required: [login, password, firstName, lastName, roles]
       properties:
-        email:
-          type: string
-          format: email
+        login: { type: string, minLength: 1 }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, nullable: true }
         password:
           type: string
           format: password
@@ -758,11 +782,11 @@ components:
     UpdateUserRequest:
       type: object
       additionalProperties: false
-      required: [email, firstName, lastName, status, roles]
+      required: [login, firstName, lastName, status, roles]
       properties:
-        email:
-          type: string
-          format: email
+        login: { type: string, minLength: 1 }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, nullable: true }
         password:
           type: string
           format: password
@@ -811,7 +835,7 @@ components:
     CreateAcademicYearRequest:
       type: object
       additionalProperties: false
-      required: [name, startsOn, endsOn, status, quarters]
+      required: [name, startsOn, endsOn, status]
       properties:
         name:
           type: string
@@ -825,12 +849,6 @@ components:
           format: date
         status:
           $ref: '#/components/schemas/AcademicYearStatus'
-        quarters:
-          type: array
-          minItems: 4
-          maxItems: 4
-          items:
-            $ref: '#/components/schemas/AcademicYearQuarterInput'
     CreateAcademicYearResponse:
       type: object
       additionalProperties: false

@@ -1,0 +1,27 @@
+post:
+  tags: [Academic years]
+  operationId: createAcademicYearQuarter
+  summary: Создать учебный период
+  parameters:
+    - name: academicYearId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/CreateAcademicYearQuarterRequest'
+  responses:
+    '201':
+      description: Период создан.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateAcademicYearQuarterResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
