@@ -47,6 +47,12 @@ func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, 
 func (s classRepoStub) ListAcademicYearQuarters(context.Context, repository.Transaction) ([]entity.AcademicYearQuarter, error) {
 	return s.quarters, nil
 }
+func (s classRepoStub) ListAcademicYears(context.Context, repository.Transaction) ([]entity.AcademicYear, error) {
+	if s.year.ID == uuid.Nil {
+		return nil, nil
+	}
+	return []entity.AcademicYear{s.year}, nil
+}
 
 func (s classRepoStub) GetUser(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.User, error) {
 	for _, user := range s.users {

@@ -52,4 +52,5 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Put("/lessons/:lessonId/absences/:studentId", h.PutStudentAbsence)
 	router.Delete("/lessons/:lessonId/absences/:studentId", h.DeleteStudentAbsence)
 	router.Get("/parent/students/:studentId/journal", h.GetParentStudentJournal)
+	router.Get("/parent/students/:studentId/periods", h.ListParentStudentPeriods)
 }

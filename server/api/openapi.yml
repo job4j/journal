@@ -88,6 +88,8 @@ paths:
     $ref: './paths/parent_students.yml'
   /parent/students/{studentId}/journal:
     $ref: './paths/parent_students_studentId_journal.yml'
+  /parent/students/{studentId}/periods:
+    $ref: './paths/parent_students_studentId_periods.yml'
 
 components:
   securitySchemes:
@@ -1171,6 +1173,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserSummary'
+
+    ParentStudentPeriod:
+      type: object
+      additionalProperties: false
+      required: [academicYear, class, subjects]
+      properties:
+        academicYear:
+          $ref: '#/components/schemas/AcademicYear'
+        class:
+          $ref: '#/components/schemas/Class'
+        subjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassSubject'
+    ListParentStudentPeriodsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParentStudentPeriod'
 
     JournalScore:
       type: object

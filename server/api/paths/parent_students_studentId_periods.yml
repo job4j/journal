@@ -1,0 +1,18 @@
+get:
+  tags: [Parent]
+  operationId: listParentStudentPeriods
+  summary: Получить учебные периоды ребёнка
+  description: Возвращает только классы и предметы ребёнка при наличии обоих персональных разрешений.
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  responses:
+    '200':
+      description: Учебные годы, классы и предметы ребёнка.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/ListParentStudentPeriodsResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }

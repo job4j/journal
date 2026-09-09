@@ -1,0 +1,7 @@
+import{afterEach,expect,it,vi}from'vitest'
+import{cleanup,render,screen}from'@testing-library/react'
+import userEvent from'@testing-library/user-event'
+import ParentJournalView from'./ParentJournalView'
+afterEach(()=>{cleanup();vi.restoreAllMocks()})
+it('navigates from child through period to subject',async()=>{const student={id:'student-1',firstName:'Анна',lastName:'Иванова',roles:['student']},period={academicYear:{id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[]},class:{id:'class-1',academicYearId:'year-1',name:'7А',gradeLevel:7,studentCount:1},subjects:[{id:'link-1',classId:'class-1',subject:{id:'s-1',code:'math',name:'Математика'},responsibleTeacher:{id:'t-1',firstName:'Иван',lastName:'Петров',roles:['teacher']} }]};vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[period]}),{status:200}));render(<ParentJournalView/>);await userEvent.click(await screen.findByRole('button',{name:'Иванова Анна'}));await userEvent.click(await screen.findByRole('button',{name:'7А'}));await userEvent.click(await screen.findByRole('button',{name:'Математика'}));expect(await screen.findByRole('heading',{name:'Математика'})).toBeInTheDocument()})
+it('shows empty children state',async()=>{vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}));render(<ParentJournalView/>);expect(await screen.findByText('Нет доступных детей')).toBeInTheDocument()})

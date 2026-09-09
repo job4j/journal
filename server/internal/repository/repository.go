@@ -79,6 +79,7 @@ type ClassReadRepository interface {
 	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
 	GetAcademicYear(context.Context, Transaction, uuid.UUID) (entity.AcademicYear, error)
 	ListAcademicYearQuarters(context.Context, Transaction) ([]entity.AcademicYearQuarter, error)
+	ListAcademicYears(context.Context, Transaction) ([]entity.AcademicYear, error)
 	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)
 	CreateClassStudent(context.Context, Transaction, entity.ClassStudent) (entity.ClassStudent, error)
