@@ -97,6 +97,9 @@ type ClassReadRepository interface {
 	ListPermissions(context.Context, Transaction) ([]entity.Permission, error)
 	DeleteUserPermission(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 	FindActiveUserBySessionHash(context.Context, Transaction, string) (entity.User, error)
+	ListLessons(context.Context, Transaction) ([]entity.Lesson, error)
+	ListLessonMaterials(context.Context, Transaction) ([]entity.LessonMaterial, error)
+	ListGradeItems(context.Context, Transaction) ([]entity.GradeItem, error)
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

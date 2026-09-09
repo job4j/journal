@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"journal/server/internal/domain"
+	"time"
 )
 
 func (s *ClassService) ListClasses(ctx context.Context, token string, yearID uuid.UUID) ([]domain.ClassView, error) {
@@ -13,6 +14,14 @@ func (s *ClassService) ListClasses(ctx context.Context, token string, yearID uui
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	return s.domain.ListClasses(ctx, tx, sessionTokenHash(token), yearID)
+}
+func (s *ClassService) ListClassSubjectLessons(ctx context.Context, token string, id uuid.UUID, from, to *time.Time) ([]domain.LessonView, error) {
+	tx, err := s.txManager.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	return s.domain.ListClassSubjectLessons(ctx, tx, sessionTokenHash(token), id, from, to)
 }
 func (s *ClassService) GetClass(ctx context.Context, token string, id uuid.UUID) (domain.ClassView, error) {
 	tx, err := s.txManager.Begin(ctx)

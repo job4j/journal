@@ -27,6 +27,9 @@ type classRepoStub struct {
 	userPermissions        *[]entity.UserPermission
 	deletedUserPermissions *[]entity.UserPermission
 	currentUser            entity.User
+	lessons                []entity.Lesson
+	materials              []entity.LessonMaterial
+	gradeItems             []entity.GradeItem
 }
 
 func (s classRepoStub) GetAcademicYear(context.Context, repository.Transaction, uuid.UUID) (entity.AcademicYear, error) {
@@ -148,6 +151,15 @@ func (s classRepoStub) FindActiveUserBySessionHash(context.Context, repository.T
 		return entity.User{}, repository.ErrNotFound
 	}
 	return s.currentUser, nil
+}
+func (s classRepoStub) ListLessons(context.Context, repository.Transaction) ([]entity.Lesson, error) {
+	return s.lessons, nil
+}
+func (s classRepoStub) ListLessonMaterials(context.Context, repository.Transaction) ([]entity.LessonMaterial, error) {
+	return s.materials, nil
+}
+func (s classRepoStub) ListGradeItems(context.Context, repository.Transaction) ([]entity.GradeItem, error) {
+	return s.gradeItems, nil
 }
 func (s classRepoStub) GetClass(context.Context, repository.Transaction, uuid.UUID) (entity.Class, error) {
 	if len(s.classes) == 0 {

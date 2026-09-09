@@ -76,4 +76,5 @@ type ClassService interface {
 	UpdateClassSubject(context.Context, string, uuid.UUID, uuid.UUID) (domain.ClassSubjectView, error)
 	ListTeacherClasses(context.Context, string) ([]domain.ClassView, error)
 	ListTeacherClassSubjects(context.Context, string, uuid.UUID) ([]domain.ClassSubjectView, error)
+	ListClassSubjectLessons(context.Context, string, uuid.UUID, *time.Time, *time.Time) ([]domain.LessonView, error)
 }
