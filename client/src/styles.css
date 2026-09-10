@@ -563,3 +563,13 @@ button.grade-control:hover:not(:disabled) {
   background: #f4f8fb;
   box-shadow: inset 1px 0 #d5e2ea, inset -1px 0 #d5e2ea;
 }
+.grade-cell .grade-control--empty {
+  color: #8797a4;
+  background: #f3f5f7;
+  border-color: #d8e0e6;
+}
+.grade-cell button.grade-control--empty:hover:not(:disabled) {
+  color: #687b8a;
+  background: #edf1f4;
+  border-color: #c6d1d9;
+}
