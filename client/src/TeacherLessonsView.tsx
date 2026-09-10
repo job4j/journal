@@ -123,6 +123,9 @@ function GradeTable({
                 const lesson = lessons.get(date)
                 const disabled = date < member.enrolledOn
                   || Boolean(member.leftOn && date > member.leftOn)
+                if (!lesson?.topic.trim()) {
+                  return <td key={date} aria-label={`Нет темы ${date}`}/>
+                }
                 return (
                   <td key={date}>
                     <div className="grade-cell">
