@@ -539,3 +539,14 @@ button.grade-control:hover:not(:disabled) {
   background: #e2eaf0;
   border-color: #8fa7b9;
 }
+.grade-cell {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .35rem;
+}
+.grade-cell .grade-control {
+  width: max-content;
+  min-width: 2rem;
+  padding-right: .35rem;
+  padding-left: .35rem;
+}
