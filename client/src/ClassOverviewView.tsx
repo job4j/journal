@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AcademicYear } from './academicYears'
 import { ClassRecord, ClassStudent, listClassStudents } from './classes'
 import { ClassSubjectRecord, listClassSubjects } from './classSubjects'
@@ -24,7 +24,9 @@ function gradeLabel(grade: QuarterGrade) {
 }
 
 export default function ClassOverviewView({ item, year, onBack, onCountChange }: Props) {
+  const quarters = useMemo(() => item.quarters ?? [], [item.quarters])
   const [section, setSection] = useState<Section>('summary')
+  const [quarterID, setQuarterID] = useState(quarters[0]?.id ?? '')
   const [journal, setJournal] = useState<ClassSubjectRecord | null>(null)
   const [students, setStudents] = useState<ClassStudent[]>([])
   const [subjects, setSubjects] = useState<ClassSubjectRecord[]>([])
@@ -33,18 +35,23 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
   const [error, setError] = useState('')
 
   useEffect(() => {
+    setQuarterID((current) =>
+      quarters.some((quarter) => quarter.id === current) ? current : quarters[0]?.id ?? '',
+    )
+  }, [item.id, quarters])
+
+  useEffect(() => {
+    if (section !== 'summary' || journal) return undefined
     let active = true
     setLoading(true)
     setError('')
     Promise.all([listClassStudents(item.id), listClassSubjects(item.id)])
       .then(async ([members, assignments]) => {
-        const gradeLists = await Promise.all(
-          assignments.flatMap((assignment) =>
-            (item.quarters ?? []).map((quarter) =>
-              listQuarterGrades(assignment.id, quarter.id),
-            ),
-          ),
-        )
+        const gradeLists = quarterID
+          ? await Promise.all(
+            assignments.map((assignment) => listQuarterGrades(assignment.id, quarterID)),
+          )
+          : []
         if (active) {
           setStudents(members)
           setSubjects(assignments)
@@ -62,7 +69,7 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
     return () => {
       active = false
     }
-  }, [item.id, item.quarters, journal, section])
+  }, [item.id, journal, quarterID, section])
 
   if (journal) {
     return (
@@ -106,6 +113,24 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
           </button>
         </div>
       </div>
+      <div className="lesson-filters">
+        {quarters.length ? (
+          <label>
+            Период
+            <select
+              aria-label="Период"
+              value={quarterID}
+              onChange={(event) => setQuarterID(event.target.value)}
+            >
+              {quarters.map((quarter) => (
+                <option value={quarter.id} key={quarter.id}>
+                  {quarter.number} период
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : <span className="summary-empty">Нет периодов</span>}
+      </div>
       {error && <p className="content-error" role="alert">{error}</p>}
       {loading ? (
         <div className="empty-card">Загружаем сводку…</div>
@@ -138,21 +163,17 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
                 <tr key={member.student.id}>
                   <th>{member.student.name}</th>
                   {subjects.map((assignment) => {
-                    const values = (item.quarters ?? []).map((quarter) => ({
-                      quarter,
-                      grade: grades.find((grade) =>
-                        grade.classSubjectId === assignment.id
-                        && grade.studentId === member.student.id
-                        && grade.quarterId === quarter.id),
-                    }))
+                    const grade = grades.find((grade) =>
+                      grade.classSubjectId === assignment.id
+                      && grade.studentId === member.student.id
+                      && grade.quarterId === quarterID)
                     return (
                       <td key={assignment.id}>
-                        {values.length ? values.map(({ quarter, grade }) => (
-                          <span className="summary-grade" key={quarter.id}>
-                            <small>{quarter.number} период</small>
+                        {quarterID ? (
+                          <span className="summary-grade">
                             <strong>{grade ? gradeLabel(grade) : '—'}</strong>
                           </span>
-                        )) : <span className="summary-empty">Нет периодов</span>}
+                        ) : <span className="summary-empty">Нет периодов</span>}
                       </td>
                     )
                   })}

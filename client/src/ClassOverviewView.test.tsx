@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import ClassOverviewView from './ClassOverviewView'
 
 const item = {
@@ -10,6 +11,7 @@ const item = {
   studentCount: 1,
   quarters: [
     { id: 'quarter-1', number: 1, startsOn: '2026-09-01', endsOn: '2026-10-31' },
+    { id: 'quarter-2', number: 2, startsOn: '2026-11-01', endsOn: '2026-12-31' },
   ],
 }
 
@@ -41,7 +43,18 @@ describe('class overview', () => {
       if (url.endsWith('/classes/class-1/subjects')) {
         return new Response(JSON.stringify({ items: [assignment] }), { status: 200 })
       }
-      if (url.includes('/quarters/quarter-1/grades')) {
+      if (url.includes('/quarters/quarter-2/grades')) {
+        return new Response(JSON.stringify({
+          items: [{
+            id: 'grade-2',
+            quarterId: 'quarter-2',
+            classSubjectId: 'subject-link-1',
+            studentId: 'student-1',
+            gradingScale: 'five_point',
+            numericValue: 4,
+          }],
+        }), { status: 200 })
+      }      if (url.includes('/quarters/quarter-1/grades')) {
         return new Response(JSON.stringify({
           items: [{
             id: 'grade-1',
@@ -61,7 +74,11 @@ describe('class overview', () => {
     expect(await screen.findByText('Анна Иванова')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Математика' })).toBeInTheDocument()
     expect(screen.getByText('Иван Петров')).toBeInTheDocument()
-    expect(screen.getByText('1 период')).toBeInTheDocument()
+    const period = screen.getByLabelText('Период')
+    expect(period).toHaveValue('quarter-1')
     expect(screen.getByText('5')).toBeInTheDocument()
+
+    await userEvent.selectOptions(period, 'quarter-2')
+    expect(await screen.findByText('4')).toBeInTheDocument()
   })
 })
