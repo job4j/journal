@@ -588,3 +588,6 @@ button.grade-control:hover:not(:disabled) {
   border-right: 0;
   border-bottom: 0;
 }
+.journal-table tbody tr:first-child > th {
+  border-top: 1px solid #e2e9ef;
+}
