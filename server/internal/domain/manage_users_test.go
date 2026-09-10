@@ -111,7 +111,7 @@ func (r *userRepoStub) ListUserPermissions(context.Context, repository.Transacti
 }
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}
-	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "teacher", Email: " TEACHER@example.com ", Password: "password", Name: " Анна " + " " + " Иванова ", Status: "active", Roles: []string{"teacher"}}})
+	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "teacher", Email: " TEACHER@example.com ", Password: "x", Name: " Анна " + " " + " Иванова ", Status: "active", Roles: []string{"teacher"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,6 +120,39 @@ func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	}
 	if len(repo.assigned) != 1 {
 		t.Fatalf("assignments = %d", len(repo.assigned))
+	}
+}
+func TestUpdateUserAcceptsOneCharacterPassword(t *testing.T) {
+	id := uuid.New()
+	repo := &userRepoStub{
+		authenticated: true,
+		allowed:       true,
+		roles:         []entity.Role{{ID: uuid.New(), Code: "teacher"}},
+		users: map[uuid.UUID]entity.User{
+			id: {ID: id, PasswordHash: "old-hash"},
+		},
+	}
+
+	user, err := NewUserDomain(repo).UpdateUser(
+		context.Background(),
+		nil,
+		UpdateUserRequest{
+			SessionTokenHash: "hash",
+			ID:               id,
+			Input: UserInput{
+				Login:    "teacher",
+				Password: "x",
+				Name:     "Анна Иванова",
+				Status:   "active",
+				Roles:    []string{"teacher"},
+			},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if user.PasswordHash == "old-hash" || !strings.HasPrefix(user.PasswordHash, "$argon2id$") {
+		t.Fatalf("password hash was not updated: %q", user.PasswordHash)
 	}
 }
 func TestCreateUserRequiresPermission(t *testing.T) {

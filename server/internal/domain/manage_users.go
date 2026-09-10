@@ -73,10 +73,7 @@ func normalizeUser(input UserInput, passwordRequired bool) (UserInput, error) {
 	if input.Status != "active" && input.Status != "blocked" {
 		return UserInput{}, ErrInvalidUser
 	}
-	if passwordRequired && len([]rune(input.Password)) < 8 {
-		return UserInput{}, ErrInvalidUser
-	}
-	if input.Password != "" && len([]rune(input.Password)) < 8 {
+	if passwordRequired && input.Password == "" {
 		return UserInput{}, ErrInvalidUser
 	}
 	seen := map[string]struct{}{}

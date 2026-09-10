@@ -755,7 +755,7 @@ components:
         password:
           type: string
           format: password
-          minLength: 8
+          minLength: 1
         name:
           type: string
           minLength: 1
@@ -783,7 +783,7 @@ components:
         password:
           type: string
           format: password
-          minLength: 8
+          minLength: 1
         name:
           type: string
           minLength: 1
