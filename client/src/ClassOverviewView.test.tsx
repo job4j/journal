@@ -31,6 +31,7 @@ const assignment = {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  location.hash = ''
 })
 
 describe('class overview', () => {
@@ -72,6 +73,10 @@ describe('class overview', () => {
     })
 
     render(<ClassOverviewView item={item} onBack={() => {}} onCountChange={() => {}} />)
+
+    expect(await screen.findByText('Класс 7А')).toBeInTheDocument()
+    expect(screen.getByText('Анна Иванова')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Математика/ }))
 
     expect(await screen.findByText('Журнал класса')).toBeInTheDocument()
     expect(screen.getByText('7А · Математика')).toBeInTheDocument()

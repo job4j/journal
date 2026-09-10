@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AcademicYear } from './academicYears'
 import { ClassRecord, ClassStudent, listClassStudents } from './classes'
 import { ClassSubjectRecord, listClassSubjects } from './classSubjects'
-import { QuarterGrade, listQuarterGrades } from './quarterGrades'
 import ClassRosterView from './ClassRosterView'
 import ClassSubjectsView from './ClassSubjectsView'
 import TeacherLessonsView from './TeacherLessonsView'
@@ -16,52 +15,32 @@ interface Props {
 
 type Section = 'summary' | 'roster' | 'subjects'
 
-function gradeLabel(grade: QuarterGrade) {
-  if (grade.numericValue != null) return String(grade.numericValue)
-  if (grade.textValue === 'pass') return 'Зачёт'
-  if (grade.textValue === 'fail') return 'Незачёт'
-  return '—'
-}
-
 export default function ClassOverviewView({ item, year, onBack, onCountChange }: Props) {
-  const quarters = useMemo(() => item.quarters ?? [], [item.quarters])
   const [section, setSection] = useState<Section>('summary')
-  const [quarterID, setQuarterID] = useState(quarters[0]?.id ?? '')
   const [journal, setJournal] = useState<ClassSubjectRecord | null>(null)
   const [students, setStudents] = useState<ClassStudent[]>([])
   const [subjects, setSubjects] = useState<ClassSubjectRecord[]>([])
-  const [grades, setGrades] = useState<QuarterGrade[]>([])
+  const [refresh, setRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    setQuarterID((current) =>
-      quarters.some((quarter) => quarter.id === current) ? current : quarters[0]?.id ?? '',
-    )
-  }, [item.id, quarters])
-
-  useEffect(() => {
-    if (section !== 'summary' || journal) return undefined
     let active = true
     setLoading(true)
     setError('')
     Promise.all([listClassStudents(item.id), listClassSubjects(item.id)])
-      .then(async ([members, assignments]) => {
-        const gradeLists = quarterID
-          ? await Promise.all(
-            assignments.map((assignment) => listQuarterGrades(assignment.id, quarterID)),
-          )
-          : []
-        if (active) {
-          setStudents(members)
-          setSubjects(assignments)
-          setGrades(gradeLists.flat())
-          setJournal((current) => current ?? assignments[0] ?? null)
+      .then(([members, assignments]) => {
+        if (!active) return
+        setStudents(members)
+        setSubjects(assignments)
+        const assignmentID = location.hash.match(/\/subjects\/([0-9a-f-]+)$/i)?.[1]
+        if (assignmentID) {
+          setJournal(assignments.find((assignment) => assignment.id === assignmentID) ?? null)
         }
       })
       .catch((cause) => {
         if (active) {
-          setError(cause instanceof Error ? cause.message : 'Не удалось загрузить сводку класса')
+          setError(cause instanceof Error ? cause.message : 'Не удалось загрузить класс')
         }
       })
       .finally(() => {
@@ -70,20 +49,32 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
     return () => {
       active = false
     }
-  }, [item.id, journal, quarterID, section])
+  }, [item.id, refresh])
+
+  function showSummary() {
+    location.hash = `classes/${item.id}`
+    setJournal(null)
+    setSection('summary')
+    setRefresh((current) => current + 1)
+  }
+
+  function openJournal(assignment: ClassSubjectRecord) {
+    location.hash = `classes/${item.id}/subjects/${assignment.id}`
+    setJournal(assignment)
+  }
 
   if (section === 'roster') {
     return (
       <ClassRosterView
         item={item}
         year={year}
-        onBack={() => setSection('summary')}
+        onBack={showSummary}
         onCountChange={onCountChange}
       />
     )
   }
   if (section === 'subjects') {
-    return <ClassSubjectsView item={item} onBack={() => setSection('summary')} />
+    return <ClassSubjectsView item={item} onBack={showSummary} />
   }
   if (journal) {
     return (
@@ -91,7 +82,7 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
         assignment={journal}
         className={item.name}
         quarters={item.quarters ?? []}
-        onBack={() => setSection('subjects')}
+        onBack={showSummary}
       />
     )
   }
@@ -104,85 +95,65 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
       <div className="content-heading">
         <div>
           <p className="content-kicker">{year?.name ?? 'Учебный год'}</p>
-          <h2>Сводка класса {item.name}</h2>
+          <h2>Класс {item.name}</h2>
         </div>
         <div className="heading-actions">
-          <button className="secondary-action" type="button" onClick={() => setSection('roster')}>
-            Состав класса
+          <button
+            className="primary-action"
+            type="button"
+            onClick={() => setSection('roster')}
+          >
+            + Добавить ученика
           </button>
-          <button className="secondary-action" type="button" onClick={() => setSection('subjects')}>
-            Предметы класса
+          <button
+            className="primary-action"
+            type="button"
+            onClick={() => setSection('subjects')}
+          >
+            + Добавить предмет
           </button>
         </div>
-      </div>
-      <div className="lesson-filters">
-        {quarters.length ? (
-          <label>
-            Период
-            <select
-              aria-label="Период"
-              value={quarterID}
-              onChange={(event) => setQuarterID(event.target.value)}
-            >
-              {quarters.map((quarter) => (
-                <option value={quarter.id} key={quarter.id}>
-                  {quarter.number} период
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : <span className="summary-empty">Нет периодов</span>}
       </div>
       {error && <p className="content-error" role="alert">{error}</p>}
       {loading ? (
-        <div className="empty-card">Загружаем сводку…</div>
-      ) : !students.length ? (
-        <div className="empty-card">В классе пока нет учеников</div>
-      ) : !subjects.length ? (
-        <div className="empty-card">Классу пока не назначены предметы</div>
+        <div className="empty-card">Загружаем класс…</div>
       ) : (
-        <div className="table-card table-scroll">
-          <table className="class-summary-table">
-            <thead>
-              <tr>
-                <th>Ученик</th>
-                {subjects.map((assignment) => (
-                  <th key={assignment.id}>
-                    <button
-                      className="subject-link"
-                      type="button"
-                      onClick={() => setJournal(assignment)}
-                    >
-                      {assignment.subject.name}
-                    </button>
-                    <span>{assignment.responsibleTeacher.name}</span>
-                  </th>
+        <div className="class-overview-columns">
+          <section className="class-overview-card" aria-labelledby="class-students-title">
+            <div className="class-overview-heading">
+              <h3 id="class-students-title">Ученики</h3>
+              <span className="count-badge">{students.length}</span>
+            </div>
+            {students.length ? (
+              <ul className="class-overview-list">
+                {students.map((member) => (
+                  <li key={member.student.id}>
+                    <strong>{member.student.name}</strong>
+                    {member.leftOn && <span>Выбыл {member.leftOn}</span>}
+                  </li>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((member) => (
-                <tr key={member.student.id}>
-                  <th>{member.student.name}</th>
-                  {subjects.map((assignment) => {
-                    const grade = grades.find((grade) =>
-                      grade.classSubjectId === assignment.id
-                      && grade.studentId === member.student.id
-                      && grade.quarterId === quarterID)
-                    return (
-                      <td key={assignment.id}>
-                        {quarterID ? (
-                          <span className="summary-grade">
-                            <strong>{grade ? gradeLabel(grade) : '—'}</strong>
-                          </span>
-                        ) : <span className="summary-empty">Нет периодов</span>}
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </ul>
+            ) : <p className="class-overview-empty">В классе пока нет учеников</p>}
+          </section>
+
+          <section className="class-overview-card" aria-labelledby="class-subjects-title">
+            <div className="class-overview-heading">
+              <h3 id="class-subjects-title">Предметы</h3>
+              <span className="count-badge">{subjects.length}</span>
+            </div>
+            {subjects.length ? (
+              <ul className="class-overview-list class-subject-list">
+                {subjects.map((assignment) => (
+                  <li key={assignment.id}>
+                    <button type="button" onClick={() => openJournal(assignment)}>
+                      <strong>{assignment.subject.name}</strong>
+                      <span>{assignment.responsibleTeacher.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="class-overview-empty">Классу пока не назначены предметы</p>}
+          </section>
         </div>
       )}
     </div>
