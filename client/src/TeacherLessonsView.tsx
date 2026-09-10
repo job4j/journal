@@ -5,15 +5,23 @@ import{Absence,GradeItem,LessonDraft,LessonRecord,Score,createGradeItem,createLe
 import{GradingScale,QuarterGrade,listQuarterGrades}from'./quarterGrades'
 
 const emptyLesson=():LessonDraft=>({lessonDate:new Date().toISOString().slice(0,10),position:1,topic:'',homework:'',materials:[]})
+
+type PeriodView = 'week' | 'period'
+const periodViewCookie = 'journal_period_view'
+function readPeriodView(): PeriodView {
+ const value=document.cookie.split('; ').find(item=>item.startsWith(periodViewCookie+'='))?.split('=')[1]
+ return value==='period'?'period':'week'
+}
 export default function TeacherLessonsView({assignment,quarters=[],className,onBack}:{assignment:ClassSubjectRecord;quarters?:{id:string;number:number;startsOn?:string;endsOn?:string}[];className?:string;onBack:()=>void}){
- const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[newScore,setNewScore]=useState<{date:string;lesson?:LessonRecord;studentID:string;kind:GradeItem['kind']}|null>(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
+ const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[periodView,setPeriodView]=useState<PeriodView>(readPeriodView),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[newScore,setNewScore]=useState<{date:string;lesson?:LessonRecord;studentID:string;kind:GradeItem['kind']}|null>(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
  const selectedQuarter=quarters.find(item=>item.id===quarterID),from=selectedQuarter?.startsOn??'',to=selectedQuarter?.endsOn??''
  const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster,totals]=await Promise.all([listLessons(assignment.id,from,to),listClassStudents(assignment.classId),quarterID?listQuarterGrades(assignment.id,quarterID):Promise.resolve([])]);setItems(lessons);setStudents(roster);setQuarterGrades(totals)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,from,to,quarterID])
  useEffect(()=>{void load()},[load])
  async function submit(event:FormEvent){event.preventDefault();if(!draft)return;setSaving(true);try{const payload={...draft,homework:draft.homework||undefined};const saved=editingLessonID?await updateLesson(editingLessonID,payload):await createLesson(assignment.id,payload);setItems(current=>editingLessonID?current.map(item=>item.id===editingLessonID?{...saved,gradeItems:item.gradeItems,absences:item.absences}:item):[...current,saved]);setEditingLessonID('');setDraft(null)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось создать урок')}finally{setSaving(false)}}
  function scoreSaved(saved:Score){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==saved.gradeItemId?item:{...item,scores:[...item.scores.filter(score=>score.studentId!==saved.studentId),saved]})})))}
  function absenceChanged(lessonID:string,studentID:string,absence?:Absence){setItems(current=>current.map(lesson=>lesson.id!==lessonID?lesson:{...lesson,absences:absence?[...(lesson.absences??[]).filter(item=>item.studentId!==studentID),absence]:(lesson.absences??[]).filter(item=>item.studentId!==studentID)}))}
- return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters">{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><GradeTable items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
+ function changePeriodView(value:PeriodView){setPeriodView(value);document.cookie=periodViewCookie+'='+value+'; Max-Age=31536000; Path=/; SameSite=Lax'}
+ return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><GradeTable periodView={periodView} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
 }
 
 type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
@@ -50,6 +58,7 @@ function formatWeekday(value: string) {
 }
 
 function GradeTable({
+  periodView,
   items,
   students,
   from,
@@ -61,6 +70,7 @@ function GradeTable({
   onAbsence,
   onAddGrade,
 }: {
+  periodView: PeriodView
   items: LessonRecord[]
   students: ClassStudent[]
   from: string
@@ -79,12 +89,29 @@ function GradeTable({
 }) {
   const dates = useMemo(() => {
     if (!from || !to) return items.map((item) => item.lessonDate)
+    let rangeStart = new Date(from)
+    let rangeEnd = new Date(to)
+    if (periodView === 'week') {
+      const today = new Date().toISOString().slice(0, 10)
+      const anchor = new Date(today >= from && today <= to ? today : from)
+      const weekdayFromMonday = (anchor.getUTCDay() + 6) % 7
+      const weekStart = new Date(anchor)
+      weekStart.setUTCDate(weekStart.getUTCDate() - weekdayFromMonday)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
+      if (weekStart > rangeStart) rangeStart = weekStart
+      if (weekEnd < rangeEnd) rangeEnd = weekEnd
+    }
     const result: string[] = []
-    for (const day = new Date(from); day <= new Date(to); day.setUTCDate(day.getUTCDate() + 1)) {
+    for (
+      const day = new Date(rangeStart);
+      day <= rangeEnd;
+      day.setUTCDate(day.getUTCDate() + 1)
+    ) {
       result.push(day.toISOString().slice(0, 10))
     }
     return result
-  }, [from, to, items])
+  }, [from, to, items, periodView])
   const lessons = useMemo(() => new Map(items.map((item) => [item.lessonDate, item])), [items])
   if (!dates.length && !quarterID) return <div className="empty-card">Добавьте учебный период.</div>
   return (

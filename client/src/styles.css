@@ -483,4 +483,27 @@ button.grade-control {
   .journal-toolbar .lesson-filters {
     margin-left: 0;
   }
+}.period-view-toggle {
+  display: inline-flex;
+  height: 2rem;
+  padding: .15rem;
+  background: #edf2f6;
+  border: 1px solid #d4dfe7;
+  border-radius: .55rem;
+}
+.period-view-toggle button {
+  padding: 0 .65rem;
+  color: #667d91;
+  background: transparent;
+  border: 0;
+  border-radius: .38rem;
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+.period-view-toggle button[aria-pressed="true"] {
+  color: #174f78;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 79, 120, .16);
+  font-weight: 750;
 }
