@@ -60,8 +60,8 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-mark brand-mark--small" aria-hidden="true">J</div>
-          <span>Journal</span>
+          <div className="brand-mark brand-mark--small" aria-hidden="true">Р</div>
+          <span>Родное слово</span>
         </div>
 
         <nav className="navigation" aria-label="Основная навигация">
@@ -93,7 +93,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
       <main className="workspace" aria-label="Рабочая область">
         <header className="workspace-header">
           <div>
-            <p className="workspace-context">Journal</p>
+
             <nav className="breadcrumbs" aria-label="Хлебные крошки">
               {(breadcrumbs.length
                 ? breadcrumbs
