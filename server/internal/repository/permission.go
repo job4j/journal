@@ -11,7 +11,7 @@ func (r *Repository) CreatePermission(ctx context.Context, tx Transaction, value
 }
 
 func (r *Repository) EnsurePermission(ctx context.Context, tx Transaction, value entity.Permission) (entity.Permission, error) {
-	return queryOne[entity.Permission](ctx, tx, "ensure permission", `INSERT INTO permissions (code,value,description) VALUES ($1,$2,$3) ON CONFLICT (code, (COALESCE(value, ''))) DO UPDATE SET description=EXCLUDED.description RETURNING id,code,value,description,created_at`, value.Code, value.Value, value.Description)
+	return queryOne[entity.Permission](ctx, tx, "ensure permission", `INSERT INTO permissions (code,value,description) VALUES ($1,$2,$3) ON CONFLICT (code,value) DO UPDATE SET description=EXCLUDED.description RETURNING id,code,value,description,created_at`, value.Code, value.Value, value.Description)
 }
 func (r *Repository) GetPermission(ctx context.Context, tx Transaction, id uuid.UUID) (entity.Permission, error) {
 	return queryOne[entity.Permission](ctx, tx, "get permission", `SELECT id, code, value, description, created_at FROM permissions WHERE id = $1`, id)

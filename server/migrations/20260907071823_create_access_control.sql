@@ -30,7 +30,7 @@ CREATE TABLE permissions (
 );
 
 CREATE UNIQUE INDEX permissions_code_value_unique_idx
-    ON permissions (code, COALESCE(value, ''));
+    ON permissions (code, value) NULLS NOT DISTINCT;
 
 CREATE TABLE user_roles (
     user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
