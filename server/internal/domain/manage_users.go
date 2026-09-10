@@ -11,9 +11,12 @@ import (
 	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
 	"net/mail"
+	"regexp"
 	"sort"
 	"strings"
 )
+
+var loginPattern = regexp.MustCompile(`^[a-z][a-z0-9_.]*$`)
 
 type UserDomain struct {
 	repo repository.UserManagementRepository
@@ -67,7 +70,7 @@ func normalizeUser(input UserInput, passwordRequired bool) (UserInput, error) {
 		address, err := mail.ParseAddress(input.Email)
 		emailValid = err == nil && address.Address == input.Email
 	}
-	if input.Login == "" || !roleCodePattern.MatchString(input.Login) || !emailValid || input.Name == "" || len([]rune(input.Name)) > 200 {
+	if input.Login == "" || !loginPattern.MatchString(input.Login) || !emailValid || input.Name == "" || len([]rune(input.Name)) > 200 {
 		return UserInput{}, ErrInvalidUser
 	}
 	if input.Status != "active" && input.Status != "blocked" {

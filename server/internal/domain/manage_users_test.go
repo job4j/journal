@@ -111,11 +111,11 @@ func (r *userRepoStub) ListUserPermissions(context.Context, repository.Transacti
 }
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}
-	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "teacher", Email: " TEACHER@example.com ", Password: "x", Name: " Анна " + " " + " Иванова ", Status: "active", Roles: []string{"teacher"}}})
+	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "arsentev.matvey", Email: " TEACHER@example.com ", Password: "x", Name: " Анна " + " " + " Иванова ", Status: "active", Roles: []string{"teacher"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if user.Email != "teacher@example.com" || !strings.HasPrefix(repo.created.PasswordHash, "$argon2id$") {
+	if user.Login != "arsentev.matvey" || user.Email != "teacher@example.com" || !strings.HasPrefix(repo.created.PasswordHash, "$argon2id$") {
 		t.Fatalf("unexpected user: %+v", user)
 	}
 	if len(repo.assigned) != 1 {
