@@ -1,19 +1,19 @@
 import{FormEvent,useCallback,useEffect,useMemo,useState}from'react'
 import{ClassStudent,listClassStudents}from'./classes'
 import{ClassSubjectRecord}from'./classSubjects'
-import{Absence,GradeItem,GradeItemDraft,LessonDraft,LessonRecord,Score,createGradeItem,createLesson,updateLesson,deleteStudentAbsence,listLessons,putStudentAbsence,putStudentScore}from'./lessons'
+import{Absence,GradeItem,LessonDraft,LessonRecord,Score,createGradeItem,createLesson,updateLesson,deleteStudentAbsence,listLessons,putStudentAbsence,putStudentScore}from'./lessons'
 import{GradingScale,QuarterGrade,listQuarterGrades}from'./quarterGrades'
 
 const emptyLesson=():LessonDraft=>({lessonDate:new Date().toISOString().slice(0,10),position:1,topic:'',homework:'',materials:[]})
 export default function TeacherLessonsView({assignment,quarters=[],className,onBack}:{assignment:ClassSubjectRecord;quarters?:{id:string;number:number;startsOn?:string;endsOn?:string}[];className?:string;onBack:()=>void}){
- const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[gradeEditor,setGradeEditor]=useState<{lessonID:string;kind:GradeItem['kind']}|null>(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
+ const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[newScore,setNewScore]=useState<{lessonID:string;studentID:string;kind:GradeItem['kind']}|null>(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
  const selectedQuarter=quarters.find(item=>item.id===quarterID),from=selectedQuarter?.startsOn??'',to=selectedQuarter?.endsOn??''
  const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster,totals]=await Promise.all([listLessons(assignment.id,from,to),listClassStudents(assignment.classId),quarterID?listQuarterGrades(assignment.id,quarterID):Promise.resolve([])]);setItems(lessons);setStudents(roster);setQuarterGrades(totals)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,from,to,quarterID])
  useEffect(()=>{void load()},[load])
  async function submit(event:FormEvent){event.preventDefault();if(!draft)return;setSaving(true);try{const payload={...draft,homework:draft.homework||undefined};const saved=editingLessonID?await updateLesson(editingLessonID,payload):await createLesson(assignment.id,payload);setItems(current=>editingLessonID?current.map(item=>item.id===editingLessonID?{...saved,gradeItems:item.gradeItems,absences:item.absences}:item):[...current,saved]);setEditingLessonID('');setDraft(null)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось создать урок')}finally{setSaving(false)}}
  function scoreSaved(saved:Score){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==saved.gradeItemId?item:{...item,scores:[...item.scores.filter(score=>score.studentId!==saved.studentId),saved]})})))}
  function absenceChanged(lessonID:string,studentID:string,absence?:Absence){setItems(current=>current.map(lesson=>lesson.id!==lessonID?lesson:{...lesson,absences:absence?[...(lesson.absences??[]).filter(item=>item.studentId!==studentID),absence]:(lesson.absences??[]).filter(item=>item.studentId!==studentID)}))}
- return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div><div className="lesson-filters">{quarters.length>0?<label>Период<select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><GradeTable items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={(lessonID,kind)=>setGradeEditor({lessonID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{gradeEditor&&<GradeEditor lessonID={gradeEditor.lessonID} kind={gradeEditor.kind} onBack={()=>setGradeEditor(null)} onSaved={saved=>{setItems(current=>current.map(item=>item.id===gradeEditor.lessonID?{...item,gradeItems:[...item.gradeItems,saved]}:item));setGradeEditor(null)}}/>}</div>
+ return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div><div className="lesson-filters">{quarters.length>0?<label>Период<select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><GradeTable items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={(lessonID,studentID,kind)=>setNewScore({lessonID,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog lessonID={newScore.lessonID} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={saved=>{setItems(current=>current.map(item=>item.id===newScore.lessonID?{...item,gradeItems:[...item.gradeItems,saved]}:item));setNewScore(null)}}/>}</div>
 }
 
 type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
@@ -70,7 +70,7 @@ function GradeTable({
   onHomework: (date: string, lesson?: LessonRecord) => void
   onSaved: (score: Score) => void
   onAbsence: (lessonID: string, studentID: string, absence?: Absence) => void
-  onAddGrade: (lessonID: string, kind: GradeItem['kind']) => void
+  onAddGrade: (lessonID: string, studentID: string, kind: GradeItem['kind']) => void
 }) {
   const dates = useMemo(() => {
     if (!from || !to) return items.map((item) => item.lessonDate)
@@ -147,7 +147,7 @@ function GradeTable({
                             className="grade-control grade-control--empty"
                             aria-label={`Добавить ${gradeLabels[kind]}`}
                             title={gradeLabels[kind]}
-                            onClick={() => onAddGrade(lesson.id, kind)}
+                            onClick={() => onAddGrade(lesson.id, member.student.id, kind)}
                             key={kind}
                           >
                             <GradeIcon kind={kind}/><span>—</span>
@@ -356,91 +356,75 @@ function QuarterGradeValue({ current }: { current?: QuarterGrade }) {
   )
 }
 function LessonDialog({draft,setDraft,saving,submit}:{draft:LessonDraft;setDraft:(value:LessonDraft|null)=>void;saving:boolean;submit:(event:FormEvent)=>void}){return <div className="dialog-backdrop"><form className="role-dialog role-form" onSubmit={submit}><h3>Новый урок</h3><label>Дата<input aria-label="Дата урока" type="date" value={draft.lessonDate} onChange={e=>setDraft({...draft,lessonDate:e.target.value})}/></label><label>Позиция<input aria-label="Позиция урока" type="number" min="1" value={draft.position} onChange={e=>setDraft({...draft,position:Number(e.target.value)})}/></label><label>Тема<input value={draft.topic} onChange={e=>setDraft({...draft,topic:e.target.value})} required/></label><label>Домашнее задание<input value={draft.homework} onChange={e=>setDraft({...draft,homework:e.target.value})}/></label><button type="button" className="secondary-action" onClick={()=>setDraft({...draft,materials:[...draft.materials,{title:'',url:'',position:draft.materials.length+1}]})}>+ Материал</button>{draft.materials.map((material,i)=><div className="form-columns" key={i}><label>Название материала<input aria-label={`Название материала ${i+1}`} value={material.title} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,title:e.target.value}:m)})}/></label><label>Ссылка<input aria-label={`Ссылка материала ${i+1}`} type="url" value={material.url} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,url:e.target.value}:m)})}/></label></div>)}<button className="primary-action" disabled={saving}>Сохранить</button></form></div>}
-function GradeEditor({ lessonID, kind, onBack, onSaved }: {
+function NewScoreDialog({ lessonID, studentID, kind, onBack, onSaved }: {
   lessonID: string
+  studentID: string
   kind: GradeItem['kind']
   onBack: () => void
   onSaved: (item: GradeItem) => void
 }) {
-  const [value, setValue] = useState<GradeItemDraft>({
-    title: '',
-    kind,
-    gradingScale: 'five_point',
-  })
+  const title = gradeLabels[kind as JournalKind] ?? 'Работа'
+  const [value, setValue] = useState('')
+  const [comment, setComment] = useState('')
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    if (!value) return
+    setSaving(true)
+    setError('')
     try {
-      onSaved(await createGradeItem(lessonID, value))
+      const item = await createGradeItem(lessonID, {
+        title,
+        kind,
+        gradingScale: 'five_point',
+      })
+      const score = await putStudentScore(item.id, studentID, {
+        numericValue: Number(value),
+        teacherComment: comment || undefined,
+      })
+      onSaved({ ...item, scores: [score] })
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Ошибка')
+      setError(cause instanceof Error ? cause.message : 'Не удалось сохранить оценку')
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
     <div className="dialog-backdrop">
       <form className="role-dialog role-form" onSubmit={submit}>
-        <h3>Новая работа</h3>
-        {error && <p className="content-error" role="alert">{error}</p>}
+        <h3>{title}</h3>
         <label>
-          Название
+          Оценка
           <input
-            value={value.title}
-            onChange={(event) => setValue({ ...value, title: event.target.value })}
+            aria-label={`Оценка ${title}`}
+            type="number"
+            min="2"
+            max="5"
+            step="1"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            autoFocus
           />
         </label>
         <label>
-          Тип
-          <select
-            aria-label="Тип работы"
-            value={value.kind}
-            onChange={(event) => setValue({
-              ...value,
-              kind: event.target.value as GradeItem['kind'],
-            })}
-          >
-            <option value="homework">Домашняя</option>
-            <option value="classwork">Классная</option>
-            <option value="knowledge_check">Проверочная</option>
-            <option value="other">Другая</option>
-          </select>
+          Комментарий
+          <textarea
+            aria-label={`Комментарий ${title}`}
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+          />
         </label>
-        <label>
-          Шкала
-          <select
-            aria-label="Шкала"
-            value={value.gradingScale}
-            onChange={(event) => {
-              const gradingScale = event.target.value as GradeItem['gradingScale']
-              setValue({ ...value, gradingScale, maxScore: undefined })
-            }}
-          >
-            <option value="five_point">Пятибалльная</option>
-            <option value="points">Баллы</option>
-            <option value="pass_fail">Зачёт</option>
-          </select>
-        </label>
-        {value.gradingScale === 'points' && (
-          <label>
-            Максимальный балл
-            <input
-              aria-label="Максимальный балл"
-              type="number"
-              min="0.01"
-              step="0.01"
-              onChange={(event) => setValue({
-                ...value,
-                maxScore: Number(event.target.value),
-              })}
-            />
-          </label>
-        )}
+        {error && <p className="content-error" role="alert">{error}</p>}
         <div className="dialog-actions">
           <button type="button" className="secondary-action" onClick={onBack}>
             Отмена
           </button>
-          <button className="primary-action">Создать работу</button>
+          <button className="primary-action" disabled={!value || saving}>
+            {saving ? 'Сохраняем…' : 'Сохранить оценку'}
+          </button>
         </div>
       </form>
     </div>
