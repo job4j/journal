@@ -6,6 +6,7 @@ func (h *AuthHandler) Register(router fiber.Router) {
 	router.Post("/auth/login", h.Login)
 	router.Post("/auth/logout", h.Logout)
 	router.Get("/me", h.CurrentUser)
+	router.Put("/me/password", h.ChangeOwnPassword)
 }
 func (h *RoleHandler) Register(router fiber.Router) {
 	router.Get("/roles", h.ListRoles)

@@ -28,6 +28,9 @@ func (s authServiceStub) CurrentUser(context.Context, string) (entity.User, erro
 	return s.result.User, s.err
 }
 func (s authServiceStub) Logout(context.Context, string) error { return s.err }
+func (s authServiceStub) ChangeOwnPassword(context.Context, string, string, string) error {
+	return s.err
+}
 
 func TestLoginSetsSessionCookie(t *testing.T) {
 	expires := time.Now().Add(time.Hour)

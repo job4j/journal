@@ -8,6 +8,7 @@ import (
 	"journal/server/internal/repository/entity"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -93,6 +94,31 @@ func (r *authRepository) InsertSession(ctx context.Context, transaction Transact
 	`, session.ID, session.UserID, session.TokenHash, session.ExpiresAt)
 	if err != nil {
 		return fmt.Errorf("insert session: %w", err)
+	}
+	return nil
+}
+
+func (r *authRepository) UpdatePasswordHash(
+	ctx context.Context,
+	transaction Transaction,
+	userID uuid.UUID,
+	passwordHash string,
+) error {
+	tx, err := pgxTransaction(transaction)
+	if err != nil {
+		return err
+	}
+	command, err := tx.Exec(
+		ctx,
+		`UPDATE users SET password_hash=$2,updated_at=now() WHERE id=$1`,
+		userID,
+		passwordHash,
+	)
+	if err != nil {
+		return fmt.Errorf("update password hash: %w", err)
+	}
+	if command.RowsAffected() == 0 {
+		return ErrNotFound
 	}
 	return nil
 }

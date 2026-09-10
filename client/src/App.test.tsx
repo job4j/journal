@@ -89,4 +89,44 @@ describe('login', () => {
     expect(await screen.findByLabelText('Хлебные крошки')).toHaveTextContent('Классы7А')
     expect(screen.getByText('Математика')).toBeInTheDocument()
   })
+  it('allows a parent to change their own password', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input)
+      if (url === '/api/v1/me') {
+        return new Response(JSON.stringify({
+          user: {
+            id: 'parent-1',
+            login: 'parent',
+            name: 'Пётр Иванов',
+            status: 'active',
+            roles: ['parent'],
+          },
+        }), { status: 200 })
+      }
+      if (url === '/api/v1/parent/students') {
+        return new Response(JSON.stringify({ items: [] }), { status: 200 })
+      }
+      if (url === '/api/v1/me/password' && init?.method === 'PUT') {
+        expect(JSON.parse(String(init.body))).toEqual({
+          currentPassword: 'old',
+          newPassword: 'x',
+        })
+        return new Response(JSON.stringify({ changed: true }), { status: 200 })
+      }
+      return new Response(null, { status: 404 })
+    })
+
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Сменить пароль' }))
+    await userEvent.type(screen.getByLabelText('Текущий пароль'), 'old')
+    await userEvent.type(screen.getByLabelText('Новый пароль'), 'x')
+    await userEvent.click(screen.getByRole('button', { name: 'Изменить пароль' }))
+
+    await screen.findByText('Нет доступных детей')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/me/password',
+      expect.objectContaining({ method: 'PUT' }),
+    )
+  })
 })

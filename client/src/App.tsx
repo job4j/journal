@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { currentUser, login, logout, LoginError, User } from './auth'
+import { changeOwnPassword, currentUser, login, logout, LoginError, User } from './auth'
 import TeacherClassesView from './TeacherClassesView'
 import RolesView from './RolesView'
 import UsersView from './UsersView'
@@ -53,6 +53,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
   const initials = `${user.name.charAt(0)}${user.name.charAt(0)}`.toUpperCase()
   const [breadcrumbs, setBreadcrumbs] = useState<{ label: string; action?: () => void }[]>([])
+  const [passwordOpen, setPasswordOpen] = useState(false)
   useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
   function navigate(id:string){setBreadcrumbs([]);location.hash=id;setActiveID(id)}
 
@@ -86,6 +87,15 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
             <strong>{user.name}</strong>
             <span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span>
           </div>
+          {(user.roles.includes('teacher') || user.roles.includes('parent')) && (
+            <button
+              className="sidebar-user-action"
+              type="button"
+              aria-label="Сменить пароль"
+              title="Сменить пароль"
+              onClick={() => setPasswordOpen(true)}
+            >•••</button>
+          )}
           <button type="button" aria-label="Выйти" onClick={onLogout}>↪</button>
         </div>
       </aside>
@@ -127,10 +137,71 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
           {activeItem?.id === 'journal' && <div className="empty-card">Для ученика пока нет доступных действий.</div>}
         </section>
       </main>
+      {passwordOpen && <ChangePasswordDialog onClose={() => setPasswordOpen(false)} />}
     </div>
   )
 }
 
+function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      await changeOwnPassword(currentPassword, newPassword)
+      onClose()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Не удалось изменить пароль')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="dialog-backdrop">
+      <section className="role-dialog" role="dialog" aria-modal="true">
+        <div className="dialog-heading">
+          <h3>Смена пароля</h3>
+          <button type="button" aria-label="Закрыть" onClick={onClose}>×</button>
+        </div>
+        {error && <p className="content-error" role="alert">{error}</p>}
+        <form className="role-form" onSubmit={submit}>
+          <label>
+            Текущий пароль
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Новый пароль
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              required
+            />
+          </label>
+          <div className="dialog-actions">
+            <button className="secondary-action" type="button" onClick={onClose}>Отмена</button>
+            <button className="primary-action" type="submit" disabled={saving}>
+              {saving ? 'Сохраняем…' : 'Изменить пароль'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  )
+}
 function RouteState({code,title,action}:{code:string;title:string;action:()=>void}){return <div className="route-state"><strong>{code}</strong><h2>{title}</h2><button className="primary-action" onClick={action}>В рабочую область</button></div>}
 
 export default function App() {

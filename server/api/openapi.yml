@@ -42,6 +42,8 @@ paths:
     $ref: './paths/auth_logout.yml'
   /me:
     $ref: './paths/me.yml'
+  /me/password:
+    $ref: './paths/me_password.yml'
   /users:
     $ref: './paths/users.yml'
   /roles:
@@ -753,6 +755,27 @@ components:
         user:
           $ref: '#/components/schemas/User'
 
+    ChangeOwnPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          minLength: 1
+        newPassword:
+          type: string
+          format: password
+          minLength: 1
+    ChangeOwnPasswordResponse:
+      type: object
+      additionalProperties: false
+      required: [changed]
+      properties:
+        changed:
+          type: boolean
+          enum: [true]
     CreateUserRequest:
       type: object
       additionalProperties: false

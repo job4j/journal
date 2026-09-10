@@ -16,6 +16,7 @@ type AuthRepository interface {
 	FindUserBySessionTokenHash(context.Context, Transaction, string, time.Time) (entity.User, error)
 	InsertSession(context.Context, Transaction, entity.Session) error
 	RevokeSession(context.Context, Transaction, string, time.Time) error
+	UpdatePasswordHash(context.Context, Transaction, uuid.UUID, string) error
 }
 
 type UserRepository interface {

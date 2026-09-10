@@ -32,3 +32,12 @@ export async function logout(): Promise<void> {
   await request('/api/v1/auth/logout', { method: 'POST' })
 }
 import { ApiError, request } from './api'
+export async function changeOwnPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  await request('/api/v1/me/password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+}

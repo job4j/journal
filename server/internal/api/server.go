@@ -18,6 +18,7 @@ type AuthService interface {
 	Login(context.Context, string, string) (domain.LoginResponse, error)
 	CurrentUser(context.Context, string) (entity.User, error)
 	Logout(context.Context, string) error
+	ChangeOwnPassword(context.Context, string, string, string) error
 }
 type RoleHandler struct {
 	service RoleService
