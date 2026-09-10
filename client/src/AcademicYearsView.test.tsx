@@ -21,4 +21,22 @@ describe('academic years',()=>{
   await userEvent.type(screen.getByLabelText('Название'),'2027/2028');await userEvent.type(screen.getByLabelText('Начало'),'2027-09-01');await userEvent.type(screen.getByLabelText('Окончание'),'2028-05-31');await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
   expect(await screen.findByText('2027/2028')).toBeInTheDocument()
  })
-})
+
+ it('creates and displays a named period',async()=>{
+  const year={id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[]}
+  const period={id:'q-1',number:1,name:'Осень',startsOn:'2026-09-01',endsOn:'2026-10-31'}
+  vi.spyOn(globalThis,'fetch')
+   .mockResolvedValueOnce(new Response(JSON.stringify({items:[year]}),{status:200}))
+   .mockResolvedValueOnce(new Response(JSON.stringify({quarter:period}),{status:201}))
+  render(<AcademicYearsView/>)
+  await userEvent.click(await screen.findByRole('button',{name:'+ Период'}))
+  await userEvent.type(screen.getByLabelText('Название периода'),'Осень')
+  await userEvent.clear(screen.getByLabelText('Окончание'))
+  await userEvent.type(screen.getByLabelText('Окончание'),'2026-10-31')
+  await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+  expect(await screen.findByText(/Осень:/)).toBeInTheDocument()
+  expect(globalThis.fetch).toHaveBeenLastCalledWith(
+   '/api/v1/academic-years/year-1/quarters',
+   expect.objectContaining({body:expect.stringContaining('"name":"Осень"')}),
+  )
+ })})

@@ -7,6 +7,7 @@ import (
 	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
 	"testing"
+	"time"
 )
 
 type academicYearRepoStub struct {
@@ -48,6 +49,57 @@ func TestListAcademicYearsGroupsQuarters(t *testing.T) {
 func TestListAcademicYearsChecksAccess(t *testing.T) {
 	_, err := NewAcademicYearDomain(academicYearRepoStub{}).ListAcademicYears(context.Background(), testTx{}, "hash")
 	if !errors.Is(err, ErrUnauthenticated) {
+		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestCreateAcademicYearQuarterStoresTrimmedName(t *testing.T) {
+	start := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+	repo := academicYearRepoStub{
+		authenticated: true,
+		allowed:       true,
+		years: []entity.AcademicYear{{
+			ID: uuid.New(), StartsOn: start, EndsOn: start.AddDate(1, 0, 0),
+		}},
+	}
+
+	result, err := NewAcademicYearDomain(repo).CreateAcademicYearQuarter(
+		context.Background(),
+		testTx{},
+		"hash",
+		repo.years[0].ID.String(),
+		" Осенний период ",
+		start,
+		start.AddDate(0, 1, 0),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Name != "Осенний период" {
+		t.Fatalf("name = %q", result.Name)
+	}
+}
+
+func TestCreateAcademicYearQuarterRejectsEmptyName(t *testing.T) {
+	start := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+	repo := academicYearRepoStub{
+		authenticated: true,
+		allowed:       true,
+		years: []entity.AcademicYear{{
+			ID: uuid.New(), StartsOn: start, EndsOn: start.AddDate(1, 0, 0),
+		}},
+	}
+
+	_, err := NewAcademicYearDomain(repo).CreateAcademicYearQuarter(
+		context.Background(),
+		testTx{},
+		"hash",
+		repo.years[0].ID.String(),
+		"   ",
+		start,
+		start.AddDate(0, 1, 0),
+	)
+	if !errors.Is(err, ErrInvalidAcademicYear) {
 		t.Fatalf("error = %v", err)
 	}
 }

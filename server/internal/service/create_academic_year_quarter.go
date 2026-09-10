@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-func (s *AcademicYearService) CreateAcademicYearQuarter(ctx context.Context, token, yearID string, startsOn, endsOn time.Time) (result entity.AcademicYearQuarter, err error) {
+func (s *AcademicYearService) CreateAcademicYearQuarter(ctx context.Context, token, yearID, name string, startsOn, endsOn time.Time) (result entity.AcademicYearQuarter, err error) {
 	tx, err := s.txManager.Begin(ctx)
 	if err != nil {
 		return result, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	result, err = s.domain.CreateAcademicYearQuarter(ctx, tx, sessionTokenHash(token), yearID, startsOn, endsOn)
+	result, err = s.domain.CreateAcademicYearQuarter(ctx, tx, sessionTokenHash(token), yearID, name, startsOn, endsOn)
 	if err != nil {
 		return result, err
 	}

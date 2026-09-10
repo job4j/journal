@@ -52,7 +52,7 @@ type AcademicYearHandler struct {
 type AcademicYearService interface {
 	ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error)
 	CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error)
-	CreateAcademicYearQuarter(context.Context, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error)
+	CreateAcademicYearQuarter(context.Context, string, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error)
 }
 type SubjectHandler struct {
 	service SubjectService

@@ -30,7 +30,7 @@ func (h *AcademicYearHandler) ListAcademicYears(c *fiber.Ctx) error {
 func academicYearResponse(item domain.AcademicYearView) gen.AcademicYear {
 	quarters := make([]gen.AcademicYearQuarter, len(item.Quarters))
 	for j, q := range item.Quarters {
-		quarters[j] = gen.AcademicYearQuarter{Id: openapi_types.UUID(q.ID), Number: int(q.Number), StartsOn: openapi_types.Date{Time: q.StartsOn}, EndsOn: openapi_types.Date{Time: q.EndsOn}}
+		quarters[j] = gen.AcademicYearQuarter{Id: openapi_types.UUID(q.ID), Number: int(q.Number), Name: q.Name, StartsOn: openapi_types.Date{Time: q.StartsOn}, EndsOn: openapi_types.Date{Time: q.EndsOn}}
 	}
 	return gen.AcademicYear{Id: openapi_types.UUID(item.Year.ID), Name: item.Year.Name, StartsOn: openapi_types.Date{Time: item.Year.StartsOn}, EndsOn: openapi_types.Date{Time: item.Year.EndsOn}, Status: gen.AcademicYearStatus(item.Year.Status), Quarters: quarters}
 }

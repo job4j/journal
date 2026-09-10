@@ -12,7 +12,7 @@ import (
 func classResponse(item domain.ClassView) gen.Class {
 	quarters := make([]gen.AcademicYearQuarter, len(item.Quarters))
 	for i, value := range item.Quarters {
-		quarters[i] = gen.AcademicYearQuarter{Id: openapi_types.UUID(value.ID), Number: int(value.Number), StartsOn: openapi_types.Date{Time: value.StartsOn}, EndsOn: openapi_types.Date{Time: value.EndsOn}}
+		quarters[i] = gen.AcademicYearQuarter{Id: openapi_types.UUID(value.ID), Number: int(value.Number), Name: value.Name, StartsOn: openapi_types.Date{Time: value.StartsOn}, EndsOn: openapi_types.Date{Time: value.EndsOn}}
 	}
 	return gen.Class{Id: openapi_types.UUID(item.Class.ID), AcademicYearId: openapi_types.UUID(item.Class.AcademicYearID), Name: item.Class.Name, GradeLevel: int(item.Class.GradeLevel), StudentCount: item.StudentCount, Quarters: &quarters}
 }

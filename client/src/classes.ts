@@ -1,5 +1,5 @@
 import{request}from'./api'
-export interface ClassRecord{id:string;academicYearId:string;name:string;gradeLevel:number;studentCount:number;quarters?:{id:string;number:number;startsOn:string;endsOn:string}[]}
+export interface ClassRecord{id:string;academicYearId:string;name:string;gradeLevel:number;studentCount:number;quarters?:{id:string;number:number;name?:string;startsOn:string;endsOn:string}[]}
 export interface ClassDraft{academicYearId:string;name:string;gradeLevel:number}
 export interface ClassStudent{student:{id:string;name:string;roles:string[]};enrolledOn:string;leftOn?:string|null}
 export async function listClasses(yearID:string):Promise<ClassRecord[]>{return(await request<{items:ClassRecord[]}>(`/api/v1/classes?academicYearId=${encodeURIComponent(yearID)}`)).items}

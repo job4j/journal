@@ -18,7 +18,7 @@ func (h *AcademicYearHandler) CreateAcademicYearQuarter(c *fiber.Ctx) error {
 	if err = c.BodyParser(&body); err != nil {
 		return writeError(c, 400, "invalid_request", "Некорректное тело запроса")
 	}
-	item, err := h.service.CreateAcademicYearQuarter(c.UserContext(), c.Cookies("journal_session"), yearID.String(), body.StartsOn.Time, body.EndsOn.Time)
+	item, err := h.service.CreateAcademicYearQuarter(c.UserContext(), c.Cookies("journal_session"), yearID.String(), body.Name, body.StartsOn.Time, body.EndsOn.Time)
 	switch {
 	case errors.Is(err, domain.ErrUnauthenticated):
 		return writeError(c, 401, "unauthorized", "Сессия недействительна")
@@ -34,5 +34,5 @@ func (h *AcademicYearHandler) CreateAcademicYearQuarter(c *fiber.Ctx) error {
 		h.logger.Error("create academic period failed", "error", err)
 		return writeError(c, 500, "internal_error", "Внутренняя ошибка сервера")
 	}
-	return c.Status(201).JSON(gen.CreateAcademicYearQuarterResponse{Quarter: gen.AcademicYearQuarter{Id: openapi_types.UUID(item.ID), Number: int(item.Number), StartsOn: openapi_types.Date{Time: item.StartsOn}, EndsOn: openapi_types.Date{Time: item.EndsOn}}})
+	return c.Status(201).JSON(gen.CreateAcademicYearQuarterResponse{Quarter: gen.AcademicYearQuarter{Id: openapi_types.UUID(item.ID), Number: int(item.Number), Name: item.Name, StartsOn: openapi_types.Date{Time: item.StartsOn}, EndsOn: openapi_types.Date{Time: item.EndsOn}}})
 }

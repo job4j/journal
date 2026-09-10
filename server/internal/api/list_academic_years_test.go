@@ -25,14 +25,14 @@ func (s academicYearServiceStub) ListAcademicYears(context.Context, string) ([]d
 func (s academicYearServiceStub) CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error) {
 	return domain.AcademicYearView{}, s.err
 }
-func (s academicYearServiceStub) CreateAcademicYearQuarter(context.Context, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error) {
+func (s academicYearServiceStub) CreateAcademicYearQuarter(context.Context, string, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error) {
 	return entity.AcademicYearQuarter{}, s.err
 }
 
 func TestListAcademicYearsReturnsQuarters(t *testing.T) {
 	id, quarterID := uuid.New(), uuid.New()
 	date := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	service := academicYearServiceStub{items: []domain.AcademicYearView{{Year: entity.AcademicYear{ID: id, Name: "2026/2027", StartsOn: date, EndsOn: date.AddDate(1, 0, 0), Status: "active"}, Quarters: []entity.AcademicYearQuarter{{ID: quarterID, AcademicYearID: id, Number: 1, StartsOn: date, EndsOn: date.AddDate(0, 1, 0)}}}}}
+	service := academicYearServiceStub{items: []domain.AcademicYearView{{Year: entity.AcademicYear{ID: id, Name: "2026/2027", StartsOn: date, EndsOn: date.AddDate(1, 0, 0), Status: "active"}, Quarters: []entity.AcademicYearQuarter{{ID: quarterID, AcademicYearID: id, Number: 1, Name: "Первый период", StartsOn: date, EndsOn: date.AddDate(0, 1, 0)}}}}}
 	app := fiber.New()
 	NewAcademicYearHandler(service, slog.New(slog.NewTextHandler(io.Discard, nil))).Register(app)
 	request := httptest.NewRequest("GET", "/academic-years", nil)

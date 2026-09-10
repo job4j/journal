@@ -461,7 +461,7 @@ components:
     AcademicYearQuarter:
       type: object
       additionalProperties: false
-      required: [id, number, startsOn, endsOn]
+      required: [id, number, name, startsOn, endsOn]
       properties:
         id:
           type: string
@@ -470,6 +470,10 @@ components:
           type: integer
           minimum: 1
           maximum: 4
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
         startsOn:
           type: string
           format: date
@@ -480,12 +484,16 @@ components:
     AcademicYearQuarterInput:
       type: object
       additionalProperties: false
-      required: [number, startsOn, endsOn]
+      required: [number, name, startsOn, endsOn]
       properties:
         number:
           type: integer
           minimum: 1
           maximum: 4
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
         startsOn:
           type: string
           format: date
@@ -496,8 +504,9 @@ components:
     CreateAcademicYearQuarterRequest:
       type: object
       additionalProperties: false
-      required: [startsOn, endsOn]
+      required: [name, startsOn, endsOn]
       properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
         startsOn: { type: string, format: date }
         endsOn: { type: string, format: date }
     CreateAcademicYearQuarterResponse:
