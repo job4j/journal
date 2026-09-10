@@ -507,3 +507,28 @@ button.grade-control {
   box-shadow: 0 1px 3px rgba(23, 79, 120, .16);
   font-weight: 750;
 }
+.grade-control,
+.grade-control--empty,
+.grade-control--homework,
+.grade-control--classwork,
+.grade-control--knowledge_check,
+.grade-control--absence,
+.grade-control--total {
+  color: #183f5d;
+  background: #eef3f6;
+  border-color: #bdccd7;
+  font-weight: 850;
+}
+.grade-control svg,
+.grade-legend svg {
+  stroke-width: 2.25;
+}
+.grade-control .grade-value {
+  color: #102f47;
+  font-weight: 850;
+}
+button.grade-control:hover:not(:disabled) {
+  color: #0c304c;
+  background: #e2eaf0;
+  border-color: #8fa7b9;
+}
