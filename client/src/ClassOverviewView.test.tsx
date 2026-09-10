@@ -43,7 +43,9 @@ describe('class overview', () => {
       if (url.endsWith('/classes/class-1/subjects')) {
         return new Response(JSON.stringify({ items: [assignment] }), { status: 200 })
       }
-      if (url.includes('/quarters/quarter-2/grades')) {
+      if (url.includes('/class-subjects/subject-link-1/lessons?')) {
+        return new Response(JSON.stringify({ items: [] }), { status: 200 })
+      }      if (url.includes('/quarters/quarter-2/grades')) {
         return new Response(JSON.stringify({
           items: [{
             id: 'grade-2',
@@ -71,14 +73,13 @@ describe('class overview', () => {
 
     render(<ClassOverviewView item={item} onBack={() => {}} onCountChange={() => {}} />)
 
-    expect(await screen.findByText('Анна Иванова')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Математика' })).toBeInTheDocument()
-    expect(screen.getByText('Иван Петров')).toBeInTheDocument()
+    expect(await screen.findByText('Журнал класса')).toBeInTheDocument()
+    expect(screen.getByText('7А · Математика')).toBeInTheDocument()
+    expect(await screen.findAllByText('Анна Иванова')).toHaveLength(2)
     const period = screen.getByLabelText('Период')
     expect(period).toHaveValue('quarter-1')
-    expect(screen.getByText('5')).toBeInTheDocument()
 
     await userEvent.selectOptions(period, 'quarter-2')
-    expect(await screen.findByText('4')).toBeInTheDocument()
+    expect(period).toHaveValue('quarter-2')
   })
 })

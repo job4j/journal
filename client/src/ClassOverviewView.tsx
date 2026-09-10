@@ -56,6 +56,7 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
           setStudents(members)
           setSubjects(assignments)
           setGrades(gradeLists.flat())
+          setJournal((current) => current ?? assignments[0] ?? null)
         }
       })
       .catch((cause) => {
@@ -71,15 +72,6 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
     }
   }, [item.id, journal, quarterID, section])
 
-  if (journal) {
-    return (
-      <TeacherLessonsView
-        assignment={journal}
-        quarters={item.quarters ?? []}
-        onBack={() => setJournal(null)}
-      />
-    )
-  }
   if (section === 'roster') {
     return (
       <ClassRosterView
@@ -92,6 +84,16 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
   }
   if (section === 'subjects') {
     return <ClassSubjectsView item={item} onBack={() => setSection('summary')} />
+  }
+  if (journal) {
+    return (
+      <TeacherLessonsView
+        assignment={journal}
+        className={item.name}
+        quarters={item.quarters ?? []}
+        onBack={() => setSection('subjects')}
+      />
+    )
   }
 
   return (

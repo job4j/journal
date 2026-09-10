@@ -307,3 +307,69 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .summary-empty { color: #8293a2; font-size: .82rem; }
 .heading-actions{display:flex;align-items:center;gap:.75rem}.subject-assignment{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:.75rem;padding:1rem;background:#fff;border:1px solid #dbe5ed;border-radius:.9rem}.subject-assignment label{display:grid;gap:.4rem;color:#29435d;font-size:.82rem;font-weight:700}.subject-assignment select,.subjects-table select{min-height:2.7rem;padding:.55rem .7rem;border:1px solid #bac9d6;border-radius:.6rem;background:#f9fbfd;font:inherit}@media(max-width:45rem){.subject-assignment{grid-template-columns:1fr}.heading-actions{align-items:flex-end;flex-direction:column}}
 .lesson-filters{display:flex;gap:.75rem}.lesson-filters label{display:grid;gap:.35rem;color:#29435d;font-size:.82rem;font-weight:700}.lesson-filters input{width:12rem}.subjects-table td a{display:block;margin:.2rem 0;color:#155f99}
+
+.lesson-topic {
+  display: block;
+  margin-top: .35rem;
+  color: #708396;
+  font-size: .72rem;
+  font-weight: 500;
+}
+.homework-button {
+  display: block;
+  margin-top: .65rem;
+  padding: 0;
+  color: #7890a3;
+  background: transparent;
+  border: 0;
+  font-size: .66rem;
+  font-weight: 750;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.homework-button:hover { color: #155f99; }
+.grade-control-wrap { position: relative; }
+.grade-control-wrap > .grade-control { width: 100%; }
+.grade-control input, .grade-control select {
+  width: 100%;
+  height: 100%;
+  padding: 0 .1rem 0 1.45rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  outline: none;
+  font-size: .8rem;
+  font-weight: 800;
+}
+.grade-control input { appearance: textfield; }
+.grade-control input::-webkit-inner-spin-button { appearance: none; }
+button.grade-control { justify-content: flex-end; padding: 0 .45rem 0 1.45rem; cursor: pointer; }
+.grade-control--empty { color: #7b8c9b; background: #f1f4f6; border-color: #d7e0e7; }
+.grade-control--knowledge_check { color: #784f13; background: #fff0cf; border-color: #efdcae; }
+.grade-control--absence { color: #9f2d2d; background: #fde5e5; border-color: #f2c6c6; }
+.grade-popover {
+  position: absolute;
+  top: calc(100% + .35rem);
+  left: 0;
+  z-index: 5;
+  display: none;
+  width: 14rem;
+  gap: .45rem;
+  padding: .7rem;
+  color: #29435d;
+  background: #fff;
+  border: 1px solid #cddae4;
+  border-radius: .6rem;
+  box-shadow: 0 .75rem 2rem rgba(31, 66, 97, .18);
+}
+.grade-control-wrap:focus-within .grade-popover { display: grid; }
+.grade-popover input {
+  width: 100%;
+  min-height: 2.3rem;
+  padding: .4rem .55rem;
+  border: 1px solid #bac9d6;
+  border-radius: .45rem;
+}
+.grade-popover small { color: #9b261f; }
