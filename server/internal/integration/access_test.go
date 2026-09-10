@@ -39,7 +39,7 @@ func transaction(t *testing.T) pgx.Tx {
 func user(t *testing.T, tx pgx.Tx, roles ...string) uuid.UUID {
 	t.Helper()
 	id := uuid.New()
-	_, err := tx.Exec(context.Background(), `INSERT INTO users(id,email,password_hash,first_name,last_name,status)VALUES($1,$2,'hash','Test','User','active')`, id, id.String()+"@test.local")
+	_, err := tx.Exec(context.Background(), `INSERT INTO users(id,login,email,password_hash,name,status)VALUES($1,$2,$2,'hash','Test User','active')`, id, id.String()+"@test.local")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -33,5 +33,5 @@ func classStudentResponse(item domain.ClassStudentView) gen.ClassStudent {
 	if item.Membership.LeftOn != nil {
 		leftOn = &openapi_types.Date{Time: *item.Membership.LeftOn}
 	}
-	return gen.ClassStudent{Student: gen.UserSummary{Id: openapi_types.UUID(item.Student.ID), FirstName: item.Student.FirstName, LastName: item.Student.LastName, Roles: roles}, EnrolledOn: openapi_types.Date{Time: item.Membership.EnrolledOn}, LeftOn: leftOn}
+	return gen.ClassStudent{Student: gen.UserSummary{Id: openapi_types.UUID(item.Student.ID), Name: item.Student.Name, Roles: roles}, EnrolledOn: openapi_types.Date{Time: item.Membership.EnrolledOn}, LeftOn: leftOn}
 }

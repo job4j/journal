@@ -14,7 +14,7 @@ func userSummary(user entity.User) gen.UserSummary {
 	for i, role := range user.Roles {
 		roles[i] = gen.RoleCode(role)
 	}
-	return gen.UserSummary{Id: openapi_types.UUID(user.ID), FirstName: user.FirstName, LastName: user.LastName, Roles: roles}
+	return gen.UserSummary{Id: openapi_types.UUID(user.ID), Name: user.Name, Roles: roles}
 }
 
 func classSubjectResponse(item domain.ClassSubjectView) gen.ClassSubject {

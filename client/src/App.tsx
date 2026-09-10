@@ -51,7 +51,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const items = navigation.filter((item) => item.roles.some((role) => user.roles.includes(role)))
   const [activeID, setActiveID] = useState(()=>location.hash.slice(1).split('/')[0]||items[0]?.id||'')
   const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
-  const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  const initials = `${user.name.charAt(0)}${user.name.charAt(0)}`.toUpperCase()
   useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
   function navigate(id:string){location.hash=id;setActiveID(id)}
 
@@ -82,7 +82,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
         <div className="sidebar-user">
           <div className="avatar" aria-hidden="true">{initials}</div>
           <div className="user-copy">
-            <strong>{user.firstName} {user.lastName}</strong>
+            <strong>{user.name}</strong>
             <span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span>
           </div>
           <button type="button" aria-label="Выйти" onClick={onLogout}>↪</button>
@@ -95,7 +95,7 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
             <p className="workspace-context">Journal</p>
             <h1>{activeItem?.label ?? 'Рабочая область'}</h1>
           </div>
-          <div className="header-avatar" aria-label={`${user.firstName} ${user.lastName}`}>{initials}</div>
+          <div className="header-avatar" aria-label={`${user.name}`}>{initials}</div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
           {!knownItem&&<RouteState code="404" title="Страница не найдена" action={()=>navigate(items[0]?.id??'')}/>} 

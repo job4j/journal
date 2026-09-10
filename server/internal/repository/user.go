@@ -8,7 +8,7 @@ import (
 	"journal/server/internal/repository/entity"
 )
 
-const userColumns = `u.id,u.login,u.email,u.phone,u.password_hash,u.first_name,u.last_name,u.status,
+const userColumns = `u.id,u.login,u.email,u.phone,u.password_hash,u.name,u.status,
  ARRAY(SELECT r.code FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=u.id ORDER BY r.code) AS roles,
  u.created_at,u.updated_at`
 
@@ -18,8 +18,7 @@ type userRow struct {
 	Email        *string   `db:"email"`
 	Phone        *string   `db:"phone"`
 	PasswordHash string    `db:"password_hash"`
-	FirstName    string    `db:"first_name"`
-	LastName     string    `db:"last_name"`
+	Name         string    `db:"name"`
 	Status       string    `db:"status"`
 	Roles        []string  `db:"roles"`
 	CreatedAt    time.Time `db:"created_at"`
@@ -27,7 +26,7 @@ type userRow struct {
 }
 
 func (row userRow) entity() entity.User {
-	user := entity.User{ID: row.ID, Login: row.Login, PasswordHash: row.PasswordHash, FirstName: row.FirstName, LastName: row.LastName, Status: row.Status, Roles: row.Roles, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt}
+	user := entity.User{ID: row.ID, Login: row.Login, PasswordHash: row.PasswordHash, Name: row.Name, Status: row.Status, Roles: row.Roles, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt}
 	if row.Email != nil {
 		user.Email = *row.Email
 	}
@@ -38,7 +37,7 @@ func (row userRow) entity() entity.User {
 }
 
 func (r *Repository) CreateUser(ctx context.Context, tx Transaction, value entity.User) (entity.User, error) {
-	row, err := queryOne[userRow](ctx, tx, "create user", `INSERT INTO users(login,email,phone,password_hash,first_name,last_name,status) VALUES($1,NULLIF($2,''),NULLIF($3,''),$4,$5,$6,$7) RETURNING id,login,email,phone,password_hash,first_name,last_name,status,'{}'::text[] AS roles,created_at,updated_at`, value.Login, value.Email, value.Phone, value.PasswordHash, value.FirstName, value.LastName, value.Status)
+	row, err := queryOne[userRow](ctx, tx, "create user", `INSERT INTO users(login,email,phone,password_hash,name,status) VALUES($1,NULLIF($2,''),NULLIF($3,''),$4,$5,$6) RETURNING id,login,email,phone,password_hash,name,status,'{}'::text[] AS roles,created_at,updated_at`, value.Login, value.Email, value.Phone, value.PasswordHash, value.Name, value.Status)
 	return row.entity(), err
 }
 func (r *Repository) GetUser(ctx context.Context, tx Transaction, id uuid.UUID) (entity.User, error) {
@@ -61,7 +60,7 @@ func (r *Repository) ListUsers(ctx context.Context, tx Transaction) ([]entity.Us
 	return users, nil
 }
 func (r *Repository) UpdateUser(ctx context.Context, tx Transaction, value entity.User) (entity.User, error) {
-	row, err := queryOne[userRow](ctx, tx, "update user", `UPDATE users SET login=$1,email=NULLIF($2,''),phone=NULLIF($3,''),password_hash=$4,first_name=$5,last_name=$6,status=$7,updated_at=now() WHERE id=$8 RETURNING id,login,email,phone,password_hash,first_name,last_name,status,'{}'::text[] AS roles,created_at,updated_at`, value.Login, value.Email, value.Phone, value.PasswordHash, value.FirstName, value.LastName, value.Status, value.ID)
+	row, err := queryOne[userRow](ctx, tx, "update user", `UPDATE users SET login=$1,email=NULLIF($2,''),phone=NULLIF($3,''),password_hash=$4,name=$5,status=$6,updated_at=now() WHERE id=$7 RETURNING id,login,email,phone,password_hash,name,status,'{}'::text[] AS roles,created_at,updated_at`, value.Login, value.Email, value.Phone, value.PasswordHash, value.Name, value.Status, value.ID)
 	return row.entity(), err
 }
 func (r *Repository) DeleteUser(ctx context.Context, tx Transaction, id uuid.UUID) error {

@@ -111,7 +111,7 @@ func (r *userRepoStub) ListUserPermissions(context.Context, repository.Transacti
 }
 func TestCreateUserHashesPasswordAndAssignsRoles(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true, roles: []entity.Role{{ID: uuid.New(), Code: "teacher"}}}
-	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "teacher", Email: " TEACHER@example.com ", Password: "password", FirstName: " Анна ", LastName: " Иванова ", Status: "active", Roles: []string{"teacher"}}})
+	user, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{SessionTokenHash: "hash", Input: UserInput{Login: "teacher", Email: " TEACHER@example.com ", Password: "password", Name: " Анна " + " " + " Иванова ", Status: "active", Roles: []string{"teacher"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func TestCreateUserRequiresPermission(t *testing.T) {
 }
 func TestCreateUserRejectsUnknownRole(t *testing.T) {
 	repo := &userRepoStub{authenticated: true, allowed: true}
-	_, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{Input: UserInput{Login: "teacher", Email: "a@example.com", Password: "password", FirstName: "A", LastName: "B", Status: "active", Roles: []string{"missing"}}})
+	_, err := NewUserDomain(repo).CreateUser(context.Background(), nil, CreateUserRequest{Input: UserInput{Login: "teacher", Email: "a@example.com", Password: "password", Name: "A" + " " + "B", Status: "active", Roles: []string{"missing"}}})
 	if !errors.Is(err, ErrRoleNotFound) {
 		t.Fatalf("error = %v", err)
 	}

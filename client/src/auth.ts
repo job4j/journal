@@ -3,8 +3,8 @@ export interface User {
   login: string
   email?: string | null
   phone?: string | null
-  firstName: string
-  lastName: string
+  name: string
+
   status: 'active' | 'blocked'
   roles: string[]
 }

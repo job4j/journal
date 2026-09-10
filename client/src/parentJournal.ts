@@ -5,7 +5,7 @@ import{ClassSubjectRecord}from'./classSubjects'
 import{LessonRecord}from'./lessons'
 import{QuarterGrade}from'./quarterGrades'
 
-export interface ParentStudent{id:string;firstName:string;lastName:string;roles:string[]}
+export interface ParentStudent{id:string;name:string;roles:string[]}
 export interface ParentStudentPeriod{academicYear:AcademicYear;class:ClassRecord;subjects:ClassSubjectRecord[]}
 export interface ParentJournalSubject{classSubject:ClassSubjectRecord;lessons:Array<{lesson:LessonRecord}>;quarterGrades?:QuarterGrade[]}
 export interface ParentJournal{student:ParentStudent;academicYear:AcademicYear;class:ClassRecord;subjects:ParentJournalSubject[]}

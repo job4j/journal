@@ -13,7 +13,7 @@ func apiUser(user entity.User) gen.User {
 	for i, role := range user.Roles {
 		roles[i] = gen.RoleCode(role)
 	}
-	return userResponse(user) // user.FirstName, LastName: user.LastName, Status: gen.UserStatus(user.Status), Roles: roles}
+	return userResponse(user) // user.Name: user.Name, Status: gen.UserStatus(user.Status), Roles: roles}
 }
 
 func (h *AuthHandler) CurrentUser(c *fiber.Ctx) error {

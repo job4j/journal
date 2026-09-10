@@ -33,7 +33,7 @@ func TestLoginSetsSessionCookie(t *testing.T) {
 	expires := time.Now().Add(time.Hour)
 	service := authServiceStub{result: domain.LoginResponse{
 		Token: "secret-token", ExpiresAt: expires,
-		User: entity.User{ID: uuid.New(), Email: "user@example.com", FirstName: "Иван", LastName: "Иванов", Status: "active", Roles: []string{"teacher"}},
+		User: entity.User{ID: uuid.New(), Email: "user@example.com", Name: "Иван" + " " + "Иванов", Status: "active", Roles: []string{"teacher"}},
 	}}
 	app := fiber.New()
 	NewAuthHandler(service, slog.New(slog.NewTextHandler(io.Discard, nil)), true).Register(app)

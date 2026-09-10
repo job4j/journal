@@ -393,7 +393,7 @@ components:
     User:
       type: object
       additionalProperties: false
-      required: [id, login, firstName, lastName, status, roles]
+      required: [id, login, name, status, roles]
       properties:
         id:
           type: string
@@ -407,9 +407,7 @@ components:
         phone:
           type: string
           nullable: true
-        firstName:
-          type: string
-        lastName:
+        name:
           type: string
         status:
           $ref: '#/components/schemas/UserStatus'
@@ -422,14 +420,12 @@ components:
     UserSummary:
       type: object
       additionalProperties: false
-      required: [id, firstName, lastName, roles]
+      required: [id, name, roles]
       properties:
         id:
           type: string
           format: uuid
-        firstName:
-          type: string
-        lastName:
+        name:
           type: string
         roles:
           type: array
@@ -751,7 +747,7 @@ components:
     CreateUserRequest:
       type: object
       additionalProperties: false
-      required: [login, password, firstName, lastName, roles]
+      required: [login, password, name, roles]
       properties:
         login: { type: string, minLength: 1 }
         email: { type: string, format: email, nullable: true }
@@ -760,10 +756,7 @@ components:
           type: string
           format: password
           minLength: 8
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
+        name:
           type: string
           minLength: 1
         roles:
@@ -782,7 +775,7 @@ components:
     UpdateUserRequest:
       type: object
       additionalProperties: false
-      required: [login, firstName, lastName, status, roles]
+      required: [login, name, status, roles]
       properties:
         login: { type: string, minLength: 1 }
         email: { type: string, format: email, nullable: true }
@@ -791,10 +784,7 @@ components:
           type: string
           format: password
           minLength: 8
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
+        name:
           type: string
           minLength: 1
         status:

@@ -25,7 +25,7 @@ func userResponse(user entity.User) gen.User {
 	if user.Phone != "" {
 		phone = &user.Phone
 	}
-	return gen.User{Id: openapi_types.UUID(user.ID), Login: user.Login, Email: email, Phone: phone, FirstName: user.FirstName, LastName: user.LastName, Status: gen.UserStatus(user.Status), Roles: roles}
+	return gen.User{Id: openapi_types.UUID(user.ID), Login: user.Login, Email: email, Phone: phone, Name: user.Name, Status: gen.UserStatus(user.Status), Roles: roles}
 }
 func optionalEmail(value *openapi_types.Email) string {
 	if value == nil {
@@ -39,12 +39,12 @@ func optionalString(value *string) string {
 	}
 	return *value
 }
-func userInput(login, email, phone, firstName, lastName, password, status string, roles []gen.RoleCode) domain.UserInput {
+func userInput(login, email, phone, name, password, status string, roles []gen.RoleCode) domain.UserInput {
 	codes := make([]string, len(roles))
 	for i, role := range roles {
 		codes[i] = string(role)
 	}
-	return domain.UserInput{Login: login, Email: email, Phone: phone, FirstName: firstName, LastName: lastName, Password: password, Status: status, Roles: codes}
+	return domain.UserInput{Login: login, Email: email, Phone: phone, Name: name, Password: password, Status: status, Roles: codes}
 }
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	token := c.Cookies("journal_session")
@@ -55,7 +55,7 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		return writeError(c, 400, "invalid_request", "Некорректное тело запроса")
 	}
-	result, err := h.service.CreateUser(c.UserContext(), token, userInput(request.Login, optionalEmail(request.Email), optionalString(request.Phone), request.FirstName, request.LastName, request.Password, "active", request.Roles))
+	result, err := h.service.CreateUser(c.UserContext(), token, userInput(request.Login, optionalEmail(request.Email), optionalString(request.Phone), request.Name, request.Password, "active", request.Roles))
 	if err != nil {
 		return h.writeUserError(c, err)
 	}
@@ -123,7 +123,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	if request.Password != nil {
 		password = *request.Password
 	}
-	result, err := h.service.UpdateUser(c.UserContext(), token, id, userInput(request.Login, optionalEmail(request.Email), optionalString(request.Phone), request.FirstName, request.LastName, password, string(request.Status), request.Roles))
+	result, err := h.service.UpdateUser(c.UserContext(), token, id, userInput(request.Login, optionalEmail(request.Email), optionalString(request.Phone), request.Name, password, string(request.Status), request.Roles))
 	if err != nil {
 		return h.writeUserError(c, err)
 	}

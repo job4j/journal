@@ -20,14 +20,14 @@ func (r *authRepository) FindUserByEmail(ctx context.Context, transaction Transa
 	var user entity.User
 	var nullableEmail, nullablePhone *string
 	err = tx.QueryRow(ctx, `
-		SELECT u.id, u.login, u.email, u.phone, u.password_hash, u.first_name, u.last_name, u.status,
+		SELECT u.id, u.login, u.email, u.phone, u.password_hash, u.name, u.status,
 		       ARRAY(SELECT role.code FROM user_roles user_role JOIN roles role ON role.id=user_role.role_id WHERE user_role.user_id=u.id ORDER BY role.code)
 		FROM users u
 		LEFT JOIN user_roles ur ON ur.user_id = u.id
 		LEFT JOIN roles r ON r.id = ur.role_id
 		WHERE lower(u.login) = lower($1)
 		GROUP BY u.id
-	`, email).Scan(&user.ID, &user.Login, &nullableEmail, &nullablePhone, &user.PasswordHash, &user.FirstName, &user.LastName, &user.Status, &user.Roles)
+	`, email).Scan(&user.ID, &user.Login, &nullableEmail, &nullablePhone, &user.PasswordHash, &user.Name, &user.Status, &user.Roles)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return entity.User{}, ErrNotFound
 	}
@@ -50,11 +50,11 @@ func (r *authRepository) FindUserBySessionTokenHash(ctx context.Context, transac
 	}
 	var user entity.User
 	var email, phone *string
-	err = tx.QueryRow(ctx, `SELECT u.id, u.login, u.email, u.phone, u.password_hash, u.first_name, u.last_name, u.status,
+	err = tx.QueryRow(ctx, `SELECT u.id, u.login, u.email, u.phone, u.password_hash, u.name, u.status,
 		ARRAY(SELECT role.code FROM user_roles user_role JOIN roles role ON role.id=user_role.role_id WHERE user_role.user_id=u.id ORDER BY role.code)
 		FROM sessions s JOIN users u ON u.id=s.user_id LEFT JOIN user_roles ur ON ur.user_id=u.id LEFT JOIN roles r ON r.id=ur.role_id
 		WHERE s.token_hash=$1 AND s.expires_at>$2 AND s.revoked_at IS NULL AND u.status='active' GROUP BY u.id`, tokenHash, now).
-		Scan(&user.ID, &user.Login, &email, &phone, &user.PasswordHash, &user.FirstName, &user.LastName, &user.Status, &user.Roles)
+		Scan(&user.ID, &user.Login, &email, &phone, &user.PasswordHash, &user.Name, &user.Status, &user.Roles)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return entity.User{}, ErrNotFound
 	}
