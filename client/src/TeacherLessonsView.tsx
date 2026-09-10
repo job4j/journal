@@ -324,7 +324,7 @@ function ScoreEditor({ item, studentID, disabled, onSaved }: {
   return (
     <>
       <button
-        className={`grade-control${existing ? ` grade-control--${kind}` : ''}`}
+        className={`grade-control ${existing ? `grade-control--${kind}` : 'grade-control--empty'}`}
         aria-label={`Изменить оценку ${item.title}`}
         title={existing?.teacherComment || item.title}
         disabled={disabled}
