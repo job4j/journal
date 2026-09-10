@@ -266,7 +266,7 @@ function AbsenceToggle({ lesson, studentID, disabled, onChange }: {
       disabled={disabled || saving}
       onClick={toggle}
     >
-      <GradeIcon kind="absence"/><span>{absent ? 'Н' : '—'}</span>
+      <GradeIcon kind="absence"/>
     </button>
   )
 }
