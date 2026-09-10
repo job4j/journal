@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/google/uuid"
 	"journal/server/internal/repository"
@@ -16,22 +17,42 @@ type QuarterGradeInput struct {
 	TextValue, TeacherComment *string
 }
 
-func (d *ClassDomain) quarterGradeContext(ctx context.Context, tx repository.Transaction, hash string, assignmentID, quarterID uuid.UUID, permission string) (uuid.UUID, entity.ClassSubject, entity.AcademicYearQuarter, error) {
-	teacherID, err := d.currentTeacher(ctx, tx, hash)
+func (d *ClassDomain) quarterGradeContext(
+	ctx context.Context,
+	tx repository.Transaction,
+	hash string,
+	assignmentID, quarterID uuid.UUID,
+	permission string,
+	requireResponsibleTeacher bool,
+) (uuid.UUID, entity.ClassSubject, entity.AcademicYearQuarter, error) {
+	user, err := d.repo.FindActiveUserBySessionHash(ctx, tx, hash)
+	if errors.Is(err, repository.ErrNotFound) {
+		return uuid.Nil, entity.ClassSubject{}, entity.AcademicYearQuarter{}, ErrUnauthenticated
+	}
 	if err != nil {
-		return uuid.Nil, entity.ClassSubject{}, entity.AcademicYearQuarter{}, err
+		return uuid.Nil, entity.ClassSubject{}, entity.AcademicYearQuarter{},
+			fmt.Errorf("find session user: %w", err)
 	}
 	assignment, err := d.repo.GetClassSubject(ctx, tx, assignmentID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return uuid.Nil, assignment, entity.AcademicYearQuarter{}, ErrClassSubjectNotFound
 	}
 	if err != nil {
-		return uuid.Nil, assignment, entity.AcademicYearQuarter{}, fmt.Errorf("get assignment: %w", err)
+		return uuid.Nil, assignment, entity.AcademicYearQuarter{},
+			fmt.Errorf("get assignment: %w", err)
 	}
-	if assignment.ResponsibleTeacherID != teacherID {
+	if requireResponsibleTeacher &&
+		(!slices.Contains(user.Roles, "teacher") || assignment.ResponsibleTeacherID != user.ID) {
 		return uuid.Nil, assignment, entity.AcademicYearQuarter{}, ErrForbidden
 	}
-	if err = AuthorizeObject(ctx, tx, d.repo, hash, permission, assignmentID.String()); err != nil {
+	if err = AuthorizeObject(
+		ctx,
+		tx,
+		d.repo,
+		hash,
+		permission,
+		assignmentID.String(),
+	); err != nil {
 		return uuid.Nil, assignment, entity.AcademicYearQuarter{}, err
 	}
 	quarter, err := d.repo.GetAcademicYearQuarter(ctx, tx, quarterID)
@@ -48,11 +69,18 @@ func (d *ClassDomain) quarterGradeContext(ctx context.Context, tx repository.Tra
 	if quarter.AcademicYearID != class.AcademicYearID {
 		return uuid.Nil, assignment, quarter, ErrInvalidScore
 	}
-	return teacherID, assignment, quarter, nil
+	return user.ID, assignment, quarter, nil
 }
-
-func (d *ClassDomain) PutQuarterGrade(ctx context.Context, tx repository.Transaction, hash string, assignmentID, quarterID, studentID uuid.UUID, input QuarterGradeInput) (entity.QuarterGrade, error) {
-	teacherID, assignment, quarter, err := d.quarterGradeContext(ctx, tx, hash, assignmentID, quarterID, "can_create_score")
+func (d *ClassDomain) PutQuarterGrade(
+	ctx context.Context,
+	tx repository.Transaction,
+	hash string,
+	assignmentID, quarterID, studentID uuid.UUID,
+	input QuarterGradeInput,
+) (entity.QuarterGrade, error) {
+	teacherID, assignment, quarter, err := d.quarterGradeContext(
+		ctx, tx, hash, assignmentID, quarterID, "can_create_score", true,
+	)
 	if err != nil {
 		return entity.QuarterGrade{}, err
 	}
@@ -63,7 +91,9 @@ func (d *ClassDomain) PutQuarterGrade(ctx context.Context, tx repository.Transac
 	if err != nil {
 		return entity.QuarterGrade{}, fmt.Errorf("get membership: %w", err)
 	}
-	if dayUTC(membership.EnrolledOn).After(dayUTC(quarter.EndsOn)) || (membership.LeftOn != nil && dayUTC(*membership.LeftOn).Before(dayUTC(quarter.StartsOn))) {
+	outsideQuarter := dayUTC(membership.EnrolledOn).After(dayUTC(quarter.EndsOn)) ||
+		(membership.LeftOn != nil && dayUTC(*membership.LeftOn).Before(dayUTC(quarter.StartsOn)))
+	if outsideQuarter {
 		return entity.QuarterGrade{}, ErrClassStudentNotFound
 	}
 	item := entity.GradeItem{GradingScale: input.GradingScale, MaxScore: input.MaxScore}
@@ -71,14 +101,32 @@ func (d *ClassDomain) PutQuarterGrade(ctx context.Context, tx repository.Transac
 		return entity.QuarterGrade{}, ErrInvalidScore
 	}
 	input.TeacherComment = trimmedOptional(input.TeacherComment)
-	result, err := d.repo.UpsertQuarterGrade(ctx, tx, entity.QuarterGrade{QuarterID: quarterID, ClassSubjectID: assignmentID, UserID: studentID, GradingScale: input.GradingScale, MaxScore: input.MaxScore, NumericValue: input.NumericValue, TextValue: input.TextValue, TeacherComment: input.TeacherComment, CreatedBy: teacherID, UpdatedBy: teacherID})
+	result, err := d.repo.UpsertQuarterGrade(ctx, tx, entity.QuarterGrade{
+		QuarterID:      quarterID,
+		ClassSubjectID: assignmentID,
+		UserID:         studentID,
+		GradingScale:   input.GradingScale,
+		MaxScore:       input.MaxScore,
+		NumericValue:   input.NumericValue,
+		TextValue:      input.TextValue,
+		TeacherComment: input.TeacherComment,
+		CreatedBy:      teacherID,
+		UpdatedBy:      teacherID,
+	})
 	if err != nil {
 		return entity.QuarterGrade{}, fmt.Errorf("upsert quarter grade: %w", err)
 	}
 	return result, nil
 }
-func (d *ClassDomain) ListQuarterGrades(ctx context.Context, tx repository.Transaction, hash string, assignmentID, quarterID uuid.UUID) ([]entity.QuarterGrade, error) {
-	_, _, _, err := d.quarterGradeContext(ctx, tx, hash, assignmentID, quarterID, "can_view_score")
+func (d *ClassDomain) ListQuarterGrades(
+	ctx context.Context,
+	tx repository.Transaction,
+	hash string,
+	assignmentID, quarterID uuid.UUID,
+) ([]entity.QuarterGrade, error) {
+	_, _, _, err := d.quarterGradeContext(
+		ctx, tx, hash, assignmentID, quarterID, "can_view_score", false,
+	)
 	if err != nil {
 		return nil, err
 	}
