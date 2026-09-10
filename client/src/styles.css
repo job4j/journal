@@ -547,8 +547,12 @@ button.grade-control:hover:not(:disabled) {
 .grade-cell .grade-control {
   width: max-content;
   min-width: 2rem;
-  padding-right: .35rem;
-  padding-left: .35rem;
+  gap: .12rem;
+  padding-right: .3rem;
+  padding-left: .3rem;
+}
+.grade-cell .grade-value {
+  min-width: 0;
 }
 .journal-table thead th.journal-today {
   background: #eaf2f7;
