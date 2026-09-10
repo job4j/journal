@@ -289,6 +289,64 @@ func TestListClassesFiltersYearAndCountsActiveStudents(t *testing.T) {
 		t.Fatalf("items = %+v", items)
 	}
 }
+func TestListClassesIncludesOnlyQuartersFromClassYear(t *testing.T) {
+	yearID := uuid.New()
+	otherYearID := uuid.New()
+	repo := classRepoStub{
+		authenticated: true,
+		allowed:       true,
+		classes: []entity.Class{
+			{ID: uuid.New(), AcademicYearID: yearID},
+		},
+		quarters: []entity.AcademicYearQuarter{
+			{ID: uuid.New(), AcademicYearID: otherYearID, Number: 1},
+			{ID: uuid.New(), AcademicYearID: yearID, Number: 1},
+			{ID: uuid.New(), AcademicYearID: yearID, Number: 2},
+		},
+	}
+
+	items, err := NewClassDomain(repo).ListClasses(
+		context.Background(),
+		testTx{},
+		"hash",
+		yearID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 || len(items[0].Quarters) != 2 {
+		t.Fatalf("items = %+v", items)
+	}
+}
+
+func TestGetClassIncludesQuartersFromClassYear(t *testing.T) {
+	yearID := uuid.New()
+	classID := uuid.New()
+	repo := classRepoStub{
+		authenticated: true,
+		allowed:       true,
+		classes: []entity.Class{
+			{ID: classID, AcademicYearID: yearID},
+		},
+		quarters: []entity.AcademicYearQuarter{
+			{ID: uuid.New(), AcademicYearID: uuid.New(), Number: 1},
+			{ID: uuid.New(), AcademicYearID: yearID, Number: 1},
+		},
+	}
+
+	item, err := NewClassDomain(repo).GetClass(
+		context.Background(),
+		testTx{},
+		"hash",
+		classID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(item.Quarters) != 1 || item.Quarters[0].AcademicYearID != yearID {
+		t.Fatalf("quarters = %+v", item.Quarters)
+	}
+}
 func TestGetClassChecksObjectAccess(t *testing.T) {
 	_, err := NewClassDomain(classRepoStub{authenticated: true}).GetClass(context.Background(), testTx{}, "hash", uuid.New())
 	if !errors.Is(err, ErrForbidden) {
