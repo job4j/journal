@@ -1,0 +1,5 @@
+-- +goose Up
+CREATE TABLE quarter_grades (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), quarter_id UUID NOT NULL REFERENCES academic_year_quarters(id) ON DELETE RESTRICT, class_subject_id UUID NOT NULL REFERENCES class_subjects(id) ON DELETE CASCADE, user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT, grading_scale TEXT NOT NULL, max_score SMALLINT, numeric_value SMALLINT, text_value TEXT, teacher_comment TEXT, created_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT, updated_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), UNIQUE(quarter_id,class_subject_id,user_id));
+CREATE INDEX quarter_grades_user_id_idx ON quarter_grades(user_id);
+-- +goose Down
+DROP TABLE quarter_grades;
