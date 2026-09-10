@@ -87,6 +87,7 @@ function GradeTable({
     kind: GradeItem['kind'],
   ) => void
 }) {
+  const today = new Date().toISOString().slice(0, 10)
   const dates = useMemo(() => {
     if (!from || !to) return items.map((item) => item.lessonDate)
     let rangeStart = new Date(from)
@@ -123,7 +124,7 @@ function GradeTable({
             {dates.map((date) => {
               const lesson = lessons.get(date)
               return (
-                <th key={date}>
+                <th className={date === today ? 'journal-today' : undefined} key={date}>
                   <span className="lesson-date">{formatLessonDate(date)}</span>
                   <span className="lesson-day">{formatWeekday(date)}</span>
                   {lesson?.topic && <span className="lesson-topic">{lesson.topic}</span>}
@@ -151,10 +152,16 @@ function GradeTable({
                 const disabled = date < member.enrolledOn
                   || Boolean(member.leftOn && date > member.leftOn)
                 if (!lesson?.topic.trim()) {
-                  return <td key={date} aria-label={`Нет темы ${date}`}/>
+                  return (
+                    <td
+                      className={date === today ? 'journal-today' : undefined}
+                      key={date}
+                      aria-label={`Нет темы ${date}`}
+                    />
+                  )
                 }
                 return (
-                  <td key={date}>
+                  <td className={date === today ? 'journal-today' : undefined} key={date}>
                     <div className="grade-cell">
                       {gradeKinds.map((kind) => {
                         if (kind === 'absence') {

@@ -550,3 +550,12 @@ button.grade-control:hover:not(:disabled) {
   padding-right: .35rem;
   padding-left: .35rem;
 }
+.journal-table thead th.journal-today {
+  background: #eaf2f7;
+  box-shadow: inset 1px 0 #c8d9e4, inset -1px 0 #c8d9e4;
+}
+.journal-table tbody td.journal-today,
+.journal-table tbody tr:hover td.journal-today {
+  background: #f4f8fb;
+  box-shadow: inset 1px 0 #d5e2ea, inset -1px 0 #d5e2ea;
+}
