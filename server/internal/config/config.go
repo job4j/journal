@@ -18,7 +18,7 @@ type Config struct {
 
 func Load() (Config, error) {
 	cfg := Config{
-		DatabaseURL: "postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable",
+		DatabaseURL: "postgres://postgres:password@127.0.0.1:5432/journal?sslmode=disable",
 		HTTPAddress: ":8080", CookieSecure: true, ShutdownTimeout: 10 * time.Second,
 	}
 	if value := os.Getenv("DATABASE_URL"); value != "" {

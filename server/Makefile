@@ -14,7 +14,7 @@ OPENAPI_SPEC := $(CURDIR)/api/openapi.yml
 OPENAPI_CONFIG := $(CURDIR)/api/oapi-codegen.yml
 OPENAPI_OUTPUT := $(CURDIR)/gen/openapi.gen.go
 GOOSE_DRIVER ?= postgres
-GOOSE_DBSTRING ?= postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable
+GOOSE_DBSTRING ?= postgres://postgres:password@127.0.0.1:5432/journal?sslmode=disable
 
 .PHONY: deps generate migration-create migrate-up migrate-down migrate-status migrate-validate test integration-test build lint
 
