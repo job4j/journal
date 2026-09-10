@@ -86,7 +86,7 @@ describe('login', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
     await userEvent.click(await screen.findByRole('button', { name: /7А/ }))
 
-    expect(await screen.findByRole('heading', { name: 'Мои предметы' })).toBeInTheDocument()
+    expect(await screen.findByLabelText('Хлебные крошки')).toHaveTextContent('Классы7А')
     expect(screen.getByText('Математика')).toBeInTheDocument()
   })
 })

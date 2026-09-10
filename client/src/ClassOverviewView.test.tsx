@@ -72,14 +72,24 @@ describe('class overview', () => {
       return new Response(null, { status: 404 })
     })
 
-    render(<ClassOverviewView item={item} onBack={() => {}} onCountChange={() => {}} />)
+    const setBreadcrumbs = vi.fn()
+    render(
+      <ClassOverviewView
+        item={item}
+        onBack={() => {}}
+        onCountChange={() => {}}
+        setBreadcrumbs={setBreadcrumbs}
+      />,
+    )
 
-    expect(await screen.findByText('Класс 7А')).toBeInTheDocument()
-    expect(screen.getByText('Анна Иванова')).toBeInTheDocument()
+    expect(await screen.findByText('Анна Иванова')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /Математика/ }))
 
-    expect(await screen.findByText('Журнал класса')).toBeInTheDocument()
-    expect(screen.getByText('7А · Математика')).toBeInTheDocument()
+    expect(setBreadcrumbs).toHaveBeenLastCalledWith([
+      expect.objectContaining({ label: 'Классы' }),
+      expect.objectContaining({ label: '7А' }),
+      { label: 'Математика' },
+    ])
     expect(await screen.findAllByText('Анна Иванова')).toHaveLength(1)
     expect(screen.getByText('Итоги')).toBeInTheDocument()
     const period = screen.getByLabelText('Период')

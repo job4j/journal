@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AcademicYear } from './academicYears'
 import { ClassRecord, ClassStudent, listClassStudents } from './classes'
 import { ClassSubjectRecord, listClassSubjects } from './classSubjects'
@@ -6,16 +6,19 @@ import ClassRosterView from './ClassRosterView'
 import ClassSubjectsView from './ClassSubjectsView'
 import TeacherLessonsView from './TeacherLessonsView'
 
+type Breadcrumb = { label: string; action?: () => void }
+
 interface Props {
   item: ClassRecord
   year?: AcademicYear
   onBack: () => void
   onCountChange: (count: number) => void
+  setBreadcrumbs?: (items: Breadcrumb[]) => void
 }
 
 type Section = 'summary' | 'roster' | 'subjects'
 
-export default function ClassOverviewView({ item, year, onBack, onCountChange }: Props) {
+export default function ClassOverviewView({ item, year, onBack, onCountChange, setBreadcrumbs }: Props) {
   const [section, setSection] = useState<Section>('summary')
   const [journal, setJournal] = useState<ClassSubjectRecord | null>(null)
   const [students, setStudents] = useState<ClassStudent[]>([])
@@ -51,12 +54,24 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
     }
   }, [item.id, refresh])
 
-  function showSummary() {
+  const showSummary = useCallback(() => {
     location.hash = `classes/${item.id}`
     setJournal(null)
     setSection('summary')
     setRefresh((current) => current + 1)
-  }
+  }, [item.id])
+
+  useEffect(() => {
+    const items: Breadcrumb[] = [{ label: 'Классы', action: onBack }]
+    if (section !== 'summary' || journal) {
+      items.push({ label: item.name, action: showSummary })
+    }
+    if (journal) items.push({ label: journal.subject.name })
+    else if (section === 'roster') items.push({ label: 'Ученики' })
+    else if (section === 'subjects') items.push({ label: 'Предметы' })
+    else items.push({ label: item.name })
+    setBreadcrumbs?.(items)
+  }, [item.name, journal, onBack, section, setBreadcrumbs, showSummary])
 
   function openJournal(assignment: ClassSubjectRecord) {
     location.hash = `classes/${item.id}/subjects/${assignment.id}`
@@ -68,35 +83,28 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange }:
       <ClassRosterView
         item={item}
         year={year}
-        onBack={showSummary}
+
         onCountChange={onCountChange}
       />
     )
   }
   if (section === 'subjects') {
-    return <ClassSubjectsView item={item} onBack={showSummary} />
+    return <ClassSubjectsView item={item} />
   }
   if (journal) {
     return (
       <TeacherLessonsView
         assignment={journal}
-        className={item.name}
+
         quarters={item.quarters ?? []}
-        onBack={showSummary}
+
       />
     )
   }
 
   return (
     <div className="content-stack">
-      <button className="back-button" type="button" onClick={onBack}>
-        ← К списку классов
-      </button>
-      <div className="content-heading">
-        <div>
-          <p className="content-kicker">{year?.name ?? 'Учебный год'}</p>
-          <h2>Класс {item.name}</h2>
-        </div>
+      <div className="page-actions">
         <div className="heading-actions">
           <button
             className="primary-action"

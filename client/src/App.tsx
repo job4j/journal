@@ -52,8 +52,9 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [activeID, setActiveID] = useState(()=>location.hash.slice(1).split('/')[0]||items[0]?.id||'')
   const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
   const initials = `${user.name.charAt(0)}${user.name.charAt(0)}`.toUpperCase()
+  const [breadcrumbs, setBreadcrumbs] = useState<{ label: string; action?: () => void }[]>([])
   useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
-  function navigate(id:string){location.hash=id;setActiveID(id)}
+  function navigate(id:string){setBreadcrumbs([]);location.hash=id;setActiveID(id)}
 
   return (
     <div className="app-shell">
@@ -93,14 +94,31 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
         <header className="workspace-header">
           <div>
             <p className="workspace-context">Journal</p>
-            <h1>{activeItem?.label ?? 'Рабочая область'}</h1>
+            <nav className="breadcrumbs" aria-label="Хлебные крошки">
+              {(breadcrumbs.length
+                ? breadcrumbs
+                : [{ label: activeItem?.label ?? 'Рабочая область' }]
+              ).map((item, index, values) => (
+                <span className="breadcrumb" key={`${item.label}-${index}`}>
+                  {item.action && index < values.length - 1 ? (
+                    <button type="button" onClick={item.action}>{item.label}</button>
+                  ) : (
+                    <strong aria-current="page">{item.label}</strong>
+                  )}
+                </span>
+              ))}
+            </nav>
           </div>
           <div className="header-avatar" aria-label={`${user.name}`}>{initials}</div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
           {!knownItem&&<RouteState code="404" title="Страница не найдена" action={()=>navigate(items[0]?.id??'')}/>} 
           {knownItem&&!activeItem&&<RouteState code="403" title="Этот раздел недоступен вашей роли" action={()=>navigate(items[0]?.id??'')}/>} 
-          {activeItem?.id === 'classes' && (user.roles.includes('admin') ? <AdminClassesView /> : <TeacherClassesView />)}
+          {activeItem?.id === 'classes' && (user.roles.includes('admin') ? (
+            <AdminClassesView setBreadcrumbs={setBreadcrumbs} />
+          ) : (
+            <TeacherClassesView setBreadcrumbs={setBreadcrumbs} />
+          ))}
           {activeItem?.id === 'roles' && <RolesView />}
           {activeItem?.id === 'users' && <UsersView />}
           {activeItem?.id === 'academic-years' && <AcademicYearsView />}

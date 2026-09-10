@@ -166,11 +166,18 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .workspace-header { min-height: 6.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 2.5rem; background: #fff; border-bottom: 1px solid #dfe7ee; }
 .workspace-context { margin: 0 0 0.25rem; color: #6d8194; font-size: 0.8rem; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; }
 .workspace-header h1 { font-size: 1.65rem; }
+.breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 0.45rem; }
+.breadcrumb::after { margin-left: 0.45rem; color: #a6b4c0; content: "/"; }
+.breadcrumb:last-child::after { content: none; }
+.breadcrumb button { padding: 0; color: #557086; background: transparent; border: 0; cursor: pointer; }
+.breadcrumb button:hover { color: #155f99; }
+.breadcrumb strong { color: #102946; font-size: 1.15rem; font-weight: 800; }
 .header-avatar { width: 2.65rem; height: 2.65rem; color: #185f9d; background: #e2f1fb; font-size: 0.8rem; }
 .workspace-content { min-height: calc(100vh - 6.25rem); padding: 2rem 2.5rem 3rem; }
 
 .content-stack { display: grid; gap: 1.4rem; max-width: 100%; }
 .content-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.page-actions { display: flex; justify-content: flex-end; }
 .content-heading h2 { margin: 0; color: #102946; font-size: 1.55rem; letter-spacing: -0.025em; }
 .content-kicker { margin: 0 0 0.35rem; color: #708396; font-size: 0.8rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.045em; }
 .count-badge, .term-badge { padding: 0.45rem 0.72rem; color: #37617f; background: #e6f1f8; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
