@@ -583,3 +583,8 @@ button.grade-control:hover:not(:disabled) {
   background: #f2dada;
   border-color: #cfa5a5;
 }
+.journal-table thead .student-heading {
+  background: transparent;
+  border-right: 0;
+  border-bottom: 0;
+}

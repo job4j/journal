@@ -120,7 +120,7 @@ function GradeTable({
       <table className="journal-table">
         <thead>
           <tr>
-            <th className="student-heading">Ученик</th>
+            <th className="student-heading" aria-label="Ученик"/>
             {dates.map((date) => {
               const lesson = lessons.get(date)
               return (
