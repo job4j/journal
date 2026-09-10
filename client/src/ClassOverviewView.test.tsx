@@ -80,7 +80,8 @@ describe('class overview', () => {
 
     expect(await screen.findByText('Журнал класса')).toBeInTheDocument()
     expect(screen.getByText('7А · Математика')).toBeInTheDocument()
-    expect(await screen.findAllByText('Анна Иванова')).toHaveLength(2)
+    expect(await screen.findAllByText('Анна Иванова')).toHaveLength(1)
+    expect(screen.getByText('Итоги')).toBeInTheDocument()
     const period = screen.getByLabelText('Период')
     expect(period).toHaveValue('quarter-1')
 

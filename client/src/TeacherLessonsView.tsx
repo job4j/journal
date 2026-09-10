@@ -6,19 +6,16 @@ import{GradingScale,QuarterGrade,listQuarterGrades,putQuarterGrade}from'./quarte
 
 const emptyLesson=():LessonDraft=>({lessonDate:new Date().toISOString().slice(0,10),position:1,topic:'',homework:'',materials:[]})
 export default function TeacherLessonsView({assignment,quarters=[],className,onBack}:{assignment:ClassSubjectRecord;quarters?:{id:string;number:number;startsOn?:string;endsOn?:string}[];className?:string;onBack:()=>void}){
- const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[gradeLessonID,setGradeLessonID]=useState(''),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
+ const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[gradeLessonID,setGradeLessonID]=useState(''),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
  const selectedQuarter=quarters.find(item=>item.id===quarterID),from=selectedQuarter?.startsOn??'',to=selectedQuarter?.endsOn??''
- const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster]=await Promise.all([listLessons(assignment.id,from,to),listClassStudents(assignment.classId)]);setItems(lessons);setStudents(roster)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,from,to])
+ const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster,totals]=await Promise.all([listLessons(assignment.id,from,to),listClassStudents(assignment.classId),quarterID?listQuarterGrades(assignment.id,quarterID):Promise.resolve([])]);setItems(lessons);setStudents(roster);setQuarterGrades(totals)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,from,to,quarterID])
  useEffect(()=>{void load()},[load])
  async function submit(event:FormEvent){event.preventDefault();if(!draft)return;setSaving(true);try{const payload={...draft,homework:draft.homework||undefined};const saved=editingLessonID?await updateLesson(editingLessonID,payload):await createLesson(assignment.id,payload);setItems(current=>editingLessonID?current.map(item=>item.id===editingLessonID?{...saved,gradeItems:item.gradeItems,absences:item.absences}:item):[...current,saved]);setEditingLessonID('');setDraft(null)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось создать урок')}finally{setSaving(false)}}
  function scoreSaved(saved:Score){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==saved.gradeItemId?item:{...item,scores:[...item.scores.filter(score=>score.studentId!==saved.studentId),saved]})})))}
  function absenceChanged(lessonID:string,studentID:string,absence?:Absence){setItems(current=>current.map(lesson=>lesson.id!==lessonID?lesson:{...lesson,absences:absence?[...(lesson.absences??[]).filter(item=>item.studentId!==studentID),absence]:(lesson.absences??[]).filter(item=>item.studentId!==studentID)}))}
  if(gradeLessonID)return <GradeEditor lessonID={gradeLessonID} onBack={()=>setGradeLessonID('')} onSaved={saved=>setItems(current=>current.map(item=>item.id===gradeLessonID?{...item,gradeItems:[...item.gradeItems,saved]}:item))}/>
- return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div><div className="lesson-filters">{quarters.length>0?<label>Период<select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><GradeTable items={items} students={students} from={from} to={to} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={setGradeLessonID}/>{quarterID&&<QuarterGradeTable assignmentID={assignment.id} quarterID={quarterID} students={students}/>}</>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}</div>
+ return <div className="content-stack"><button className="back-button" onClick={onBack}>← Предметы класса</button><div className="content-heading"><div><p className="content-kicker">{className?`${className} · ${assignment.subject.name}`:assignment.subject.name}</p><h2>Журнал класса</h2></div></div><div className="lesson-filters">{quarters.length>0?<label>Период<select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.number} период</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div>{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><GradeTable items={items} students={students} from={from} to={to} assignmentID={assignment.id} quarterID={quarterID} quarterGrades={quarterGrades} onQuarterGradeSaved={saved=>setQuarterGrades(current=>[...current.filter(item=>item.studentId!==saved.studentId),saved])} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={setGradeLessonID}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}</div>
 }
-
-function QuarterGradeTable({assignmentID,quarterID,students}:{assignmentID:string;quarterID:string;students:ClassStudent[]}){const[items,setItems]=useState<QuarterGrade[]>([]),[error,setError]=useState('');useEffect(()=>{setError('');listQuarterGrades(assignmentID,quarterID).then(setItems).catch(cause=>setError(cause instanceof Error?cause.message:'Не удалось загрузить итоги'))},[assignmentID,quarterID]);return <div className="content-stack"><h3>Итоги четверти</h3>{error&&<p className="content-error" role="alert">{error}</p>}<div className="table-card"><table className="classes-table"><thead><tr><th>Ученик</th><th>Итог</th></tr></thead><tbody>{students.map(member=><tr key={member.student.id}><td>{member.student.name}</td><td><QuarterGradeEditor current={(items??[]).find(item=>item.studentId===member.student.id)} onSave={async value=>{const saved=await putQuarterGrade(assignmentID,quarterID,member.student.id,value);setItems(current=>[...current.filter(item=>item.studentId!==saved.studentId),saved])}}/></td></tr>)}</tbody></table></div></div>}
-function QuarterGradeEditor({current,onSave}:{current?:QuarterGrade;onSave:(value:{gradingScale:GradingScale;maxScore?:number;numericValue?:number;textValue?:string})=>Promise<void>}){const[scale,setScale]=useState<GradingScale>(current?.gradingScale??'five_point'),[value,setValue]=useState(current?.numericValue?.toString()??current?.textValue??''),[max,setMax]=useState(current?.maxScore?.toString()??''),[saving,setSaving]=useState(false);async function save(){setSaving(true);try{await onSave({gradingScale:scale,maxScore:scale==='points'?Number(max):undefined,...(scale==='pass_fail'?{textValue:value}:{numericValue:Number(value)})})}finally{setSaving(false)}}return <div className="quarter-editor"><select aria-label="Шкала итога" value={scale} onChange={e=>{setScale(e.target.value as GradingScale);setValue('')}}><option value="five_point">2–5</option><option value="points">Баллы</option><option value="pass_fail">Зачёт</option></select>{scale==='points'&&<input aria-label="Максимум итога" type="number" min="0.01" value={max} onChange={e=>setMax(e.target.value)}/>} {scale==='pass_fail'?<select aria-label="Итог" value={value} onChange={e=>setValue(e.target.value)}><option value="">—</option><option value="pass">Зачёт</option><option value="fail">Незачёт</option></select>:<input aria-label="Итог" type="number" min={scale==='five_point'?2:0} max={scale==='five_point'?5:Number(max)||undefined} value={value} onChange={e=>setValue(e.target.value)}/>}<button className="secondary-action" disabled={!value||saving} onClick={save}>{saving?'…':'Сохранить итог'}</button></div>}
 
 type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
 const gradeKinds: JournalKind[] = ['homework', 'classwork', 'knowledge_check', 'absence']
@@ -58,6 +55,10 @@ function GradeTable({
   students,
   from,
   to,
+  assignmentID,
+  quarterID,
+  quarterGrades,
+  onQuarterGradeSaved,
   onHomework,
   onSaved,
   onAbsence,
@@ -67,6 +68,10 @@ function GradeTable({
   students: ClassStudent[]
   from: string
   to: string
+  assignmentID: string
+  quarterID: string
+  quarterGrades: QuarterGrade[]
+  onQuarterGradeSaved: (grade: QuarterGrade) => void
   onHomework: (date: string, lesson?: LessonRecord) => void
   onSaved: (score: Score) => void
   onAbsence: (lessonID: string, studentID: string, absence?: Absence) => void
@@ -81,7 +86,7 @@ function GradeTable({
     return result
   }, [from, to, items])
   const lessons = useMemo(() => new Map(items.map((item) => [item.lessonDate, item])), [items])
-  if (!dates.length) return <div className="empty-card">Добавьте учебный период.</div>
+  if (!dates.length && !quarterID) return <div className="empty-card">Добавьте учебный период.</div>
   return (
     <div className="table-card journal-scroll">
       <table className="journal-table">
@@ -107,6 +112,7 @@ function GradeTable({
                 </th>
               )
             })}
+            <th className="journal-total-heading">Итоги</th>
           </tr>
         </thead>
         <tbody>
@@ -157,6 +163,18 @@ function GradeTable({
                   </td>
                 )
               })}
+              <td className="journal-total-cell">
+                <QuarterGradeControl
+                  assignmentID={assignmentID}
+                  quarterID={quarterID}
+                  studentID={member.student.id}
+                  studentName={member.student.name}
+                  current={quarterGrades.find((item) => (
+                    item.studentId === member.student.id
+                  ))}
+                  onSaved={onQuarterGradeSaved}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -212,6 +230,13 @@ function AbsenceToggle({ lesson, studentID, disabled, onChange }: {
   )
 }
 
+function displayGrade(value?: { numericValue?: number | null; textValue?: string | null }) {
+  if (value?.numericValue !== undefined) return String(value.numericValue)
+  if (value?.textValue === 'pass') return 'З'
+  if (value?.textValue === 'fail') return 'Н'
+  return '—'
+}
+
 function ScoreEditor({ item, studentID, disabled, onSaved }: {
   item: GradeItem
   studentID: string
@@ -219,11 +244,22 @@ function ScoreEditor({ item, studentID, disabled, onSaved }: {
   onSaved: (score: Score) => void
 }) {
   const existing = item.scores.find((score) => score.studentId === studentID)
-  const initial = existing?.numericValue?.toString() ?? existing?.textValue ?? ''
-  const [value, setValue] = useState(initial)
-  const [comment, setComment] = useState(existing?.teacherComment ?? '')
-  const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  async function save() {
+  const [open, setOpen] = useState(false)
+  const [value, setValue] = useState('')
+  const [comment, setComment] = useState('')
+  const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
+  const kind = item.kind === 'knowledge_check' ? 'knowledge_check'
+    : item.kind === 'homework' ? 'homework' : 'classwork'
+
+  function show() {
+    setValue(existing?.numericValue?.toString() ?? existing?.textValue ?? '')
+    setComment(existing?.teacherComment ?? '')
+    setState('idle')
+    setOpen(true)
+  }
+
+  async function save(event: FormEvent) {
+    event.preventDefault()
     if (!value || disabled) return
     setState('saving')
     try {
@@ -231,55 +267,208 @@ function ScoreEditor({ item, studentID, disabled, onSaved }: {
         ? { textValue: value, teacherComment: comment || undefined }
         : { numericValue: Number(value), teacherComment: comment || undefined }
       onSaved(await putStudentScore(item.id, studentID, payload))
-      setState('saved')
+      setOpen(false)
     } catch {
       setState('error')
     }
   }
-  const kind = item.kind === 'knowledge_check' ? 'knowledge_check'
-    : item.kind === 'homework' ? 'homework' : 'classwork'
+
   return (
-    <div className="grade-control-wrap">
-      <label className={`grade-control${value ? ` grade-control--${kind}` : ''}`}>
+    <>
+      <button
+        className={`grade-control${existing ? ` grade-control--${kind}` : ''}`}
+        aria-label={`Изменить оценку ${item.title}`}
+        title={existing?.teacherComment || item.title}
+        disabled={disabled}
+        onClick={show}
+      >
         <GradeIcon kind={kind}/>
-        {item.gradingScale === 'pass_fail' ? (
-          <select
-            aria-label={`Оценка ${item.title}`}
-            disabled={disabled}
-            value={value}
-            onChange={(event) => { setValue(event.target.value); setState('idle') }}
-          >
-            <option value="">—</option><option value="pass">З</option><option value="fail">Н</option>
-          </select>
-        ) : (
-          <input
-            aria-label={`Оценка ${item.title}`}
-            disabled={disabled}
-            type="number"
-            min={item.gradingScale === 'five_point' ? 2 : 0}
-            max={item.gradingScale === 'five_point' ? 5 : item.maxScore ?? undefined}
-            step={item.gradingScale === 'five_point' ? 1 : .01}
-            value={value}
-            onChange={(event) => { setValue(event.target.value); setState('idle') }}
-          />
-        )}
-      </label>
-      <div className="grade-popover">
-        <strong>{item.title}</strong>
-        <input
-          aria-label={`Комментарий ${item.title}`}
-          disabled={disabled}
-          placeholder="Комментарий"
-          value={comment}
-          onChange={(event) => { setComment(event.target.value); setState('idle') }}
-        />
-        <button className="secondary-action" disabled={disabled || !value || state === 'saving'} onClick={save}>
-          {state === 'saving' ? '…' : state === 'saved' ? '✓' : 'Сохранить'}
-        </button>
-        {state === 'error' && <small role="alert">Ошибка сохранения</small>}
-      </div>
-    </div>
+        <span>{displayGrade(existing)}{existing?.teacherComment ? '*' : ''}</span>
+      </button>
+      {open && (
+        <div className="dialog-backdrop">
+          <form className="role-dialog role-form" onSubmit={save}>
+            <h3>{item.title}</h3>
+            <GradeValueField
+              label={`Оценка ${item.title}`}
+              scale={item.gradingScale}
+              maxScore={item.maxScore ?? undefined}
+              value={value}
+              setValue={setValue}
+            />
+            <label>
+              Комментарий
+              <textarea
+                aria-label={`Комментарий ${item.title}`}
+                value={comment}
+                onChange={(event) => setComment(event.target.value)}
+              />
+            </label>
+            {state === 'error' && <p className="content-error" role="alert">Ошибка сохранения</p>}
+            <div className="dialog-actions">
+              <button type="button" className="secondary-action" onClick={() => setOpen(false)}>
+                Отмена
+              </button>
+              <button className="primary-action" disabled={!value || state === 'saving'}>
+                {state === 'saving' ? 'Сохраняем…' : 'Сохранить оценку'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   )
 }
-function LessonDialog({draft,setDraft,saving,submit}:{draft:LessonDraft;setDraft:(value:LessonDraft|null)=>void;saving:boolean;submit:(event:FormEvent)=>void}){return <div className="dialog-backdrop"><form className="role-dialog role-form" onSubmit={submit}><h3>Новый урок</h3><label>Дата<input aria-label="Дата урока" type="date" value={draft.lessonDate} onChange={e=>setDraft({...draft,lessonDate:e.target.value})}/></label><label>Позиция<input aria-label="Позиция урока" type="number" min="1" value={draft.position} onChange={e=>setDraft({...draft,position:Number(e.target.value)})}/></label><label>Тема<input value={draft.topic} onChange={e=>setDraft({...draft,topic:e.target.value})} required/></label><label>Домашнее задание<input value={draft.homework} onChange={e=>setDraft({...draft,homework:e.target.value})}/></label><button type="button" className="secondary-action" onClick={()=>setDraft({...draft,materials:[...draft.materials,{title:'',url:'',position:draft.materials.length+1}]})}>+ Материал</button>{draft.materials.map((material,i)=><div className="form-columns" key={i}><label>Название материала<input aria-label={`Название материала ${i+1}`} value={material.title} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,title:e.target.value}:m)})}/></label><label>Ссылка<input aria-label={`Ссылка материала ${i+1}`} type="url" value={material.url} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,url:e.target.value}:m)})}/></label></div>)}<button className="primary-action" disabled={saving}>Сохранить</button></form></div>}
+
+function GradeValueField({ label, scale, maxScore, value, setValue }: {
+  label: string
+  scale: GradingScale
+  maxScore?: number
+  value: string
+  setValue: (value: string) => void
+}) {
+  if (scale === 'pass_fail') {
+    return (
+      <label>
+        Оценка
+        <select aria-label={label} value={value} onChange={(event) => setValue(event.target.value)}>
+          <option value="">—</option>
+          <option value="pass">Зачёт</option>
+          <option value="fail">Незачёт</option>
+        </select>
+      </label>
+    )
+  }
+  return (
+    <label>
+      Оценка
+      <input
+        aria-label={label}
+        type="number"
+        min={scale === 'five_point' ? 2 : 0}
+        max={scale === 'five_point' ? 5 : maxScore}
+        step={scale === 'five_point' ? 1 : .01}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    </label>
+  )
+}
+
+function QuarterGradeControl({
+  assignmentID,
+  quarterID,
+  studentID,
+  studentName,
+  current,
+  onSaved,
+}: {
+  assignmentID: string
+  quarterID: string
+  studentID: string
+  studentName: string
+  current?: QuarterGrade
+  onSaved: (grade: QuarterGrade) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [scale, setScale] = useState<GradingScale>('five_point')
+  const [value, setValue] = useState('')
+  const [max, setMax] = useState('')
+  const [comment, setComment] = useState('')
+  const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
+
+  function show() {
+    setScale(current?.gradingScale ?? 'five_point')
+    setValue(current?.numericValue?.toString() ?? current?.textValue ?? '')
+    setMax(current?.maxScore?.toString() ?? '')
+    setComment(current?.teacherComment ?? '')
+    setState('idle')
+    setOpen(true)
+  }
+
+  async function save(event: FormEvent) {
+    event.preventDefault()
+    setState('saving')
+    try {
+      const saved = await putQuarterGrade(assignmentID, quarterID, studentID, {
+        gradingScale: scale,
+        maxScore: scale === 'points' ? Number(max) : undefined,
+        teacherComment: comment || undefined,
+        ...(scale === 'pass_fail'
+          ? { textValue: value }
+          : { numericValue: Number(value) }),
+      })
+      onSaved(saved)
+      setOpen(false)
+    } catch {
+      setState('error')
+    }
+  }
+
+  return (
+    <>
+      <button
+        className={`grade-control${current ? ' grade-control--total' : ' grade-control--empty'}`}
+        aria-label={`Итог ${studentName}`}
+        title={current?.teacherComment || 'Итог'}
+        disabled={!quarterID}
+        onClick={show}
+      >
+        <span>{displayGrade(current)}{current?.teacherComment ? '*' : ''}</span>
+      </button>
+      {open && (
+        <div className="dialog-backdrop">
+          <form className="role-dialog role-form" onSubmit={save}>
+            <h3>Итог: {studentName}</h3>
+            <label>
+              Шкала
+              <select
+                aria-label="Шкала итога"
+                value={scale}
+                onChange={(event) => {
+                  setScale(event.target.value as GradingScale)
+                  setValue('')
+                }}
+              >
+                <option value="five_point">2–5</option>
+                <option value="points">Баллы</option>
+                <option value="pass_fail">Зачёт</option>
+              </select>
+            </label>
+            {scale === 'points' && (
+              <label>
+                Максимум
+                <input
+                  aria-label="Максимум итога"
+                  type="number"
+                  min="0.01"
+                  value={max}
+                  onChange={(event) => setMax(event.target.value)}
+                />
+              </label>
+            )}
+            <GradeValueField label="Итог" scale={scale} maxScore={Number(max)} value={value} setValue={setValue}/>
+            <label>
+              Комментарий
+              <textarea
+                aria-label="Комментарий итога"
+                value={comment}
+                onChange={(event) => setComment(event.target.value)}
+              />
+            </label>
+            {state === 'error' && <p className="content-error" role="alert">Ошибка сохранения</p>}
+            <div className="dialog-actions">
+              <button type="button" className="secondary-action" onClick={() => setOpen(false)}>
+                Отмена
+              </button>
+              <button className="primary-action" disabled={!value || state === 'saving'}>
+                {state === 'saving' ? 'Сохраняем…' : 'Сохранить итог'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
+  )
+}function LessonDialog({draft,setDraft,saving,submit}:{draft:LessonDraft;setDraft:(value:LessonDraft|null)=>void;saving:boolean;submit:(event:FormEvent)=>void}){return <div className="dialog-backdrop"><form className="role-dialog role-form" onSubmit={submit}><h3>Новый урок</h3><label>Дата<input aria-label="Дата урока" type="date" value={draft.lessonDate} onChange={e=>setDraft({...draft,lessonDate:e.target.value})}/></label><label>Позиция<input aria-label="Позиция урока" type="number" min="1" value={draft.position} onChange={e=>setDraft({...draft,position:Number(e.target.value)})}/></label><label>Тема<input value={draft.topic} onChange={e=>setDraft({...draft,topic:e.target.value})} required/></label><label>Домашнее задание<input value={draft.homework} onChange={e=>setDraft({...draft,homework:e.target.value})}/></label><button type="button" className="secondary-action" onClick={()=>setDraft({...draft,materials:[...draft.materials,{title:'',url:'',position:draft.materials.length+1}]})}>+ Материал</button>{draft.materials.map((material,i)=><div className="form-columns" key={i}><label>Название материала<input aria-label={`Название материала ${i+1}`} value={material.title} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,title:e.target.value}:m)})}/></label><label>Ссылка<input aria-label={`Ссылка материала ${i+1}`} type="url" value={material.url} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,url:e.target.value}:m)})}/></label></div>)}<button className="primary-action" disabled={saving}>Сохранить</button></form></div>}
 function GradeEditor({lessonID,onBack,onSaved}:{lessonID:string;onBack:()=>void;onSaved:(item:GradeItem)=>void}){const[value,setValue]=useState<GradeItemDraft>({title:'',kind:'homework',gradingScale:'five_point'}),[error,setError]=useState('');async function submit(e:FormEvent){e.preventDefault();try{const saved=await createGradeItem(lessonID,value);onSaved(saved);onBack()}catch(cause){setError(cause instanceof Error?cause.message:'Ошибка')}}return <div className="content-stack"><button className="back-button" onClick={onBack}>← К урокам</button><h2>Новая работа</h2>{error&&<p role="alert">{error}</p>}<form className="role-form" onSubmit={submit}><label>Название<input value={value.title} onChange={e=>setValue({...value,title:e.target.value})}/></label><label>Тип<select aria-label="Тип работы" value={value.kind} onChange={e=>setValue({...value,kind:e.target.value as GradeItem['kind']})}><option value="homework">Домашняя</option><option value="classwork">Классная</option><option value="knowledge_check">Проверочная</option><option value="other">Другая</option></select></label><label>Шкала<select aria-label="Шкала" value={value.gradingScale} onChange={e=>{const gradingScale=e.target.value as GradeItem['gradingScale'];setValue({...value,gradingScale,maxScore:undefined})}}><option value="five_point">Пятибалльная</option><option value="points">Баллы</option><option value="pass_fail">Зачёт</option></select></label>{value.gradingScale==='points'&&<label>Максимальный балл<input aria-label="Максимальный балл" type="number" min="0.01" step="0.01" onChange={e=>setValue({...value,maxScore:Number(e.target.value)})}/></label>}<button className="primary-action">Создать работу</button></form></div>}
