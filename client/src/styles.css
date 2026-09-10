@@ -573,3 +573,13 @@ button.grade-control:hover:not(:disabled) {
   background: #edf1f4;
   border-color: #c6d1d9;
 }
+.grade-cell .grade-control--absence {
+  color: #183f5d;
+  background: #f7e5e5;
+  border-color: #ddbcbc;
+}
+.grade-cell button.grade-control--absence:hover:not(:disabled) {
+  color: #183f5d;
+  background: #f2dada;
+  border-color: #cfa5a5;
+}
