@@ -10,8 +10,32 @@ func (r *Repository) CreatePermission(ctx context.Context, tx Transaction, value
 	return queryOne[entity.Permission](ctx, tx, "create permission", `INSERT INTO permissions (code, value, description) VALUES ($1, $2, $3) RETURNING id, code, value, description, created_at`, value.Code, value.Value, value.Description)
 }
 
-func (r *Repository) EnsurePermission(ctx context.Context, tx Transaction, value entity.Permission) (entity.Permission, error) {
-	return queryOne[entity.Permission](ctx, tx, "ensure permission", `INSERT INTO permissions (code,value,description) VALUES ($1,$2,$3) ON CONFLICT (code,value) DO UPDATE SET description=EXCLUDED.description RETURNING id,code,value,description,created_at`, value.Code, value.Value, value.Description)
+func (r *Repository) EnsurePermission(
+	ctx context.Context,
+	tx Transaction,
+	value entity.Permission,
+) (entity.Permission, error) {
+	if value.Value == nil {
+		return queryOne[entity.Permission](ctx, tx, "ensure global permission", `
+			INSERT INTO permissions (code, value, description)
+			VALUES ($1, NULL, $2)
+			ON CONFLICT (code) WHERE value IS NULL
+			DO UPDATE SET description = EXCLUDED.description
+			RETURNING id, code, value, description, created_at`,
+			value.Code,
+			value.Description,
+		)
+	}
+	return queryOne[entity.Permission](ctx, tx, "ensure object permission", `
+		INSERT INTO permissions (code, value, description)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (code, value) WHERE value IS NOT NULL
+		DO UPDATE SET description = EXCLUDED.description
+		RETURNING id, code, value, description, created_at`,
+		value.Code,
+		value.Value,
+		value.Description,
+	)
 }
 func (r *Repository) GetPermission(ctx context.Context, tx Transaction, id uuid.UUID) (entity.Permission, error) {
 	return queryOne[entity.Permission](ctx, tx, "get permission", `SELECT id, code, value, description, created_at FROM permissions WHERE id = $1`, id)

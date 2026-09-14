@@ -7,7 +7,12 @@ CREATE TABLE permissions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE NULLS NOT DISTINCT INDEX permissions_code_value_unique_idx
-    ON permissions (code, value);
+CREATE UNIQUE INDEX permissions_global_code_unique_idx
+    ON permissions (code)
+    WHERE value IS NULL;
+
+CREATE UNIQUE INDEX permissions_object_code_value_unique_idx
+    ON permissions (code, value)
+    WHERE value IS NOT NULL;
 -- +goose Down
 DROP TABLE permissions;

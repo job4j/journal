@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"journal/server/internal/domain"
 	"journal/server/internal/repository"
+	"journal/server/internal/repository/entity"
 )
 
 const defaultDatabaseURL = "postgres://postgres:password@127.0.0.1:5433/journal?sslmode=disable"
@@ -74,6 +75,46 @@ func permission(t *testing.T, tx pgx.Tx, userID uuid.UUID, code string, value uu
 	_, err = tx.Exec(context.Background(), `INSERT INTO user_permissions(user_id,permission_id)VALUES($1,$2)`, userID, permissionID)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestEnsurePermissionSupportsGlobalAndObjectValues(t *testing.T) {
+	ctx := context.Background()
+	tx := transaction(t)
+	repo := repository.NewRepository()
+	code := "integration_permission_" + uuid.NewString()
+
+	global := entity.Permission{Code: code, Description: "global"}
+	firstGlobal, err := repo.EnsurePermission(ctx, tx, global)
+	if err != nil {
+		t.Fatal(err)
+	}
+	global.Description = "updated global"
+	secondGlobal, err := repo.EnsurePermission(ctx, tx, global)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if firstGlobal.ID != secondGlobal.ID {
+		t.Fatal("global permission was duplicated")
+	}
+
+	objectValue := uuid.NewString()
+	object := entity.Permission{
+		Code:        code,
+		Value:       &objectValue,
+		Description: "object",
+	}
+	firstObject, err := repo.EnsurePermission(ctx, tx, object)
+	if err != nil {
+		t.Fatal(err)
+	}
+	object.Description = "updated object"
+	secondObject, err := repo.EnsurePermission(ctx, tx, object)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if firstObject.ID != secondObject.ID {
+		t.Fatal("object permission was duplicated")
 	}
 }
 
