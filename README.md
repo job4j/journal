@@ -136,3 +136,8 @@ make generate
 - Если Vite, Vitest или ESLint сообщают об ошибках синтаксиса Node.js, проверьте версию командой `node --version`.
 - Команды `make migrate-up` и `make run` нужно выполнять из каталога `server`.
 - Каждый HTTP-ответ содержит `X-Request-ID`; тот же идентификатор присутствует в структурированном JSON-логе сервера. Тела запросов, query-параметры, cookie и заголовки авторизации не логируются.
+
+## Production
+
+Настройка Jenkins, systemd и nginx описана в
+[`docs/deployment.md`](docs/deployment.md).
