@@ -26,6 +26,31 @@ WITH password_hash (value) AS (
             'Струменской Владислав'
         ),
         ('20000000-0000-4000-8000-000000000011'::UUID, 'shkurko.alexander', 'Шкурко Александр'),
+        (
+            '25000000-0000-4000-8000-000000000001'::UUID,
+            'margatskaya.zhanna',
+            'Маргацкая Жанна Александровна'
+        ),
+        (
+            '25000000-0000-4000-8000-000000000002'::UUID,
+            'mural.natalia',
+            'Мураль Наталья Павловна'
+        ),
+        (
+            '25000000-0000-4000-8000-000000000003'::UUID,
+            'burakova.maria',
+            'Буракова Мария Сергеевна'
+        ),
+        (
+            '25000000-0000-4000-8000-000000000004'::UUID,
+            'gerasina.yulia',
+            'Герасина Юлия Андреевна'
+        ),
+        (
+            '25000000-0000-4000-8000-000000000005'::UUID,
+            'bogolyubskaya.darya',
+            'Боголюбская Дарья Дмитриевна'
+        ),
         ('30000000-0000-4000-8000-000000000001'::UUID, 'arsenteva.svetlana', 'Арсентьева Светлана'),
         ('30000000-0000-4000-8000-000000000002'::UUID, 'arsentev.petr', 'Арсентьев Петр'),
         ('30000000-0000-4000-8000-000000000003'::UUID, 'bokova.ludmila', 'Бокова Людмила'),
@@ -58,6 +83,11 @@ WITH assignments (login, role_code) AS (
         ('pomogaeva.inna', 'student'),
         ('strumenskoy.vladislav', 'student'),
         ('shkurko.alexander', 'student'),
+        ('margatskaya.zhanna', 'teacher'),
+        ('mural.natalia', 'teacher'),
+        ('burakova.maria', 'teacher'),
+        ('gerasina.yulia', 'teacher'),
+        ('bogolyubskaya.darya', 'teacher'),
         ('arsenteva.svetlana', 'parent'),
         ('arsentev.petr', 'parent'),
         ('bokova.ludmila', 'parent'),
@@ -80,4 +110,5 @@ JOIN roles ON roles.code = assignments.role_code;
 DELETE FROM users
 WHERE id = '10000000-0000-4000-8000-000000000001'
     OR id::TEXT LIKE '20000000-0000-4000-8000-%'
+    OR id::TEXT LIKE '25000000-0000-4000-8000-%'
     OR id::TEXT LIKE '30000000-0000-4000-8000-%';
