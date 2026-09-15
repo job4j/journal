@@ -111,6 +111,7 @@ type ClassReadRepository interface {
 	CreateGradeItem(context.Context, Transaction, entity.GradeItem) (entity.GradeItem, error)
 	GetGradeItem(context.Context, Transaction, uuid.UUID) (entity.GradeItem, error)
 	UpsertScore(context.Context, Transaction, entity.Score) (entity.Score, error)
+	DeleteStudentScore(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 	EnsureAbsence(context.Context, Transaction, entity.Absence) (entity.Absence, error)
 	DeleteAbsence(context.Context, Transaction, uuid.UUID, uuid.UUID) error
 	ListAbsences(context.Context, Transaction) ([]entity.Absence, error)

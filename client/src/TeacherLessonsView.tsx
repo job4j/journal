@@ -1,7 +1,7 @@
 import{FormEvent,useCallback,useEffect,useMemo,useState}from'react'
 import{ClassStudent,listClassStudents}from'./classes'
 import{ClassSubjectRecord}from'./classSubjects'
-import{Absence,GradeItem,LessonDraft,LessonRecord,Score,createGradeItem,createLesson,updateLesson,deleteStudentAbsence,listLessons,putStudentAbsence,putStudentScore}from'./lessons'
+import{Absence,GradeItem,LessonDraft,LessonRecord,Score,createGradeItem,createLesson,updateLesson,deleteStudentAbsence,deleteStudentScore,listLessons,putStudentAbsence,putStudentScore}from'./lessons'
 import{GradingScale,QuarterGrade,listQuarterGrades}from'./quarterGrades'
 
 const emptyLesson=():LessonDraft=>({lessonDate:new Date().toISOString().slice(0,10),position:1,topic:'',homework:'',materials:[]})
@@ -19,9 +19,10 @@ export default function TeacherLessonsView({assignment,quarters=[]}:{assignment:
  useEffect(()=>{void load()},[load])
  async function submit(event:FormEvent){event.preventDefault();if(!draft)return;setSaving(true);try{const payload={...draft,homework:draft.homework||undefined};const saved=editingLessonID?await updateLesson(editingLessonID,payload):await createLesson(assignment.id,payload);setItems(current=>editingLessonID?current.map(item=>item.id===editingLessonID?{...saved,gradeItems:item.gradeItems,absences:item.absences}:item):[...current,saved]);setEditingLessonID('');setDraft(null)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось создать урок')}finally{setSaving(false)}}
  function scoreSaved(saved:Score){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==saved.gradeItemId?item:{...item,scores:[...item.scores.filter(score=>score.studentId!==saved.studentId),saved]})})))}
+ function scoreDeleted(gradeItemID:string,studentID:string){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==gradeItemID?item:{...item,scores:item.scores.filter(score=>score.studentId!==studentID)})})))}
  function absenceChanged(lessonID:string,studentID:string,absence?:Absence){setItems(current=>current.map(lesson=>lesson.id!==lessonID?lesson:{...lesson,absences:absence?[...(lesson.absences??[]).filter(item=>item.studentId!==studentID),absence]:(lesson.absences??[]).filter(item=>item.studentId!==studentID)}))}
  function changePeriodView(value:PeriodView){setPeriodView(value);document.cookie=periodViewCookie+'='+value+'; Max-Age=31536000; Path=/; SameSite=Lax'}
- return <div className="content-stack">{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.name||item.number+' период'}</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><GradeTable periodView={periodView} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onAbsence={absenceChanged} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
+ return <div className="content-stack">{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>setQuarterID(e.target.value)}>{quarters.map(item=><option value={item.id} key={item.id}>{item.name||item.number+' период'}</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><GradeTable periodView={periodView} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onDeleted={scoreDeleted} onAbsence={absenceChanged} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
 }
 
 type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
@@ -67,6 +68,7 @@ function GradeTable({
   quarterGrades,
   onHomework,
   onSaved,
+  onDeleted,
   onAbsence,
   onAddGrade,
 }: {
@@ -79,6 +81,7 @@ function GradeTable({
   quarterGrades: QuarterGrade[]
   onHomework: (date: string, lesson?: LessonRecord) => void
   onSaved: (score: Score) => void
+  onDeleted: (gradeItemID: string, studentID: string) => void
   onAbsence: (lessonID: string, studentID: string, absence?: Absence) => void
   onAddGrade: (
     date: string,
@@ -182,6 +185,7 @@ function GradeTable({
                             studentID={member.student.id}
                             disabled={disabled}
                             onSaved={onSaved}
+                            onDeleted={onDeleted}
                             key={kind}
                           />
                         ) : lesson ? (
@@ -285,11 +289,12 @@ function displayGrade(value?: { numericValue?: number | null; textValue?: string
   return ''
 }
 
-function ScoreEditor({ item, studentID, disabled, onSaved }: {
+function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
   item: GradeItem
   studentID: string
   disabled: boolean
   onSaved: (score: Score) => void
+  onDeleted: (gradeItemID: string, studentID: string) => void
 }) {
   const existing = item.scores.find((score) => score.studentId === studentID)
   const [open, setOpen] = useState(false)
@@ -315,6 +320,18 @@ function ScoreEditor({ item, studentID, disabled, onSaved }: {
         ? { textValue: value, teacherComment: comment || undefined }
         : { numericValue: Number(value), teacherComment: comment || undefined }
       onSaved(await putStudentScore(item.id, studentID, payload))
+      setOpen(false)
+    } catch {
+      setState('error')
+    }
+  }
+
+  async function remove() {
+    if (!existing || disabled) return
+    setState('saving')
+    try {
+      await deleteStudentScore(item.id, studentID)
+      onDeleted(item.id, studentID)
       setOpen(false)
     } catch {
       setState('error')
@@ -352,14 +369,15 @@ function ScoreEditor({ item, studentID, disabled, onSaved }: {
                 onChange={(event) => setComment(event.target.value)}
               />
             </label>
-            {state === 'error' && <p className="content-error" role="alert">Ошибка сохранения</p>}
+            {state === 'error' && <p className="content-error" role="alert">Не удалось изменить оценку</p>}
             <div className="dialog-actions">
+              <button className="primary-action" disabled={!value || state === 'saving'}>
+                {state === 'saving' ? 'Сохраняем…' : 'Сохранить'}
+              </button>
               <button type="button" className="secondary-action" onClick={() => setOpen(false)}>
                 Отмена
               </button>
-              <button className="primary-action" disabled={!value || state === 'saving'}>
-                {state === 'saving' ? 'Сохраняем…' : 'Сохранить оценку'}
-              </button>
+              {existing && <button type="button" className="secondary-action danger-action dialog-delete-action" disabled={state === 'saving'} onClick={remove}>Удалить</button>}
             </div>
           </form>
         </div>

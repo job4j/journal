@@ -52,6 +52,7 @@ func (h *ClassHandler) Register(router fiber.Router) {
 	router.Patch("/lessons/:lessonId", h.UpdateLesson)
 	router.Post("/lessons/:lessonId/grade-items", h.CreateGradeItem)
 	router.Put("/grade-items/:gradeItemId/scores/:studentId", h.PutStudentScore)
+	router.Delete("/grade-items/:gradeItemId/scores/:studentId", h.DeleteStudentScore)
 	router.Put("/lessons/:lessonId/absences/:studentId", h.PutStudentAbsence)
 	router.Delete("/lessons/:lessonId/absences/:studentId", h.DeleteStudentAbsence)
 	router.Get("/parent/students/:studentId/journal", h.GetParentStudentJournal)

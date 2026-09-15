@@ -30,3 +30,7 @@ func (r *Repository) UpsertScore(ctx context.Context, tx Transaction, value enti
 func (r *Repository) DeleteScore(ctx context.Context, tx Transaction, id uuid.UUID) error {
 	return deleteRows(ctx, tx, "delete score", `DELETE FROM scores WHERE id = $1`, id)
 }
+
+func (r *Repository) DeleteStudentScore(ctx context.Context, tx Transaction, gradeItemID, studentID uuid.UUID) error {
+	return deleteRows(ctx, tx, "delete student score", `DELETE FROM scores WHERE grade_item_id = $1 AND user_id = $2`, gradeItemID, studentID)
+}

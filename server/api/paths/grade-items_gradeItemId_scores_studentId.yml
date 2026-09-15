@@ -28,3 +28,21 @@ put:
       $ref: '../openapi.yml#/components/responses/Forbidden'
     '404':
       $ref: '../openapi.yml#/components/responses/NotFound'
+delete:
+  tags: [Scores]
+  operationId: deleteStudentScore
+  summary: Удалить оценку ученика
+  description: Удаляет оценку вместе с комментарием учителя.
+  x-required-permission: can_update_score
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/GradeItemIdPath'
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  responses:
+    '204':
+      description: Оценка удалена.
+    '401':
+      $ref: '../openapi.yml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../openapi.yml#/components/responses/Forbidden'
+    '404':
+      $ref: '../openapi.yml#/components/responses/NotFound'
