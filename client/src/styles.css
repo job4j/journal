@@ -220,11 +220,14 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .journal-table thead th { width: 14rem; padding: 0.9rem 1rem; color: #39546c; background: #f3f7fa; font-size: 0.8rem; font-weight: 700; line-height: 1.35; text-align: left; vertical-align: top; }
 .journal-table thead .student-heading { position: sticky; left: 0; z-index: 2; width: 13rem; color: #fff; background: #1b527d; vertical-align: middle; }
 .journal-table tbody th { position: sticky; left: 0; z-index: 1; width: 13rem; padding: 1rem; background: #fbfcfd; text-align: left; }
-.lesson-date, .lesson-day, .homework-label, .homework-text { display: block; }
-.lesson-date { color: #1e3c56; font-size: 0.9rem; font-weight: 750; }
-.lesson-day { margin-top: 0.1rem; color: #8293a2; font-size: 0.72rem; font-weight: 500; }
-.homework-label { margin-top: 0.75rem; color: #7890a3; font-size: 0.66rem; font-weight: 750; letter-spacing: 0.045em; text-transform: uppercase; }
-.homework-text { margin-top: 0.25rem; color: #526a7e; font-size: 0.78rem; font-weight: 500; line-height: 1.4; }
+.lesson-date-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.lesson-date, .homework-text { display: block; }
+.lesson-date { color: #1e3c56; font-size: 0.9rem; font-weight: 750; white-space: nowrap; }
+.lesson-tasks-button { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; padding: 0; color: #607b91; background: transparent; border: 0; border-radius: .4rem; cursor: pointer; }
+.lesson-tasks-button:hover { color: #155f99; background: #e5eef5; }
+.lesson-tasks-button:focus-visible { outline: 3px solid rgba(38, 117, 184, 0.25); outline-offset: 1px; }
+.lesson-tasks-button svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+.homework-text { overflow: hidden; margin-top: 0.5rem; color: #526a7e; font-size: 0.78rem; font-weight: 500; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
 .student-name { color: #1e3c56; font-size: 0.88rem; font-weight: 750; line-height: 1.35; }
 .journal-table td { height: 4.75rem; padding: 0.7rem; vertical-align: top; background: #fff; }
 .journal-table tbody tr:hover td, .journal-table tbody tr:hover th { background: #f9fbfd; }
@@ -330,22 +333,8 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
   margin-top: .35rem;
   color: #708396;
   font-size: .72rem;
-  font-weight: 500;
-}
-.homework-button {
-  display: block;
-  margin-top: .65rem;
-  padding: 0;
-  color: #7890a3;
-  background: transparent;
-  border: 0;
-  font-size: .66rem;
   font-weight: 750;
-  letter-spacing: .045em;
-  text-transform: uppercase;
-  cursor: pointer;
 }
-.homework-button:hover { color: #155f99; }
 .grade-control--empty {
   color: #7b8c9b;
   background: #f1f4f6;
@@ -524,6 +513,10 @@ button.grade-control {
   box-shadow: 0 1px 3px rgba(23, 79, 120, .16);
   font-weight: 750;
 }
+.week-pagination { display: inline-flex; gap: .25rem; }
+.week-pagination button { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; color: #174f78; background: #fff; border: 1px solid #bac9d6; border-radius: .5rem; font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.week-pagination button:hover:not(:disabled) { background: #edf4f8; border-color: #8faabd; }
+.week-pagination button:disabled { color: #aebbc5; background: #f3f6f8; cursor: default; }
 .grade-control,
 .grade-control--empty,
 .grade-control--homework,
@@ -601,3 +594,11 @@ button.grade-control:hover:not(:disabled) {
 .journal-table tbody tr:first-child > th {
   border-top: 1px solid #e2e9ef;
 }
+
+.academic-period-list { display: grid; gap: .4rem; }
+.academic-period { display: flex; align-items: center; gap: .3rem; }
+.academic-period .status-badge { margin: 0; }
+.period-icon-action { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; padding: 0; color: #38617f; background: #edf4f8; border: 0; border-radius: .4rem; font: inherit; cursor: pointer; }
+.period-icon-action:hover { background: #dcebf4; }
+.period-icon-action--danger { color: #a33434; background: #fbeaea; }
+.period-icon-action--danger:hover { background: #f6d5d5; }

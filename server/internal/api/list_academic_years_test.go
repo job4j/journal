@@ -28,6 +28,12 @@ func (s academicYearServiceStub) CreateAcademicYear(context.Context, string, dom
 func (s academicYearServiceStub) CreateAcademicYearQuarter(context.Context, string, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error) {
 	return entity.AcademicYearQuarter{}, s.err
 }
+func (s academicYearServiceStub) UpdateAcademicYearQuarter(context.Context, string, uuid.UUID, string, time.Time, time.Time) (entity.AcademicYearQuarter, error) {
+	return entity.AcademicYearQuarter{}, s.err
+}
+func (s academicYearServiceStub) DeleteAcademicYearQuarter(context.Context, string, uuid.UUID) error {
+	return s.err
+}
 
 func TestListAcademicYearsReturnsQuarters(t *testing.T) {
 	id, quarterID := uuid.New(), uuid.New()

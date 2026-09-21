@@ -43,6 +43,7 @@ var (
 	ErrInvalidScore         = errors.New("invalid score")
 	ErrScoreNotFound        = errors.New("score not found")
 	ErrQuarterNotFound      = errors.New("quarter not found")
+	ErrQuarterInUse         = errors.New("quarter is in use")
 	ErrClassSubjectExists   = errors.New("class subject already exists")
 	ErrClassSubjectNotFound = errors.New("class subject not found")
 )

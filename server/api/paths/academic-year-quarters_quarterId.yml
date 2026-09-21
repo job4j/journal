@@ -1,0 +1,36 @@
+put:
+  tags: [Academic years]
+  operationId: updateAcademicYearQuarter
+  summary: Изменить учебный период
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/QuarterIdPath'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yml#/components/schemas/UpdateAcademicYearQuarterRequest'
+  responses:
+    '200':
+      description: Период изменён.
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/UpdateAcademicYearQuarterResponse'
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
+delete:
+  tags: [Academic years]
+  operationId: deleteAcademicYearQuarter
+  summary: Удалить учебный период
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/QuarterIdPath'
+  responses:
+    '204': { description: Период удалён. }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }

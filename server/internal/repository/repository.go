@@ -66,6 +66,9 @@ type AcademicYearRepository interface {
 	CheckSessionPermission(context.Context, Transaction, string, string) (bool, bool, error)
 	CreateAcademicYear(context.Context, Transaction, entity.AcademicYear) (entity.AcademicYear, error)
 	CreateAcademicYearQuarter(context.Context, Transaction, entity.AcademicYearQuarter) (entity.AcademicYearQuarter, error)
+	GetAcademicYearQuarter(context.Context, Transaction, uuid.UUID) (entity.AcademicYearQuarter, error)
+	UpdateAcademicYearQuarter(context.Context, Transaction, entity.AcademicYearQuarter) (entity.AcademicYearQuarter, error)
+	DeleteAcademicYearQuarter(context.Context, Transaction, uuid.UUID) error
 	ListAcademicYears(context.Context, Transaction) ([]entity.AcademicYear, error)
 	ListAcademicYearQuarters(context.Context, Transaction) ([]entity.AcademicYearQuarter, error)
 }
@@ -118,6 +121,7 @@ type ClassReadRepository interface {
 	GetAcademicYearQuarter(context.Context, Transaction, uuid.UUID) (entity.AcademicYearQuarter, error)
 	UpsertQuarterGrade(context.Context, Transaction, entity.QuarterGrade) (entity.QuarterGrade, error)
 	ListQuarterGrades(context.Context, Transaction) ([]entity.QuarterGrade, error)
+	DeleteQuarterGrade(context.Context, Transaction, uuid.UUID, uuid.UUID, uuid.UUID) error
 }
 type ClassRepository interface {
 	CreateClass(context.Context, Transaction, entity.Class) (entity.Class, error)

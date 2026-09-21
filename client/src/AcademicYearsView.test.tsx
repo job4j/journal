@@ -7,7 +7,7 @@ afterEach(()=>{cleanup();vi.restoreAllMocks()})
 
 describe('academic years',()=>{
  it('loads the academic year list',async()=>{
-  vi.spyOn(globalThis,'fetch').mockResolvedValue(new Response(JSON.stringify({items:[{id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[1,2,3,4].map(number=>({id:`q-${number}`,number,startsOn:'2026-09-01',endsOn:'2026-10-01'}))}]}),{status:200}))
+  vi.spyOn(globalThis,'fetch').mockResolvedValue(new Response(JSON.stringify({items:[{id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[1,2,3,4].map(number=>({id:`q-${number}`,number,name:`Период ${number}`,startsOn:'2026-09-01',endsOn:'2026-10-01'}))}]}),{status:200}))
   render(<AcademicYearsView/>)
   expect(await screen.findByText('2026/2027')).toBeInTheDocument()
   expect(screen.getByText('Активный')).toBeInTheDocument()
@@ -25,18 +25,22 @@ describe('academic years',()=>{
  it('creates and displays a named period',async()=>{
   const year={id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[]}
   const period={id:'q-1',number:1,name:'Осень',startsOn:'2026-09-01',endsOn:'2026-10-31'}
-  vi.spyOn(globalThis,'fetch')
-   .mockResolvedValueOnce(new Response(JSON.stringify({items:[year]}),{status:200}))
-   .mockResolvedValueOnce(new Response(JSON.stringify({quarter:period}),{status:201}))
-  render(<AcademicYearsView/>)
-  await userEvent.click(await screen.findByRole('button',{name:'+ Период'}))
-  await userEvent.type(screen.getByLabelText('Название периода'),'Осень')
-  await userEvent.clear(screen.getByLabelText('Окончание'))
-  await userEvent.type(screen.getByLabelText('Окончание'),'2026-10-31')
-  await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+  vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[year]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({quarter:period}),{status:201}))
+  render(<AcademicYearsView/>);await userEvent.click(await screen.findByRole('button',{name:'+ Период'}))
+  await userEvent.type(screen.getByLabelText('Название периода'),'Осень');await userEvent.clear(screen.getByLabelText('Окончание'));await userEvent.type(screen.getByLabelText('Окончание'),'2026-10-31');await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
   expect(await screen.findByText(/Осень:/)).toBeInTheDocument()
-  expect(globalThis.fetch).toHaveBeenLastCalledWith(
-   '/api/v1/academic-years/year-1/quarters',
-   expect.objectContaining({body:expect.stringContaining('"name":"Осень"')}),
-  )
- })})
+  expect(globalThis.fetch).toHaveBeenLastCalledWith('/api/v1/academic-years/year-1/quarters',expect.objectContaining({body:expect.stringContaining('"name":"Осень"')}))
+ })
+
+ it('edits and deletes an academic period',async()=>{
+  const year={id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[{id:'q-1',number:1,name:'Осень',startsOn:'2026-09-01',endsOn:'2026-10-31'}]}
+  const updated={...year.quarters[0],name:'Первый период',endsOn:'2026-11-01'}
+  vi.spyOn(window,'confirm').mockReturnValue(true)
+  vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[year]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({quarter:updated}),{status:200})).mockResolvedValueOnce(new Response(null,{status:204}))
+  render(<AcademicYearsView/>);await userEvent.click(await screen.findByRole('button',{name:'Редактировать период Осень'}))
+  const name=screen.getByLabelText('Название периода');await userEvent.clear(name);await userEvent.type(name,'Первый период');await userEvent.clear(screen.getByLabelText('Окончание'));await userEvent.type(screen.getByLabelText('Окончание'),'2026-11-01');await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+  expect(await screen.findByText(/Первый период:/)).toBeInTheDocument();expect(globalThis.fetch).toHaveBeenLastCalledWith('/api/v1/academic-year-quarters/q-1',expect.objectContaining({method:'PUT'}))
+  await userEvent.click(screen.getByRole('button',{name:'Удалить период Первый период'}))
+  expect(window.confirm).toHaveBeenCalled();expect(screen.queryByText(/Первый период:/)).not.toBeInTheDocument();expect(globalThis.fetch).toHaveBeenLastCalledWith('/api/v1/academic-year-quarters/q-1',expect.objectContaining({method:'DELETE'}))
+ })
+})

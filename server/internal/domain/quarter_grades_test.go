@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"journal/server/internal/repository"
 	"journal/server/internal/repository/entity"
 )
 
@@ -111,5 +112,19 @@ func TestPutQuarterGradeRejectsStudentOutsideQuarter(t *testing.T) {
 	)
 	if !errors.Is(err, ErrClassStudentNotFound) {
 		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestDeleteQuarterGradeChecksTeacherAndMapsMissingGrade(t *testing.T) {
+	repo, assignmentID, quarterID, studentID := quarterGradeFixture()
+	repo.deleteQuarterGradeErr = repository.ErrNotFound
+	err := NewClassDomain(repo).DeleteQuarterGrade(context.Background(), testTx{}, "hash", assignmentID, quarterID, studentID)
+	if !errors.Is(err, ErrScoreNotFound) {
+		t.Fatalf("error = %v", err)
+	}
+	repo.currentUser.Roles = []string{"admin"}
+	err = NewClassDomain(repo).DeleteQuarterGrade(context.Background(), testTx{}, "hash", assignmentID, quarterID, studentID)
+	if !errors.Is(err, ErrForbidden) {
+		t.Fatalf("admin error = %v", err)
 	}
 }

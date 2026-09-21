@@ -27,6 +27,25 @@ func (s academicYearRepoStub) CreateAcademicYearQuarter(_ context.Context, _ rep
 	value.ID = uuid.New()
 	return value, nil
 }
+func (s academicYearRepoStub) GetAcademicYearQuarter(_ context.Context, _ repository.Transaction, id uuid.UUID) (entity.AcademicYearQuarter, error) {
+	for _, item := range s.quarters {
+		if item.ID == id {
+			return item, nil
+		}
+	}
+	return entity.AcademicYearQuarter{}, repository.ErrNotFound
+}
+func (s academicYearRepoStub) UpdateAcademicYearQuarter(_ context.Context, _ repository.Transaction, value entity.AcademicYearQuarter) (entity.AcademicYearQuarter, error) {
+	return value, nil
+}
+func (s academicYearRepoStub) DeleteAcademicYearQuarter(_ context.Context, _ repository.Transaction, id uuid.UUID) error {
+	for _, item := range s.quarters {
+		if item.ID == id {
+			return nil
+		}
+	}
+	return repository.ErrNotFound
+}
 func (s academicYearRepoStub) ListAcademicYears(context.Context, repository.Transaction) ([]entity.AcademicYear, error) {
 	return s.years, nil
 }

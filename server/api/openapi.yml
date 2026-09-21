@@ -58,6 +58,8 @@ paths:
     $ref: './paths/academic-years.yml'
   /academic-years/{academicYearId}/quarters:
     $ref: './paths/academic-years_academicYearId_quarters.yml'
+  /academic-year-quarters/{quarterId}:
+    $ref: './paths/academic-year-quarters_quarterId.yml'
   /subjects:
     $ref: './paths/subjects.yml'
   /classes:
@@ -512,6 +514,21 @@ components:
         startsOn: { type: string, format: date }
         endsOn: { type: string, format: date }
     CreateAcademicYearQuarterResponse:
+      type: object
+      additionalProperties: false
+      required: [quarter]
+      properties:
+        quarter:
+          $ref: '#/components/schemas/AcademicYearQuarter'
+    UpdateAcademicYearQuarterRequest:
+      type: object
+      additionalProperties: false
+      required: [name, startsOn, endsOn]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        startsOn: { type: string, format: date }
+        endsOn: { type: string, format: date }
+    UpdateAcademicYearQuarterResponse:
       type: object
       additionalProperties: false
       required: [quarter]

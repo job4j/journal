@@ -54,6 +54,8 @@ type AcademicYearService interface {
 	ListAcademicYears(context.Context, string) ([]domain.AcademicYearView, error)
 	CreateAcademicYear(context.Context, string, domain.CreateAcademicYearRequest) (domain.AcademicYearView, error)
 	CreateAcademicYearQuarter(context.Context, string, string, string, time.Time, time.Time) (entity.AcademicYearQuarter, error)
+	UpdateAcademicYearQuarter(context.Context, string, uuid.UUID, string, time.Time, time.Time) (entity.AcademicYearQuarter, error)
+	DeleteAcademicYearQuarter(context.Context, string, uuid.UUID) error
 }
 type SubjectHandler struct {
 	service SubjectService
@@ -91,4 +93,5 @@ type ClassService interface {
 	ListParentStudentPeriods(context.Context, string, uuid.UUID) ([]domain.ParentStudentPeriod, error)
 	PutQuarterGrade(context.Context, string, uuid.UUID, uuid.UUID, uuid.UUID, domain.QuarterGradeInput) (entity.QuarterGrade, error)
 	ListQuarterGrades(context.Context, string, uuid.UUID, uuid.UUID) ([]entity.QuarterGrade, error)
+	DeleteQuarterGrade(context.Context, string, uuid.UUID, uuid.UUID, uuid.UUID) error
 }
