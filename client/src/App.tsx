@@ -22,7 +22,7 @@ const navigation: NavigationItem[] = [
   { id: 'roles', label: 'Роли', icon: 'shield', roles: ['admin'] },
   { id: 'academic-years', label: 'Учебные годы', icon: 'calendar', roles: ['admin'] },
   { id: 'classes', label: 'Классы', icon: 'classes', roles: ['admin', 'teacher'] },
-  { id: 'students', label: 'Мои дети', icon: 'student', roles: ['parent'] },
+  { id: 'students', label: 'Ученики', icon: 'student', roles: ['parent'] },
   { id: 'subjects', label: 'Предметы', icon: 'book', roles: ['admin'] },
   { id: 'journal', label: 'Мой журнал', icon: 'book', roles: ['student'] },
 ]
@@ -49,61 +49,27 @@ function NavigationIcon({ name }: { name: NavigationItem['icon'] }) {
 
 function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
   const items = navigation.filter((item) => item.roles.some((role) => user.roles.includes(role)))
-  const [activeID, setActiveID] = useState(()=>location.hash.slice(1).split('/')[0]||items[0]?.id||'')
+  const defaultID = user.roles.includes('admin') || user.roles.includes('teacher')
+    ? 'classes'
+    : user.roles.includes('parent') ? 'students' : items[0]?.id ?? ''
+  const [activeID, setActiveID] = useState(()=>location.hash.slice(1).split('/')[0]||defaultID)
   const knownItem=navigation.find(item=>item.id===activeID),activeItem=items.find(item=>item.id===activeID)
   const initials = `${user.name.charAt(0)}${user.name.charAt(0)}`.toUpperCase()
   const [breadcrumbs, setBreadcrumbs] = useState<{ label: string; action?: () => void }[]>([])
   const [passwordOpen, setPasswordOpen] = useState(false)
-  useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||items[0]?.id||'');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[items])
-  function navigate(id:string){setBreadcrumbs([]);location.hash=id;setActiveID(id)}
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  useEffect(()=>{const sync=()=>setActiveID(location.hash.slice(1).split('/')[0]||defaultID);window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[defaultID])
+  function navigate(id:string){setBreadcrumbs([]);setUserMenuOpen(false);location.hash=id;setActiveID(id)}
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="brand-mark brand-mark--small" aria-hidden="true">Р</div>
-          <span>Родное слово</span>
-        </div>
-
-        <nav className="navigation" aria-label="Основная навигация">
-          <p className="navigation-label">Управление</p>
-          {items.map((item) => (
-            <button
-              className={`navigation-item${item.id === activeItem?.id ? ' navigation-item--active' : ''}`}
-              key={item.id}
-              type="button"
-              aria-current={item.id === activeItem?.id ? 'page' : undefined}
-              onClick={() => navigate(item.id)}
-            >
-              <NavigationIcon name={item.icon} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-user">
-          <div className="avatar" aria-hidden="true">{initials}</div>
-          <div className="user-copy">
-            <strong>{user.name}</strong>
-            <span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span>
-          </div>
-          {(user.roles.includes('teacher') || user.roles.includes('parent')) && (
-            <button
-              className="sidebar-user-action"
-              type="button"
-              aria-label="Сменить пароль"
-              title="Сменить пароль"
-              onClick={() => setPasswordOpen(true)}
-            >•••</button>
-          )}
-          <button type="button" aria-label="Выйти" onClick={onLogout}>↪</button>
-        </div>
-      </aside>
-
       <main className="workspace" aria-label="Рабочая область">
         <header className="workspace-header">
-          <div>
-
+          <div className="workspace-heading">
+            <div className="header-brand">
+              <div className="brand-mark brand-mark--small" aria-hidden="true">Р</div>
+              <span>Родное слово</span>
+            </div>
             <nav className="breadcrumbs" aria-label="Хлебные крошки">
               {(breadcrumbs.length
                 ? breadcrumbs
@@ -119,7 +85,22 @@ function Workspace({ user, onLogout }: { user: User; onLogout: () => void }) {
               ))}
             </nav>
           </div>
-          <div className="header-avatar" aria-label={`${user.name}`}>{initials}</div>
+          <div className="user-menu">
+            <button className="user-menu-trigger" type="button" aria-label="Меню пользователя" aria-expanded={userMenuOpen} aria-haspopup="menu" onClick={() => setUserMenuOpen((open) => !open)}>
+              <span className="header-avatar" aria-hidden="true">{initials}</span>
+              <span className="user-menu-trigger-copy"><strong>{user.name}</strong><span>{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</span></span>
+              <span className="user-menu-chevron" aria-hidden="true">⌄</span>
+            </button>
+            {userMenuOpen && <div className="user-menu-popover" role="menu">
+              <nav className="user-navigation" aria-label="Основная навигация">
+                {items.map((item) => <button className={`user-navigation-item${item.id === activeItem?.id ? ' user-navigation-item--active' : ''}`} key={item.id} type="button" role="menuitem" aria-current={item.id === activeItem?.id ? 'page' : undefined} onClick={() => navigate(item.id)}><NavigationIcon name={item.icon} /><span>{item.label}</span></button>)}
+              </nav>
+              <div className="user-menu-actions">
+                {(user.roles.includes('teacher') || user.roles.includes('parent')) && <button type="button" role="menuitem" onClick={() => { setUserMenuOpen(false); setPasswordOpen(true) }}>Сменить пароль</button>}
+                <button type="button" role="menuitem" onClick={onLogout}>Выйти</button>
+              </div>
+            </div>}
+          </div>
         </header>
         <section className="workspace-content" aria-label={activeItem?.label}>
           {!knownItem&&<RouteState code="404" title="Страница не найдена" action={()=>navigate(items[0]?.id??'')}/>} 

@@ -13,9 +13,9 @@ describe('role routes',()=>{it('shows 403 for a known inaccessible route',async(
 
 describe('login', () => {
   it('opens the empty workspace after successful login', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValue(new Response(JSON.stringify({
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 401 })).mockResolvedValueOnce(new Response(JSON.stringify({
       user: { id: crypto.randomUUID(), email: 'admin@example.ru', name: 'Admin'+' '+ 'User', status: 'active', roles: ['admin'] },
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockImplementation(async () => new Response(JSON.stringify({ items: [] }), { status: 200 }))
 
     render(<App />)
     await userEvent.type(await screen.findByLabelText('Логин'), 'admin@example.ru')
@@ -23,11 +23,13 @@ describe('login', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
     expect(await screen.findByLabelText('Рабочая область')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Классы' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Меню пользователя' }))
     expect(screen.getByRole('navigation', { name: 'Основная навигация' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Пользователи' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Роли' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Классы' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Предметы' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Пользователи' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Роли' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Классы' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Предметы' })).toBeInTheDocument()
   })
 
   it('shows the server error and keeps the form', async () => {
@@ -55,9 +57,10 @@ describe('login', () => {
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
-    expect(await screen.findByRole('button', { name: 'Классы' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Пользователи' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Ученики' })).not.toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Меню пользователя' }))
+    expect(await screen.findByRole('menuitem', { name: 'Классы' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Пользователи' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Ученики' })).not.toBeInTheDocument()
   })
 
   it('shows only students to a parent', async () => {
@@ -70,8 +73,9 @@ describe('login', () => {
     await userEvent.type(screen.getByLabelText('Пароль'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
-    expect(await screen.findByRole('button', { name: 'Мои дети' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Классы' })).not.toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Меню пользователя' }))
+    expect(await screen.findByRole('menuitem', { name: 'Ученики' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Классы' })).not.toBeInTheDocument()
   })
 
   it('opens the real teacher class subjects', async () => {
@@ -117,12 +121,13 @@ describe('login', () => {
     })
 
     render(<App />)
-    await userEvent.click(await screen.findByRole('button', { name: 'Сменить пароль' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Меню пользователя' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Сменить пароль' }))
     await userEvent.type(screen.getByLabelText('Текущий пароль'), 'old')
     await userEvent.type(screen.getByLabelText('Новый пароль'), 'x')
     await userEvent.click(screen.getByRole('button', { name: 'Изменить пароль' }))
 
-    await screen.findByText('Нет доступных детей')
+    await screen.findByText('Нет доступных учеников')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/v1/me/password',
