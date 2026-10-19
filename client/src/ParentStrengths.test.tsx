@@ -26,8 +26,11 @@ it('shows one ring for all subjects with sectors proportional to their average g
   expect(sectors[1]).toHaveAttribute('stroke-dasharray','37.5 62.5')
   expect(sectors[1]).toHaveAttribute('stroke-dashoffset','-62.5')
   expect(sectors[0].getAttribute('stroke')).not.toBe(sectors[1].getAttribute('stroke'))
-  expect(screen.getByLabelText('Математика: средний балл 5 из 5')).toBeInTheDocument()
-  expect(screen.getByLabelText('Английский язык: средний балл 3 из 5')).toBeInTheDocument()
+  expect(ring).toHaveAccessibleName(expect.stringContaining('Математика: 5 из 5'))
+  expect(screen.getByText('62,5%')).toBeInTheDocument()
+  expect(ring.querySelector('span')).toBeNull()
+  expect(ring).toHaveAccessibleName(expect.stringContaining('Английский язык: 3 из 5'))
+  expect(screen.getByText('37,5%')).toBeInTheDocument()
   expect(ring).toHaveAccessibleName(expect.stringContaining('доля 62,5%'))
 })
 it('uses all work grades, including remediated low grades, but excludes other scales and period grades', () => {
@@ -37,8 +40,8 @@ it('uses all work grades, including remediated low grades, but excludes other sc
   journal.subjects[0].lessons = [lesson('first',5),lesson('second',5),low,lesson('points',1,'points'),lesson('pass',0,'pass_fail')]
   journal.subjects[0].quarterGrades = [{id:'quarter',quarterId:'quarter-1',classSubjectId:'link-1',studentId:journal.student.id,gradingScale:'five_point',numericValue:2}]
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
-  expect(screen.getByLabelText('Математика: средний балл 4 из 5')).toBeInTheDocument()
-  expect(screen.getByText('3 оценки · 100%')).toBeInTheDocument()
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4 из 5, 3 оценки'))
+  expect(screen.getByText('100%')).toBeInTheDocument()
 })
 
 it('excludes historical years and includes subjects with an average below four', () => {
@@ -47,7 +50,7 @@ it('excludes historical years and includes subjects with an average below four',
   const past = {...journal,academicYear:{...journal.academicYear,id:'past',startsOn:'2025-09-01',endsOn:'2026-05-31'},subjects:[{...journal.subjects[0],lessons:[lesson('past',5)]}]}
   render(<ParentStrengths student={journal.student} journals={[past,journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toBeInTheDocument()
-  expect(screen.getByText('25 оценок · 100%')).toBeInTheDocument()
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('25 оценок'))
 })
 
 it('combines assessments for the same subject using grade counts rather than averaging class averages', () => {
@@ -56,7 +59,7 @@ it('combines assessments for the same subject using grade counts rather than ave
   journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'second-link'},lessons:[lesson('second',4),lesson('third',4)]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getAllByRole('img')).toHaveLength(1)
-  expect(screen.getByLabelText('Математика: средний балл 4,3 из 5')).toBeInTheDocument()
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4,3 из 5'))
 })
 
 it('does not invent a result when there are no graded works', () => {
