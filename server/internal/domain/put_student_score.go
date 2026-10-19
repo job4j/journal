@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (d *ClassDomain) PutStudentScore(ctx context.Context, tx repository.Transaction, hash string, gradeItemID, studentID uuid.UUID, numeric *float64, text, comment *string) (entity.Score, error) {
+func (d *ClassDomain) PutStudentScore(ctx context.Context, tx repository.Transaction, hash string, gradeItemID, studentID uuid.UUID, numeric *float64, text, comment *string, remediated bool) (entity.Score, error) {
 	teacherID, err := d.currentTeacher(ctx, tx, hash)
 	if err != nil {
 		return entity.Score{}, err
@@ -53,11 +53,14 @@ func (d *ClassDomain) PutStudentScore(ctx context.Context, tx repository.Transac
 		return entity.Score{}, ErrInvalidScore
 	}
 	comment = trimmedOptional(comment)
+	if remediated && comment == nil {
+		return entity.Score{}, ErrRemediationCommentRequired
+	}
 	if text != nil {
 		value := strings.TrimSpace(*text)
 		text = &value
 	}
-	result, err := d.repo.UpsertScore(ctx, tx, entity.Score{GradeItemID: gradeItemID, UserID: studentID, NumericValue: numeric, TextValue: text, TeacherComment: comment, CreatedBy: teacherID, UpdatedBy: teacherID})
+	result, err := d.repo.UpsertScore(ctx, tx, entity.Score{GradeItemID: gradeItemID, UserID: studentID, NumericValue: numeric, TextValue: text, TeacherComment: comment, IsRemediated: remediated, CreatedBy: teacherID, UpdatedBy: teacherID})
 	if err != nil {
 		return entity.Score{}, fmt.Errorf("upsert score: %w", err)
 	}

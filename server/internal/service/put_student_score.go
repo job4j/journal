@@ -7,13 +7,13 @@ import (
 	"journal/server/internal/repository/entity"
 )
 
-func (s *ClassService) PutStudentScore(ctx context.Context, token string, gradeItemID, studentID uuid.UUID, numeric *float64, text, comment *string) (result entity.Score, err error) {
+func (s *ClassService) PutStudentScore(ctx context.Context, token string, gradeItemID, studentID uuid.UUID, numeric *float64, text, comment *string, remediated bool) (result entity.Score, err error) {
 	tx, err := s.txManager.Begin(ctx)
 	if err != nil {
 		return result, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	result, err = s.domain.PutStudentScore(ctx, tx, sessionTokenHash(token), gradeItemID, studentID, numeric, text, comment)
+	result, err = s.domain.PutStudentScore(ctx, tx, sessionTokenHash(token), gradeItemID, studentID, numeric, text, comment, remediated)
 	if err != nil {
 		return result, err
 	}

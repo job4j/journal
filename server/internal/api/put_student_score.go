@@ -8,6 +8,7 @@ import (
 )
 
 type putScoreBody struct {
+	IsRemediated   bool     `json:"isRemediated"`
 	NumericValue   *float64 `json:"numericValue"`
 	TextValue      *string  `json:"textValue"`
 	TeacherComment *string  `json:"teacherComment"`
@@ -26,9 +27,9 @@ func (h *ClassHandler) PutStudentScore(c *fiber.Ctx) error {
 	if err = c.BodyParser(&body); err != nil || (body.NumericValue == nil) == (body.TextValue == nil) {
 		return writeError(c, 400, "invalid_request", "Нужно передать один вид оценки")
 	}
-	score, err := h.service.PutStudentScore(c.UserContext(), c.Cookies("journal_session"), gradeItemID, studentID, body.NumericValue, body.TextValue, body.TeacherComment)
+	score, err := h.service.PutStudentScore(c.UserContext(), c.Cookies("journal_session"), gradeItemID, studentID, body.NumericValue, body.TextValue, body.TeacherComment, body.IsRemediated)
 	if err != nil {
 		return h.writeClassError(c, err)
 	}
-	return c.JSON(gen.PutStudentScoreResponse{Score: gen.Score{Id: openapi_types.UUID(score.ID), GradeItemId: openapi_types.UUID(score.GradeItemID), StudentId: openapi_types.UUID(score.UserID), NumericValue: score.NumericValue, TextValue: score.TextValue, TeacherComment: score.TeacherComment}})
+	return c.JSON(gen.PutStudentScoreResponse{Score: gen.Score{Id: openapi_types.UUID(score.ID), GradeItemId: openapi_types.UUID(score.GradeItemID), StudentId: openapi_types.UUID(score.UserID), NumericValue: score.NumericValue, TextValue: score.TextValue, TeacherComment: score.TeacherComment, IsRemediated: score.IsRemediated}})
 }

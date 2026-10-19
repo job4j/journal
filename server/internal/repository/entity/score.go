@@ -6,6 +6,7 @@ import (
 )
 
 type Score struct {
+	IsRemediated   bool      `db:"is_remediated"`
 	ID             uuid.UUID `db:"id"`
 	GradeItemID    uuid.UUID `db:"grade_item_id"`
 	UserID         uuid.UUID `db:"user_id"`

@@ -23,7 +23,7 @@ func lessonResponse(item domain.LessonView) gen.Lesson {
 		}
 		scores := make([]gen.Score, len(item.Scores[value.ID]))
 		for j, score := range item.Scores[value.ID] {
-			scores[j] = gen.Score{Id: openapi_types.UUID(score.ID), GradeItemId: openapi_types.UUID(score.GradeItemID), StudentId: openapi_types.UUID(score.UserID), NumericValue: score.NumericValue, TextValue: score.TextValue, TeacherComment: score.TeacherComment}
+			scores[j] = gen.Score{Id: openapi_types.UUID(score.ID), GradeItemId: openapi_types.UUID(score.GradeItemID), StudentId: openapi_types.UUID(score.UserID), NumericValue: score.NumericValue, TextValue: score.TextValue, TeacherComment: score.TeacherComment, IsRemediated: score.IsRemediated}
 		}
 		grades[i] = gen.GradeItem{Id: openapi_types.UUID(value.ID), LessonId: openapi_types.UUID(value.LessonID), Title: value.Title, Kind: gen.GradeItemKind(value.Kind), GradingScale: gen.GradingScale(value.GradingScale), MaxScore: max, Scores: scores}
 	}

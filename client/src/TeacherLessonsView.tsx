@@ -1,3 +1,4 @@
+import TeacherRetakesView from './TeacherRetakesView'
 import{FormEvent,useCallback,useEffect,useMemo,useState}from'react'
 import{ClassStudent,listClassStudents}from'./classes'
 import{ClassSubjectRecord}from'./classSubjects'
@@ -34,7 +35,7 @@ export default function TeacherLessonsView({assignment,quarters=[]}:{assignment:
  const[items,setItems]=useState<LessonRecord[]>([]),[students,setStudents]=useState<ClassStudent[]>([]),[quarterGrades,setQuarterGrades]=useState<QuarterGrade[]>([]),[quarterID,setQuarterID]=useState(quarters[0]?.id??''),[periodView,setPeriodView]=useState<PeriodView>(readPeriodView),[weekOffset,setWeekOffset]=useState(0),[draft,setDraft]=useState<LessonDraft|null>(null),[editingLessonID,setEditingLessonID]=useState(''),[newScore,setNewScore]=useState<{date:string;lesson?:LessonRecord;studentID:string;kind:GradeItem['kind']}|null>(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('')
  const selectedQuarter=quarters.find(item=>item.id===quarterID),from=selectedQuarter?.startsOn??'',to=selectedQuarter?.endsOn??''
  const weekWindow=useMemo(()=>getWeekWindow(from,to,weekOffset),[from,to,weekOffset])
- const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster,totals]=await Promise.all([listLessons(assignment.id,from,to),listClassStudents(assignment.classId),quarterID?listQuarterGrades(assignment.id,quarterID):Promise.resolve([])]);setItems(lessons);setStudents(roster);setQuarterGrades(totals)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,from,to,quarterID])
+ const load=useCallback(async()=>{setLoading(true);setError('');try{const[lessons,roster,totals]=await Promise.all([listLessons(assignment.id,'',''),listClassStudents(assignment.classId),quarterID?listQuarterGrades(assignment.id,quarterID):Promise.resolve([])]);setItems(lessons);setStudents(roster);setQuarterGrades(totals)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить журнал')}finally{setLoading(false)}},[assignment.id,assignment.classId,quarterID])
  useEffect(()=>{void load()},[load])
  async function submit(event:FormEvent){event.preventDefault();if(!draft)return;setSaving(true);try{const payload={...draft,homework:draft.homework||undefined};const saved=editingLessonID?await updateLesson(editingLessonID,payload):await createLesson(assignment.id,payload);setItems(current=>editingLessonID?current.map(item=>item.id===editingLessonID?{...saved,gradeItems:item.gradeItems,absences:item.absences}:item):[...current,saved]);setEditingLessonID('');setDraft(null)}catch(cause){setError(cause instanceof Error?cause.message:'Не удалось создать урок')}finally{setSaving(false)}}
  function scoreSaved(saved:Score){setItems(current=>current.map(lesson=>({...lesson,gradeItems:lesson.gradeItems.map(item=>item.id!==saved.gradeItemId?item:{...item,scores:[...item.scores.filter(score=>score.studentId!==saved.studentId),saved]})})))}
@@ -43,7 +44,7 @@ export default function TeacherLessonsView({assignment,quarters=[]}:{assignment:
  function quarterGradeSaved(saved:QuarterGrade){setQuarterGrades(current=>[...current.filter(item=>item.studentId!==saved.studentId),saved])}
  function quarterGradeDeleted(studentID:string){setQuarterGrades(current=>current.filter(item=>item.studentId!==studentID))}
  function changePeriodView(value:PeriodView){setPeriodView(value);document.cookie=periodViewCookie+'='+value+'; Max-Age=31536000; Path=/; SameSite=Lax'}
- return <div className="content-stack">{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{periodView==='week'&&<div className="week-pagination" aria-label="Навигация по неделям"><button type="button" aria-label="Предыдущая неделя" disabled={!weekWindow?.hasPrevious} onClick={()=>setWeekOffset(value=>value-1)}>‹</button><button type="button" aria-label="Следующая неделя" disabled={!weekWindow?.hasNext} onClick={()=>setWeekOffset(value=>value+1)}>›</button></div>}{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>{setQuarterID(e.target.value);setWeekOffset(0)}}>{quarters.map(item=><option value={item.id} key={item.id}>{formatPeriodLabel(item)}</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><GradeTable assignmentID={assignment.id} periodView={periodView} weekOffset={weekOffset} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onDeleted={scoreDeleted} onAbsence={absenceChanged} onQuarterGradeSaved={quarterGradeSaved} onQuarterGradeDeleted={quarterGradeDeleted} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
+ return <div className="content-stack teacher-journal-view">{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{periodView==='week'&&<div className="week-pagination" aria-label="Навигация по неделям"><button type="button" aria-label="Предыдущая неделя" disabled={!weekWindow?.hasPrevious} onClick={()=>setWeekOffset(value=>value-1)}>‹</button><button type="button" aria-label="Следующая неделя" disabled={!weekWindow?.hasNext} onClick={()=>setWeekOffset(value=>value+1)}>›</button></div>}{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>{setQuarterID(e.target.value);setWeekOffset(0)}}>{quarters.map(item=><option value={item.id} key={item.id}>{formatPeriodLabel(item)}</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><TeacherRetakesView lessons={items} students={students} renderScore={(item,member,date)=><ScoreEditor item={item} studentID={member.student.id} disabled={date<member.enrolledOn||Boolean(member.leftOn&&date>member.leftOn)} onSaved={scoreSaved} onDeleted={scoreDeleted} compact triggerLabel={`Изменить отработку ${member.student.name} · ${item.title} · ${date}`}/>}/><GradeTable assignmentID={assignment.id} periodView={periodView} weekOffset={weekOffset} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onDeleted={scoreDeleted} onAbsence={absenceChanged} onQuarterGradeSaved={quarterGradeSaved} onQuarterGradeDeleted={quarterGradeDeleted} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
 }
 
 type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
@@ -325,7 +326,9 @@ function displayGrade(value?: { numericValue?: number | null; textValue?: string
   return ''
 }
 
-function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
+function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted, compact = false, triggerLabel }: {
+  compact?: boolean
+  triggerLabel?: string
   item: GradeItem
   studentID: string
   disabled: boolean
@@ -336,6 +339,7 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const [comment, setComment] = useState('')
+  const [isRemediated, setIsRemediated] = useState(false)
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const kind = item.kind === 'knowledge_check' ? 'knowledge_check'
     : item.kind === 'homework' ? 'homework' : 'classwork'
@@ -343,18 +347,19 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
   function show() {
     setValue(existing?.numericValue?.toString() ?? existing?.textValue ?? '')
     setComment(existing?.teacherComment ?? '')
+    setIsRemediated(existing?.isRemediated ?? false)
     setState('idle')
     setOpen(true)
   }
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    if (!value || disabled) return
+    if (!value || disabled || (isRemediated && !comment.trim())) return
     setState('saving')
     try {
       const payload = item.gradingScale === 'pass_fail'
-        ? { textValue: value, teacherComment: comment || undefined }
-        : { numericValue: Number(value), teacherComment: comment || undefined }
+        ? { textValue: value, teacherComment: comment || undefined, isRemediated }
+        : { numericValue: Number(value), teacherComment: comment || undefined, isRemediated }
       onSaved(await putStudentScore(item.id, studentID, payload))
       setOpen(false)
     } catch {
@@ -377,14 +382,16 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
   return (
     <>
       <button
-        className={`grade-control ${existing ? `grade-control--${kind}` : 'grade-control--empty'}`}
-        aria-label={`Изменить оценку ${item.title}`}
+        className={compact ? `teacher-retake-score teacher-retake-score-${existing?.numericValue}` : `grade-control ${existing ? `grade-control--${kind}` : 'grade-control--empty'}`}
+        aria-label={triggerLabel ?? `Изменить оценку ${item.title}`}
         title={existing?.teacherComment || item.title}
         disabled={disabled}
         onClick={show}
       >
+        {compact ? displayGrade(existing) : <>
         <GradeIcon kind={kind}/>
-        <span className="grade-value">{displayGrade(existing)}{existing?.teacherComment ? '*' : ''}</span>
+        <span className="grade-value">{displayGrade(existing)}{existing?.teacherComment ? '*' : ''}</span>{existing?.isRemediated && <span className="remediated-mark" aria-label="Оценка отработана">✓</span>}
+        </>}
       </button>
       {open && (
         <div className="dialog-backdrop">
@@ -397,17 +404,19 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted }: {
               value={value}
               setValue={setValue}
             />
+            <RemediationField checked={isRemediated} onChange={setIsRemediated} />
             <label>
               Комментарий
               <textarea
                 aria-label={`Комментарий ${item.title}`}
+                required={isRemediated}
                 value={comment}
                 onChange={(event) => setComment(event.target.value)}
               />
             </label>
             {state === 'error' && <p className="content-error" role="alert">Не удалось изменить оценку</p>}
             <div className="dialog-actions">
-              <button className="primary-action" disabled={!value || state === 'saving'}>
+              <button className="primary-action" disabled={!value || (isRemediated && !comment.trim()) || state === 'saving'}>
                 {state === 'saving' ? 'Сохраняем…' : 'Сохранить'}
               </button>
               <button type="button" className="secondary-action" onClick={() => setOpen(false)}>
@@ -478,12 +487,13 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
   const title = gradeLabels[kind as JournalKind] ?? 'Работа'
   const [value, setValue] = useState('')
   const [comment, setComment] = useState('')
+  const [isRemediated, setIsRemediated] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!value) return
+    if (!value || (isRemediated && !comment.trim())) return
     setSaving(true)
     setError('')
     try {
@@ -501,6 +511,7 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
       const score = await putStudentScore(item.id, studentID, {
         numericValue: Number(value),
         teacherComment: comment || undefined,
+        isRemediated,
       })
       onSaved(currentLesson, { ...item, scores: [score] })
     } catch (cause) {
@@ -527,10 +538,12 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
             autoFocus
           />
         </label>
+        <RemediationField checked={isRemediated} onChange={setIsRemediated} />
         <label>
           Комментарий
           <textarea
             aria-label={`Комментарий ${title}`}
+            required={isRemediated}
             value={comment}
             onChange={(event) => setComment(event.target.value)}
           />
@@ -540,11 +553,18 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
           <button type="button" className="secondary-action" onClick={onBack}>
             Отмена
           </button>
-          <button className="primary-action" disabled={!value || saving}>
+          <button className="primary-action" disabled={!value || (isRemediated && !comment.trim()) || saving}>
             {saving ? 'Сохраняем…' : 'Сохранить оценку'}
           </button>
         </div>
       </form>
     </div>
   )
+}
+
+function RemediationField({ checked, onChange }: { checked: boolean; onChange: (value: boolean) => void }) {
+  return <div className="remediation-field">
+    <label><input type="checkbox" checked={checked} onChange={event => onChange(event.target.checked)} />Оценка отработана</label>
+    {checked && <small>Обязательно опишите в комментарии, что было сделано на отработке.</small>}
+  </div>
 }

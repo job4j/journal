@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import ParentStudentGrades from './ParentStudentGrades'
+import ParentStudentExport from './ParentStudentExport'
 import { ClassSubjectRecord } from './classSubjects'
 import { ParentJournalSubject, ParentStudent, ParentStudentPeriod, getParentStudentJournal, listCurrentParentStudents, listParentStudentPeriods } from './parentJournal'
 
@@ -58,7 +60,7 @@ export default function ParentJournalView() {
   return <div className="content-stack">
     <div className="content-heading"><div><p className="content-kicker">Родительский кабинет</p><h2>Ученики</h2></div><span className="count-badge">{students.length}</span></div>
     {error && <p className="content-error" role="alert">{error}</p>}
-    {loading ? <div className="empty-card">Загружаем учеников…</div> : students.length ? <div className="parent-option-list">{students.map(item => <button className="parent-option-card" aria-label={item.name} key={item.id} onClick={() => void openStudent(item)}><span><strong>{item.name}</strong><small>Открыть журнал</small></span><span aria-hidden="true">›</span></button>)}</div> : <div className="empty-card">Нет доступных учеников</div>}
+    {loading ? <div className="empty-card">Загружаем учеников…</div> : students.length ? <div className="parent-option-list parent-student-list">{students.map(item => <div className="parent-student-overview" key={item.id}><button className="parent-option-card" aria-label={item.name} onClick={() => void openStudent(item)}><span><strong>{item.name}</strong><small>Открыть журнал</small></span><span aria-hidden="true">›</span></button><ParentStudentGrades student={item} /><ParentStudentExport student={item} /></div>)}</div> : <div className="empty-card">Нет доступных учеников</div>}
   </div>
 }
 
@@ -77,7 +79,7 @@ function ParentSubjectJournal({ student, period, subject, onBack }: { student: P
     {error && <p className="content-error" role="alert">{error}</p>}
     {loading ? <div className="empty-card">Загружаем табель…</div> : <>
       {data?.quarterGrades?.length ? <div className="quarter-summary">{data.quarterGrades.map(item => <span key={item.id}>{period.academicYear.quarters.find(q => q.id === item.quarterId)?.name ?? 'Период'}: <strong>{scoreValue(item)}</strong></span>)}</div> : null}
-      {data?.lessons.length ? <div className="parent-lesson-list">{data.lessons.map(({ lesson }) => <article className="parent-lesson-card" key={lesson.id}>
+      {data?.lessons.length ? <div className="parent-lesson-list">{[...data.lessons].sort((a, b) => b.lesson.lessonDate.localeCompare(a.lesson.lessonDate) || b.lesson.position - a.lesson.position).map(({ lesson }) => <article className="parent-lesson-card" key={lesson.id}>
         <header><time dateTime={lesson.lessonDate}>{formatLessonDate(lesson.lessonDate)}</time>{lesson.absences.length ? <span className="absence-mark">Пропуск</span> : <span className="attendance-mark">Был</span>}</header>
         {lesson.topic && <div className="parent-lesson-section"><span>Тема</span><strong>{lesson.topic}</strong></div>}
         <div className="parent-lesson-section"><span>Домашнее задание</span><strong>{lesson.homework ?? 'Не задано'}</strong></div>

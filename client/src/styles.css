@@ -642,3 +642,65 @@ button.grade-control:hover:not(:disabled) {
 .period-icon-action:hover { background: #dcebf4; }
 .period-icon-action--danger { color: #a33434; background: #fbeaea; }
 .period-icon-action--danger:hover { background: #f6d5d5; }
+
+.parent-student-list { align-items: start; }
+.parent-student-overview { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #dbe5ed; border-radius: .9rem; box-shadow: 0 .4rem 1.25rem rgba(31, 66, 97, .05); }
+.parent-student-overview > .parent-option-card { border: 0; border-bottom: 1px solid #e2e9ef; border-radius: 0; box-shadow: none; }
+.parent-weekly-grades { padding: 1rem 1.15rem; }
+.parent-weekly-grades h3 { margin: 0; color: #29465e; font-size: .95rem; }
+.parent-weekly-grades header p, .parent-weekly-message { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
+.parent-weekly-subject { margin-top: 1rem; }
+.parent-weekly-subject h4 { margin: 0 0 .4rem; color: #183f5d; font-size: .9rem; }
+.parent-weekly-subject ul { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.parent-weekly-subject li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .3rem .75rem; padding: .6rem .7rem; background: #f5f8fa; border-radius: .6rem; overflow-wrap: anywhere; }
+.parent-weekly-subject li > div { display: grid; gap: .2rem; color: #36536b; font-size: .85rem; }
+.parent-weekly-subject time { color: #6a8093; font-size: .78rem; }
+.parent-weekly-score { padding: .25rem .5rem; color: #174f78; background: #dcecf6; border-radius: .45rem; text-align: center; }
+.parent-weekly-subject li > p { grid-column: 1 / -1; margin: 0; color: #657b8e; font-size: .8rem; line-height: 1.4; }
+.parent-student-export { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .85rem 1.15rem; border-top: 1px solid #e2e9ef; }
+.parent-student-export > small { color: #6a8093; font-size: .78rem; }
+.parent-student-export > .content-error { flex-basis: 100%; margin: 0; }
+.parent-risk-grades { padding: 1rem 1.15rem; border-top: 1px solid #e2e9ef; }
+.parent-risk-grades h3 { margin: 0; color: #873a29; font-size: .95rem; }
+.parent-risk-grades header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
+.parent-risk-list { display: grid; gap: .5rem; margin: .85rem 0 0; padding: 0; list-style: none; }
+.parent-risk-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .3rem .75rem; padding: .65rem .75rem; background: #fff8f2; border: 1px solid #f2dece; border-radius: .6rem; overflow-wrap: anywhere; }
+.parent-risk-list li > div { display: grid; gap: .2rem; color: #36536b; font-size: .85rem; }
+.parent-risk-list time { color: #6a8093; font-size: .78rem; }
+.parent-risk-score { min-width: 2rem; padding: .25rem .5rem; border-radius: .45rem; text-align: center; }
+.parent-risk-score-2 { color: #9f2d2d; background: #fbe2e2; }
+.parent-risk-score-3 { color: #865012; background: #fcebcf; }
+.parent-risk-list li > p { grid-column: 1 / -1; margin: 0; color: #657b8e; font-size: .8rem; line-height: 1.4; }
+.teacher-retakes { padding: .65rem .85rem; background: #fff; border: 1px solid #ecd4c1; border-radius: .75rem; }
+.teacher-retakes > header, .teacher-retakes > header > div { display: flex; align-items: baseline; gap: .5rem; }
+.teacher-retakes > header { justify-content: space-between; align-items: center; }
+.teacher-retakes > header > div { flex-wrap: wrap; }
+.teacher-retakes > header h3 { margin: 0; color: #873a29; font-size: .9rem; }
+.teacher-retakes-period { color: #6a8093; font-size: .75rem; }
+.teacher-retakes .count-badge { min-width: 1.5rem; height: 1.5rem; padding: .15rem .4rem; font-size: .75rem; }
+.teacher-retakes ul { max-height: 12rem; overflow-y: auto; display: grid; gap: .2rem; margin: .5rem 0 0; padding: 0; list-style: none; }
+.teacher-retakes li { display: grid; grid-template-columns: minmax(8rem, 1fr) 1.75rem 5.5rem minmax(0, 2fr); align-items: center; gap: .35rem .6rem; padding: .35rem .5rem; background: #fff8f2; border-radius: .35rem; overflow-wrap: anywhere; }
+.teacher-retakes li > div { min-width: 0; color: #29465e; font-size: .8rem; line-height: 1.4; }
+.teacher-retake-date { color: #6a8093; font-size: .75rem; white-space: nowrap; }
+.teacher-retake-topic small { margin-left: .3rem; color: #657b8e; font-size: .75rem; }
+.teacher-retake-topic small::before { content: '· '; }
+.teacher-retake-score { display: inline-block; min-width: 1.5rem; padding: .1rem .3rem; border-radius: .3rem; text-align: center; }
+.teacher-retake-score-2 { color: #9f2d2d; background: #fbe2e2; }
+.teacher-retake-score-3 { color: #865012; background: #fcebcf; }
+@media(max-width:45rem) {
+  .teacher-retakes li { grid-template-columns: minmax(0, 1fr) 1.5rem auto; }
+  .teacher-retake-topic { grid-column: 1 / -1; }
+}
+.teacher-journal-view { grid-template-columns: minmax(0, 1fr); }
+.teacher-journal-view .lesson-filters { flex-wrap: wrap; max-width: 100%; }
+.teacher-journal-view .lesson-filters label { min-width: 0; max-width: 100%; }
+.teacher-journal-view .lesson-filters select { max-width: 100%; }
+.remediation-field { display: grid; gap: .5rem; }
+.role-form .remediation-field label { display: flex; align-items: center; gap: .6rem; }
+.role-form .remediation-field input { width: 1.1rem; height: 1.1rem; min-height: 0; padding: 0; accent-color: #2b74aa; }
+.remediation-field small { color: #657b8e; line-height: 1.4; }
+.remediated-mark { color: #25704c; font-size: .85rem; }
+button.teacher-retake-score { border: 0; font: inherit; font-weight: 750; cursor: pointer; }
+button.teacher-retake-score:hover:not(:disabled) { box-shadow: 0 0 0 2px #b5c9d8; }
+button.teacher-retake-score:focus-visible { outline: 2px solid #2b74aa; outline-offset: 2px; }
+button.teacher-retake-score:disabled { cursor: default; opacity: .6; }

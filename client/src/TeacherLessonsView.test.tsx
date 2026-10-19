@@ -1,5 +1,5 @@
 import{afterEach,expect,it,vi}from'vitest'
-import{cleanup,render,screen}from'@testing-library/react'
+import{cleanup,render,screen,within,waitFor}from'@testing-library/react'
 import userEvent from'@testing-library/user-event'
 import TeacherLessonsView from'./TeacherLessonsView'
 
@@ -42,3 +42,101 @@ it('hides grade icons when a lesson topic is not set',async()=>{
 })
 it('sets an absence independently from a score',async()=>{const lesson={id:'l-1',classSubjectId:'link-1',lessonDate:'2026-09-09',position:1,topic:'Дроби',materials:[],gradeItems:[],absences:[]};vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({absence:{id:'a-1',lessonId:'l-1',studentId:'student-1'}}),{status:200}));render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/>);await userEvent.click(await screen.findByRole('button',{name:'Был'}));expect(await screen.findByRole('button',{name:'Н'})).toHaveAttribute('aria-pressed','true');expect(globalThis.fetch).toHaveBeenLastCalledWith('/api/v1/lessons/l-1/absences/student-1',expect.objectContaining({method:'PUT'}))})
 it('edits and deletes a quarter grade in a dialog',async()=>{const total={id:'qg-1',quarterId:'q-1',classSubjectId:'link-1',studentId:'student-1',gradingScale:'five_point',numericValue:5,teacherComment:'Уверенный результат'},updated={...total,numericValue:4,teacherComment:'Хорошо'};vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[total]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({quarterGrade:updated}),{status:200})).mockResolvedValueOnce(new Response(null,{status:204}));render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1}]}/>);const totalButton=await screen.findByRole('button',{name:'Изменить итог Анна Иванова'});expect(totalButton).toHaveTextContent('5*');await userEvent.click(totalButton);const value=screen.getByLabelText('Итоговая оценка Анна Иванова'),comment=screen.getByLabelText('Комментарий к итогу Анна Иванова');expect(value).toHaveValue(5);await userEvent.clear(value);await userEvent.type(value,'4');await userEvent.clear(comment);await userEvent.type(comment,'Хорошо');expect(screen.getByRole('button',{name:'Сохранить'})).toBeInTheDocument();expect(screen.getByRole('button',{name:'Отменить'})).toBeInTheDocument();expect(screen.getByRole('button',{name:'Удалить'})).toBeInTheDocument();await userEvent.click(screen.getByRole('button',{name:'Сохранить'}));expect(await screen.findByRole('button',{name:'Изменить итог Анна Иванова'})).toHaveTextContent('4*');await userEvent.click(screen.getByRole('button',{name:'Изменить итог Анна Иванова'}));await userEvent.click(screen.getByRole('button',{name:'Удалить'}));expect(await screen.findByRole('button',{name:'Изменить итог Анна Иванова'})).toHaveTextContent('');expect(globalThis.fetch).toHaveBeenLastCalledWith('/api/v1/class-subjects/link-1/quarters/q-1/grades/student-1',expect.objectContaining({method:'DELETE'}))})
+
+it('shows retakes for the whole academic year above the journal, outside the selected period', async () => {
+ const lesson = {id:'l-risk',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Повторение дробей',materials:[],absences:[],gradeItems:[{id:'g-risk',lessonId:'l-risk',title:'Контрольная',kind:'knowledge_check',gradingScale:'five_point',scores:[{id:'score-risk',gradeItemId:'g-risk',studentId:student.student.id,numericValue:2}]}]}
+ const fetch = vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-2',number:2,startsOn:'2026-11-01',endsOn:'2026-11-07'}]}/>)
+ const retakes = await screen.findByRole('region',{name:'Список учеников с отработками'})
+ expect(within(retakes).getByText('Анна Иванова')).toBeInTheDocument()
+ expect(within(retakes).getByText('2')).toBeInTheDocument()
+ expect(within(retakes).getByText('09.09.2026')).toBeInTheDocument()
+ expect(within(retakes).getByText('Повторение дробей')).toBeInTheDocument()
+ expect(screen.queryByRole('button',{name:'Домашнее задание 2026-09-09'})).not.toBeInTheDocument()
+ expect(retakes.compareDocumentPosition(screen.getByRole('table')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+ expect(fetch).toHaveBeenCalledWith('/api/v1/class-subjects/link-1/lessons?',expect.anything())
+ expect(fetch).toHaveBeenCalledTimes(3)
+})
+
+it.each(['update','delete','remediate'])('edits a grade directly from retakes outside the selected period: %s', async action => {
+ const score = {id:'score-risk',gradeItemId:'g-risk',studentId:student.student.id,numericValue:2}
+ const lesson = {id:'l-risk',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Повторение дробей',materials:[],absences:[],gradeItems:[{id:'g-risk',lessonId:'l-risk',title:'Контрольная',kind:'knowledge_check',gradingScale:'five_point',scores:[score]}]}
+ vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+  .mockResolvedValueOnce(action === 'delete' ? new Response(null,{status:204}) : new Response(JSON.stringify({score:{...score,numericValue:action === 'remediate' ? 2 : 5,isRemediated:action === 'remediate',teacherComment:'Повторили тему'}}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-2',number:2,startsOn:'2026-11-01',endsOn:'2026-11-07'}]}/>)
+ expect(await screen.findByRole('region',{name:'Список учеников с отработками'})).toBeInTheDocument()
+ await userEvent.click(within(screen.getByRole('region',{name:'Список учеников с отработками'})).getByRole('button',{name:/Изменить отработку/}))
+ expect(screen.getByLabelText('Оценка Контрольная')).toHaveValue(2)
+ expect(screen.queryByRole('button',{name:'Домашнее задание 2026-09-09'})).not.toBeInTheDocument()
+ if(action === 'update') {
+  const input = screen.getByLabelText('Оценка Контрольная')
+  await userEvent.clear(input)
+  await userEvent.type(input,'5')
+  await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ } else if(action === 'remediate') {
+  await userEvent.click(screen.getByRole('checkbox',{name:'Оценка отработана'}))
+  await userEvent.type(screen.getByLabelText('Комментарий Контрольная'),'Повторили тему')
+  await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ } else {
+  await userEvent.click(screen.getByRole('button',{name:'Удалить'}))
+ }
+ await waitFor(()=>expect(screen.queryByRole('region',{name:'Список учеников с отработками'})).not.toBeInTheDocument())
+})
+
+it('requires an explanation for remediation, persists the flag and allows clearing it', async () => {
+ const score = {id:'score-1',gradeItemId:'g-1',studentId:'student-1',numericValue:2,isRemediated:false}
+ const lesson = {id:'l-1',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Дроби',materials:[],absences:[],gradeItems:[{id:'g-1',lessonId:'l-1',title:'Работа',kind:'classwork',gradingScale:'five_point',scores:[score]}]}
+ const fetch = vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({score:{...score,isRemediated:true,teacherComment:'Повторили тему и решили задачи'}}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({score}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/>)
+ await userEvent.click(await screen.findByRole('button',{name:'Изменить оценку Работа'}))
+ await userEvent.click(screen.getByRole('checkbox',{name:'Оценка отработана'}))
+ const comment = screen.getByLabelText('Комментарий Работа')
+ expect(comment).toBeRequired()
+ expect(screen.getByRole('button',{name:'Сохранить'})).toBeDisabled()
+ await userEvent.type(comment,'   ')
+ expect(screen.getByRole('button',{name:'Сохранить'})).toBeDisabled()
+ expect(fetch).toHaveBeenCalledTimes(3)
+ await userEvent.clear(comment)
+ await userEvent.type(comment,'Повторили тему и решили задачи')
+ await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ await waitFor(()=>expect(screen.queryByRole('region',{name:'Список учеников с отработками'})).not.toBeInTheDocument())
+ expect(JSON.parse(fetch.mock.calls[3][1]?.body as string)).toMatchObject({numericValue:2,isRemediated:true,teacherComment:'Повторили тему и решили задачи'})
+ await userEvent.click(screen.getByRole('button',{name:'Изменить оценку Работа'}))
+ expect(screen.getByRole('checkbox',{name:'Оценка отработана'})).toBeChecked()
+ await userEvent.click(screen.getByRole('checkbox',{name:'Оценка отработана'}))
+ await userEvent.clear(screen.getByLabelText('Комментарий Работа'))
+ expect(screen.getByLabelText('Комментарий Работа')).not.toBeRequired()
+ await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ expect(await screen.findByRole('region',{name:'Список учеников с отработками'})).toBeInTheDocument()
+ expect(JSON.parse(fetch.mock.calls[4][1]?.body as string)).toMatchObject({numericValue:2,isRemediated:false})
+})
+
+it('requires a remediation explanation before creating a new graded work', async () => {
+ const lesson = {id:'l-1',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Дроби',materials:[],absences:[],gradeItems:[]}
+ const fetch = vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/>)
+ await userEvent.click(await screen.findByRole('button',{name:'Добавить Домашняя работа'}))
+ await userEvent.type(screen.getByLabelText('Оценка Домашняя работа'),'2')
+ await userEvent.click(screen.getByRole('checkbox',{name:'Оценка отработана'}))
+ expect(screen.getByRole('button',{name:'Сохранить оценку'})).toBeDisabled()
+ expect(screen.getByLabelText('Комментарий Домашняя работа')).toBeRequired()
+ await userEvent.type(screen.getByLabelText('Комментарий Домашняя работа'),'   ')
+ expect(screen.getByRole('button',{name:'Сохранить оценку'})).toBeDisabled()
+ expect(fetch).toHaveBeenCalledTimes(3)
+ await userEvent.type(screen.getByLabelText('Комментарий Домашняя работа'),'Решили задачи')
+ expect(screen.getByRole('button',{name:'Сохранить оценку'})).toBeEnabled()
+})

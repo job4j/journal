@@ -171,7 +171,7 @@ func TestTeacherAssignmentAndFormerStudentBoundaries(t *testing.T) {
 	repo := repository.NewRepository()
 	journal := domain.NewClassDomain(repo)
 	value := 5.0
-	if _, err = journal.PutStudentScore(ctx, tx, hash2, itemID, studentID, &value, nil, nil); !errors.Is(err, domain.ErrForbidden) {
+	if _, err = journal.PutStudentScore(ctx, tx, hash2, itemID, studentID, &value, nil, nil, false); !errors.Is(err, domain.ErrForbidden) {
 		t.Fatalf("other teacher: %v", err)
 	}
 	left := time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC)
@@ -179,7 +179,7 @@ func TestTeacherAssignmentAndFormerStudentBoundaries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = journal.PutStudentScore(ctx, tx, hash1, itemID, studentID, &value, nil, nil); !errors.Is(err, domain.ErrClassStudentNotFound) {
+	if _, err = journal.PutStudentScore(ctx, tx, hash1, itemID, studentID, &value, nil, nil, false); !errors.Is(err, domain.ErrClassStudentNotFound) {
 		t.Fatalf("former student: %v", err)
 	}
 	if _, err = tx.Exec(ctx, `UPDATE class_students SET left_on=NULL WHERE class_id=$1 AND user_id=$2`, classID, studentID); err != nil {
@@ -188,10 +188,10 @@ func TestTeacherAssignmentAndFormerStudentBoundaries(t *testing.T) {
 	if _, err = tx.Exec(ctx, `UPDATE class_subjects SET responsible_teacher_id=$1 WHERE id=$2`, teacher2, assignmentID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = journal.PutStudentScore(ctx, tx, hash1, itemID, studentID, &value, nil, nil); !errors.Is(err, domain.ErrForbidden) {
+	if _, err = journal.PutStudentScore(ctx, tx, hash1, itemID, studentID, &value, nil, nil, false); !errors.Is(err, domain.ErrForbidden) {
 		t.Fatalf("replaced teacher: %v", err)
 	}
-	if _, err = journal.PutStudentScore(ctx, tx, hash2, itemID, studentID, &value, nil, nil); err != nil {
+	if _, err = journal.PutStudentScore(ctx, tx, hash2, itemID, studentID, &value, nil, nil, false); err != nil {
 		t.Fatalf("new teacher: %v", err)
 	}
 }

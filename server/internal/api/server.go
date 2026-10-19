@@ -85,7 +85,7 @@ type ClassService interface {
 	CreateLesson(context.Context, string, uuid.UUID, domain.CreateLessonInput) (domain.LessonView, error)
 	UpdateLesson(context.Context, string, uuid.UUID, domain.CreateLessonInput) (domain.LessonView, error)
 	CreateGradeItem(context.Context, string, uuid.UUID, string, string, string, *float64) (entity.GradeItem, error)
-	PutStudentScore(context.Context, string, uuid.UUID, uuid.UUID, *float64, *string, *string) (entity.Score, error)
+	PutStudentScore(context.Context, string, uuid.UUID, uuid.UUID, *float64, *string, *string, bool) (entity.Score, error)
 	DeleteStudentScore(context.Context, string, uuid.UUID, uuid.UUID) error
 	PutStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) (entity.Absence, error)
 	DeleteStudentAbsence(context.Context, string, uuid.UUID, uuid.UUID) error

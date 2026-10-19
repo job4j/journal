@@ -685,7 +685,7 @@ components:
     Score:
       type: object
       additionalProperties: false
-      required: [id, gradeItemId, studentId]
+      required: [id, gradeItemId, studentId, isRemediated]
       properties:
         id:
           type: string
@@ -707,6 +707,10 @@ components:
           type: string
           nullable: true
 
+        isRemediated:
+          type: boolean
+          default: false
+          description: Оценка отработана; при true обязателен непустой teacherComment.
     Absence:
       type: object
       additionalProperties: false
@@ -1217,6 +1221,10 @@ components:
         teacherComment:
           type: string
           nullable: true
+        isRemediated:
+          type: boolean
+          default: false
+          description: Оценка отработана; при true обязателен непустой teacherComment.
     PutTextStudentScoreRequest:
       type: object
       additionalProperties: false
@@ -1228,6 +1236,10 @@ components:
         teacherComment:
           type: string
           nullable: true
+        isRemediated:
+          type: boolean
+          default: false
+          description: Оценка отработана; при true обязателен непустой teacherComment.
     PutStudentScoreResponse:
       type: object
       additionalProperties: false
