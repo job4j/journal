@@ -707,12 +707,12 @@ button.teacher-retake-score:disabled { cursor: default; opacity: .6; }
 .parent-strengths { padding: 1rem 1.15rem; border-top: 1px solid #e2e9ef; }
 .parent-strengths h3 { margin: 0; color: #25694f; font-size: .95rem; }
 .parent-strengths header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
-.strength-chart-layout { display: grid; justify-items: center; gap: .85rem; margin-top: .9rem; }
-.strength-ring { width: 100%; max-width: 25rem; }
-.strength-ring svg { display: block; width: 100%; height: auto; }
-.strength-ring-track, .strength-ring-value { fill: none; stroke-width: 20; }
-.strength-ring-track { stroke: #edf2ef; }
-.strength-chart-label polyline { fill: none; stroke-width: 1; }
-.strength-chart-label text { fill: #29465e; font-family: inherit; font-size: 10px; }
-.strength-chart-percent { font-size: 11px; font-weight: 750; }
+.strength-chart-layout { display: grid; gap: .85rem; margin-top: .9rem; }
+.strength-bar-chart { min-width: 0; }
+.strength-bar-rows { display: grid; gap: .85rem; }
+.strength-bar-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 2rem; align-items: center; gap: .6rem; }
+.strength-bar-track { height: 1.3rem; background: repeating-linear-gradient(to right, #edf2ef 0, #edf2ef calc(20% - 1px), #dbe5ed calc(20% - 1px), #dbe5ed 20%); border-radius: .3rem; overflow: hidden; }
+.strength-bar { height: 100%; border-radius: .3rem; }
+.strength-bar-value { color: #29465e; font-size: .82rem; text-align: right; }
+.strength-bar-name { color: #29465e; font-size: .75rem; line-height: 1.4; overflow-wrap: anywhere; }
 .strength-chart-note { margin: 0; color: #6a8093; font-size: .73rem; line-height: 1.4; }

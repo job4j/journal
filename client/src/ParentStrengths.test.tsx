@@ -13,25 +13,24 @@ function lesson(id: string, value: number, scale: GradeItem['gradingScale'] = 'f
   return entry
 }
 
-it('shows one ring for all subjects with sectors proportional to their average grades', () => {
+it('shows horizontal subject bars alphabetically with widths proportional to average grades', () => {
   const journal = journalFixture()
   journal.subjects[0].lessons = [lesson('math-1',5),lesson('math-2',5)]
   const english = { ...journal.subjects[0], classSubject: { ...journal.subjects[0].classSubject, id:'english-link', subject:{id:'english',name:'Английский язык',code:'english'} }, lessons:[lesson('english-1',3),lesson('english-2',3)] }
-  journal.subjects.unshift(english)
+  journal.subjects.push(english)
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
-  const ring = screen.getByRole('img')
-  const sectors = ring.querySelectorAll('.strength-ring-value')
-  expect(sectors).toHaveLength(2)
-  expect(sectors[0]).toHaveAttribute('stroke-dasharray','62.5 37.5')
-  expect(sectors[1]).toHaveAttribute('stroke-dasharray','37.5 62.5')
-  expect(sectors[1]).toHaveAttribute('stroke-dashoffset','-62.5')
-  expect(sectors[0].getAttribute('stroke')).not.toBe(sectors[1].getAttribute('stroke'))
-  expect(ring).toHaveAccessibleName(expect.stringContaining('Математика: 5 из 5'))
-  expect(screen.getByText('62,5%')).toBeInTheDocument()
-  expect(ring.querySelector('span')).toBeNull()
-  expect(ring).toHaveAccessibleName(expect.stringContaining('Английский язык: 3 из 5'))
-  expect(screen.getByText('37,5%')).toBeInTheDocument()
-  expect(ring).toHaveAccessibleName(expect.stringContaining('доля 62,5%'))
+  const chart = screen.getByRole('img')
+  const bars = chart.querySelectorAll<HTMLElement>('.strength-bar')
+  expect(bars).toHaveLength(2)
+  expect([...chart.querySelectorAll('.strength-bar-name')].map(label => label.textContent)).toEqual(['Английский язык', 'Математика'])
+  expect(bars[0]).toHaveStyle({width: '60%'})
+  expect(bars[1]).toHaveStyle({width: '100%'})
+  expect(bars[0].style.backgroundColor).not.toBe(bars[1].style.backgroundColor)
+  expect(chart.querySelectorAll('.strength-bar-value')[0]).toHaveTextContent('3')
+  expect(chart.querySelectorAll('.strength-bar-value')[1]).toHaveTextContent('5')
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Математика: 5 из 5'))
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Английский язык: 3 из 5'))
+  expect(chart.querySelector('.strength-bar-row')).toHaveAttribute('title', 'Английский язык: средний балл 3 из 5, 2 оценки')
 })
 it('uses all work grades, including remediated low grades, but excludes other scales and period grades', () => {
   const journal = journalFixture()
@@ -41,16 +40,18 @@ it('uses all work grades, including remediated low grades, but excludes other sc
   journal.subjects[0].quarterGrades = [{id:'quarter',quarterId:'quarter-1',classSubjectId:'link-1',studentId:journal.student.id,gradingScale:'five_point',numericValue:2}]
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4 из 5, 3 оценки'))
-  expect(screen.getByText('100%')).toBeInTheDocument()
+  expect(screen.getByRole('img').querySelector('.strength-bar')).toHaveStyle({width: '80%'})
 })
 
-it('excludes historical years and includes subjects with an average below four', () => {
+it('excludes historical and future years and includes subjects with an average below four', () => {
   const journal = journalFixture()
   journal.subjects[0].lessons = [...Array.from({length:24},(_,index)=>lesson('current-'+index,4)),lesson('low',3)]
   const past = {...journal,academicYear:{...journal.academicYear,id:'past',startsOn:'2025-09-01',endsOn:'2026-05-31'},subjects:[{...journal.subjects[0],lessons:[lesson('past',5)]}]}
-  render(<ParentStrengths student={journal.student} journals={[past,journal]} today="2026-10-21" loading={false} error="" />)
+  const future = {...past,academicYear:{...past.academicYear,id:'future',startsOn:'2027-09-01',endsOn:'2028-05-31'}}
+  render(<ParentStrengths student={journal.student} journals={[past,journal,future]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toBeInTheDocument()
   expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('25 оценок'))
+  expect(screen.getByRole('img').querySelector('.strength-bar-value')).toHaveTextContent('4')
 })
 
 it('combines assessments for the same subject using grade counts rather than averaging class averages', () => {
