@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	ErrInvalidSchedule            = errors.New("invalid schedule")
+	ErrScheduleConflict           = errors.New("schedule changed")
 	ErrRemediationCommentRequired = errors.New("remediation comment required")
 	ErrInvalidCredentials         = errors.New("invalid credentials")
 	ErrUserBlocked                = errors.New("user blocked")
@@ -48,6 +50,12 @@ var (
 	ErrClassSubjectExists         = errors.New("class subject already exists")
 	ErrClassSubjectNotFound       = errors.New("class subject not found")
 )
+
+type ScheduleDomain struct{ repo repository.ScheduleRepository }
+
+func NewScheduleDomain(repo repository.ScheduleRepository) *ScheduleDomain {
+	return &ScheduleDomain{repo: repo}
+}
 
 type AuthDomain struct {
 	repo            repository.AuthRepository

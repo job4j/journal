@@ -19,6 +19,19 @@ type AuthRepository interface {
 	UpdatePasswordHash(context.Context, Transaction, uuid.UUID, string) error
 }
 
+type ScheduleRepository interface {
+	FindActiveUserBySessionHash(context.Context, Transaction, string) (entity.User, error)
+	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
+	GetAcademicYear(context.Context, Transaction, uuid.UUID) (entity.AcademicYear, error)
+	GetClassSubject(context.Context, Transaction, uuid.UUID) (entity.ClassSubject, error)
+	LockScheduleClass(context.Context, Transaction, uuid.UUID) error
+	GetScheduleWeek(context.Context, Transaction, uuid.UUID, time.Time) (entity.ScheduleWeek, error)
+	SaveScheduleWeek(context.Context, Transaction, uuid.UUID, time.Time) (entity.ScheduleWeek, error)
+	ListScheduleEntries(context.Context, Transaction, uuid.UUID) ([]entity.ScheduleEntry, error)
+	DeleteScheduleEntries(context.Context, Transaction, uuid.UUID) error
+	CreateScheduleEntry(context.Context, Transaction, entity.ScheduleEntry) error
+}
+
 type UserRepository interface {
 	CreateUser(context.Context, Transaction, entity.User) (entity.User, error)
 	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
