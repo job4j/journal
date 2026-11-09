@@ -738,6 +738,33 @@ button.teacher-retake-score:disabled { cursor: default; opacity: .6; }
 .schedule-entry:hover:not(:disabled), .schedule-add:hover:not(:disabled) { border-color: #2b74aa; }
 .schedule-entry:focus-visible, .schedule-add:focus-visible { outline: 2px solid #2b74aa; outline-offset: 2px; }
 .schedule-outside { background: #f3f5f7; }
+.parent-schedule-link { display: flex; justify-content: space-between; align-items: center; gap: .7rem; margin: .85rem 1.15rem 0; width: calc(100% - 2.3rem); padding: .8rem 1rem; border: 1px solid #c9dfed; border-radius: .6rem; background: #edf6fc; color: #224d6c; text-align: left; font: inherit; cursor: pointer; }
+.parent-schedule-link strong, .parent-schedule-link small { display: block; }
+.parent-schedule-link small { margin-top: .2rem; color: #657b8e; font-size: .78rem; }
+.parent-schedule-view { width: 100%; max-width: 42rem; min-width: 0; margin-inline: auto; }
+.parent-schedule-period { display: grid; gap: .4rem; min-width: 0; }
+.parent-schedule-period select { width: 100%; min-width: 0; padding: .6rem; border: 1px solid #cbd9e3; border-radius: .4rem; font: inherit; }
+.parent-schedule-navigation { display: grid; grid-template-columns: 2.75rem minmax(0,1fr) 2.75rem; align-items: center; gap: .5rem; }
+.parent-schedule-navigation > strong { text-align: center; color: #29465e; font-size: .9rem; overflow-wrap: anywhere; }
+.parent-schedule-navigation > button { min-height: 2.75rem; padding: .45rem; }
+.parent-schedule-today { justify-self: center; }
+.parent-schedule-day { min-width: 0; padding: .9rem; border: 1px solid #dbe5ed; border-radius: .75rem; background: #fff; }
+.parent-schedule-day-today { border-color: #6ca6ce; }
+.parent-schedule-day > header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .3rem; padding-bottom: .65rem; }
+.parent-schedule-day h3 { margin: 0; color: #29465e; font-size: 1rem; text-transform: capitalize; }
+.parent-schedule-day time { color: #657b8e; font-size: .82rem; }
+.parent-schedule-day ol { list-style: none; margin: 0; padding: 0; }
+.parent-schedule-day li { min-width: 0; padding: .8rem 0; border-top: 1px solid #e2e9ef; overflow-wrap: anywhere; }
+.parent-schedule-lesson { display: flex; gap: .7rem; align-items: baseline; }
+.parent-schedule-lesson > div { min-width: 0; }
+.parent-schedule-number { flex: 0 0 1.5rem; color: #6a8093; font-size: .8rem; }
+.parent-schedule-day h4 { margin: 0; color: #183f5d; font-size: .95rem; }
+.parent-schedule-time { margin: .3rem 0 0; color: #526f86; font-size: .85rem; }
+.parent-schedule-notes { margin: .5rem 0 0 2.2rem; color: #657b8e; font-size: .82rem; white-space: pre-wrap; }
+.parent-schedule-homework { margin-top: .65rem; padding: .65rem .75rem; background: #f5f8fa; border-radius: .5rem; color: #36536b; font-size: .85rem; }
+.parent-schedule-homework > strong { font-size: .78rem; font-weight: 600; }
+.parent-schedule-homework p { margin: .3rem 0 0; white-space: pre-wrap; }
+.parent-schedule-homework small { display: block; margin-top: .4rem; color: #6a8093; }
 .parent-strengths h3 { margin: 0; color: #25694f; font-size: .95rem; }
 .parent-strengths header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
 .strength-chart-layout { display: grid; gap: .85rem; margin-top: .9rem; }

@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ParentJournalView from './ParentJournalView'
 import * as api from './parentJournal'
+import * as scheduleAPI from './parentSchedule'
 import { GradeItem, LessonRecord } from './lessons'
 
 const student = { id: 'student-1', name: 'Анна Иванова', roles: ['student'] }
@@ -33,6 +34,18 @@ function mockJournal(lessons: LessonRecord[] = []) {
 }
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
+
+it('opens the mobile weekly schedule from the child card', async () => {
+  mockJournal()
+  vi.spyOn(scheduleAPI,'getParentSchedule').mockImplementation(async(_student,_class,start)=>({weekStart:start,entries:[{id:'scheduled',day:'2026-10-19',position:1,classSubjectId:subject.id,title:'Математика',notes:'',startsAt:'08:45',endsAt:'09:30',homework:'Упражнение 5',homeworkFrom:'2026-10-16'}]}))
+  render(<ParentJournalView />)
+  await userEvent.click(await screen.findByRole('button',{name:`Расписание — ${student.name}`}))
+  expect(await screen.findByText('Упражнение 5')).toBeInTheDocument()
+  expect(screen.getByRole('heading',{name:'Расписание'})).toBeInTheDocument()
+  expect(screen.getByText('08:45–09:30')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button',{name:'← К ученикам'}))
+  expect(await screen.findByRole('button',{name:student.name})).toBeInTheDocument()
+})
 
 it('preserves navigation from the student name to the read-only subject journal', async () => {
   mockJournal([lesson('detail', '2026-09-09')])
