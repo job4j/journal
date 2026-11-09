@@ -1,0 +1,23 @@
+get:
+  tags: [Parent]
+  operationId: getParentSchedule
+  summary: Расписание доступного ребёнка по неделям
+  description: Только родитель с can_view_user и can_view_journal для указанного ученика. Проверяется членство ученика в классе. Занятия вне дат зачисления не возвращаются. Изменять расписание нельзя.
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+    - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+    - name: weekStart
+      in: path
+      required: true
+      schema: { type: string, format: date }
+      description: Понедельник недели в пределах учебного года класса.
+  responses:
+    '200':
+      description: Только занятия доступного класса, без оценок и персональных данных других учеников.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/GetParentScheduleResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }

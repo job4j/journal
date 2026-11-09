@@ -36,6 +36,8 @@ tags:
     description: Дети текущего родителя и их табели.
 
 paths:
+  /parent/students/{studentId}/classes/{classId}/schedule/{weekStart}:
+    $ref: './paths/parent_students_studentId_classes_classId_schedule_weekStart.yml'
   /classes/{classId}/schedule/{weekStart}:
     $ref: './paths/classes_classId_schedule_weekStart.yml'
   /auth/login:
@@ -254,6 +256,34 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    ParentScheduleEntry:
+      type: object
+      additionalProperties: false
+      required: [id, day, position, classSubjectId, title, notes, startsAt, endsAt, homework, homeworkFrom]
+      properties:
+        id: { type: string }
+        day: { type: string }
+        position: { type: integer }
+        classSubjectId: { type: string, nullable: true }
+        title: { type: string }
+        notes: { type: string }
+        startsAt: { type: string, nullable: true }
+        endsAt: { type: string, nullable: true }
+        homework: { type: string, nullable: true, description: 'Задание из последнего урока предмета на предыдущей дате; только для первого занятия предмета в день.' }
+        homeworkFrom: { type: string, nullable: true, description: 'Дата урока, на котором задали домашнее задание.' }
+    ParentScheduleWeek:
+      type: object
+      required: [weekStart, entries]
+      properties:
+        weekStart: { type: string }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/ParentScheduleEntry' }
+    GetParentScheduleResponse:
+      type: object
+      required: [week]
+      properties:
+        week: { $ref: '#/components/schemas/ParentScheduleWeek' }
     ScheduleEntry:
       type: object
       additionalProperties: false
