@@ -36,6 +36,8 @@ tags:
     description: Дети текущего родителя и их табели.
 
 paths:
+  /classes/{classId}/schedule/{weekStart}:
+    $ref: './paths/classes_classId_schedule_weekStart.yml'
   /auth/login:
     $ref: './paths/auth_login.yml'
   /auth/logout:
@@ -252,6 +254,49 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    ScheduleEntry:
+      type: object
+      additionalProperties: false
+      required: [id, day, position, classSubjectId, title, notes, startsAt, endsAt]
+      properties:
+        id: { type: string, description: 'UUID сохранённого занятия; пустая строка для нового.' }
+        day: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        position: { type: integer, minimum: 1, maximum: 20 }
+        classSubjectId: { type: string, nullable: true, description: 'UUID предмета класса или null для внеурочного занятия.' }
+        title: { type: string, maxLength: 200 }
+        notes: { type: string, maxLength: 1000 }
+        startsAt: { type: string, nullable: true, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+        endsAt: { type: string, nullable: true, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+    ScheduleWeek:
+      type: object
+      required: [weekStart, revision, entries]
+      properties:
+        weekStart: { type: string }
+        revision: { type: integer, minimum: 0 }
+        entries:
+          type: array
+          maxItems: 140
+          items: { $ref: '#/components/schemas/ScheduleEntry' }
+    GetClassScheduleResponse:
+      type: object
+      required: [week]
+      properties:
+        week: { $ref: '#/components/schemas/ScheduleWeek' }
+    ReplaceClassScheduleRequest:
+      type: object
+      additionalProperties: false
+      required: [revision, entries]
+      properties:
+        revision: { type: integer, minimum: 0 }
+        entries:
+          type: array
+          maxItems: 140
+          items: { $ref: '#/components/schemas/ScheduleEntry' }
+    ReplaceClassScheduleResponse:
+      type: object
+      required: [week]
+      properties:
+        week: { $ref: '#/components/schemas/ScheduleWeek' }
     ErrorResponse:
       type: object
       additionalProperties: false

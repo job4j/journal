@@ -1,0 +1,42 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/ClassIdPath'
+  - name: weekStart
+    in: path
+    required: true
+    description: Понедельник выбранной недели, YYYY-MM-DD. Неделя должна пересекаться с учебным годом класса.
+    schema: { type: string, format: date }
+get:
+  tags: [Classes]
+  operationId: getClassSchedule
+  summary: Расписание класса на конкретную неделю (только администратор)
+  responses:
+    '200':
+      description: Неделя; revision=0 и пустые entries для ещё не созданной недели.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/GetClassScheduleResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+put:
+  tags: [Classes]
+  operationId: replaceClassSchedule
+  summary: Сохранить только выбранную неделю расписания (только администратор)
+  description: Атомарная замена записей одной недели. ID существующих занятий сохраняются; пустой ID создаёт занятие. Устаревшая revision отклоняется. Уроки журнала не изменяются.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: { $ref: '../openapi.yml#/components/schemas/ReplaceClassScheduleRequest' }
+  responses:
+    '200':
+      description: Сохранённая неделя с новой revision.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/ReplaceClassScheduleResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '409': { $ref: '../openapi.yml#/components/responses/Conflict' }
