@@ -35,8 +35,8 @@ func (h *ScheduleHandler) writeScheduleError(c *fiber.Ctx, err error) error {
 	case errors.Is(err, domain.ErrUnauthenticated):
 		return writeError(c, 401, "unauthenticated", "Войдите в систему")
 	case errors.Is(err, domain.ErrForbidden):
-		return writeError(c, 403, "forbidden", "Расписание доступно только администратору")
-	case errors.Is(err, domain.ErrClassNotFound), errors.Is(err, repository.ErrNotFound):
+		return writeError(c, 403, "forbidden", "Нет доступа к расписанию")
+	case errors.Is(err, domain.ErrClassNotFound), errors.Is(err, domain.ErrUserNotFound), errors.Is(err, repository.ErrNotFound):
 		return writeError(c, 404, "not_found", "Класс или предмет не найден")
 	case errors.Is(err, domain.ErrInvalidSchedule), errors.Is(err, repository.ErrInvalidData), errors.Is(err, repository.ErrReference):
 		return writeError(c, 400, "invalid_schedule", "Проверьте даты, время, предметы и номера занятий")

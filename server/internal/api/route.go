@@ -3,6 +3,7 @@ package api
 import "github.com/gofiber/fiber/v2"
 
 func (h *ScheduleHandler) Register(router fiber.Router) {
+	router.Get("/parent/students/:studentId/classes/:classId/schedule/:weekStart", h.GetParentSchedule)
 	router.Get("/classes/:classId/schedule/:weekStart", h.GetClassSchedule)
 	router.Put("/classes/:classId/schedule/:weekStart", h.ReplaceClassSchedule)
 }

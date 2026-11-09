@@ -18,6 +18,10 @@ type scheduleServiceStub struct {
 	request domain.ReplaceClassScheduleRequest
 }
 
+func (s *scheduleServiceStub) GetParentSchedule(_ context.Context, _ string, r domain.GetParentScheduleRequest) (domain.GetParentScheduleResponse, error) {
+	return domain.GetParentScheduleResponse{WeekStart: r.WeekStart, Entries: []domain.ParentScheduleEntry{}}, s.err
+}
+
 func (s *scheduleServiceStub) GetClassSchedule(_ context.Context, _ string, r domain.GetClassScheduleRequest) (domain.GetClassScheduleResponse, error) {
 	return domain.GetClassScheduleResponse{Week: entity.ScheduleWeek{WeekStart: r.WeekStart}, Entries: []entity.ScheduleEntry{}}, s.err
 }

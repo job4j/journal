@@ -20,6 +20,10 @@ type AuthRepository interface {
 }
 
 type ScheduleRepository interface {
+	ListScheduleLessons(context.Context, Transaction, uuid.UUID, time.Time, time.Time) ([]entity.Lesson, error)
+	CheckSessionPermissionForValue(context.Context, Transaction, string, string, string) (bool, bool, error)
+	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
+	GetClassStudent(context.Context, Transaction, uuid.UUID, uuid.UUID) (entity.ClassStudent, error)
 	FindActiveUserBySessionHash(context.Context, Transaction, string) (entity.User, error)
 	GetClass(context.Context, Transaction, uuid.UUID) (entity.Class, error)
 	GetAcademicYear(context.Context, Transaction, uuid.UUID) (entity.AcademicYear, error)

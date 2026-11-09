@@ -75,6 +75,7 @@ type ScheduleHandler struct {
 	logger  *slog.Logger
 }
 type ScheduleService interface {
+	GetParentSchedule(context.Context, string, domain.GetParentScheduleRequest) (domain.GetParentScheduleResponse, error)
 	GetClassSchedule(context.Context, string, domain.GetClassScheduleRequest) (domain.GetClassScheduleResponse, error)
 	ReplaceClassSchedule(context.Context, string, domain.ReplaceClassScheduleRequest) (domain.ReplaceClassScheduleResponse, error)
 }
