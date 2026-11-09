@@ -2,10 +2,72 @@ import{afterEach,expect,it,vi}from'vitest'
 import{cleanup,render,screen,within,waitFor}from'@testing-library/react'
 import userEvent from'@testing-library/user-event'
 import TeacherLessonsView from'./TeacherLessonsView'
+import { gradedLesson } from './test/parentJournalFixture'
 
 const assignment={id:'link-1',classId:'class-1',subject:{id:'s-1',code:'MATH',name:'Математика'},responsibleTeacher:{id:'t-1',name:'Иван'+' '+'Петров',roles:['teacher']}}
 const student={student:{id:'student-1',name:'Анна'+' '+'Иванова',roles:['student']},enrolledOn:'2026-09-01',leftOn:null}
 afterEach(()=>{cleanup();vi.restoreAllMocks();document.cookie='journal_period_view=; Max-Age=0; Path=/'})
+
+it('shows a period average from all lessons independent of the visible week', async () => {
+ const lessons = ['2026-09-01','2026-09-15','2026-09-30','2026-08-31','2026-10-01'].map((date,index) => {
+  const {lesson} = gradedLesson(`average-${index}`,date)
+  lesson.gradeItems[0].scores[0].numericValue = index===2 ? 4 : index>2 ? 2 : 5
+  return lesson
+ })
+ lessons[1].gradeItems[0].scores[0].isRemediated = true
+ lessons[0].gradeItems[0].scores.push({...lessons[0].gradeItems[0].scores[0],id:'other-student',studentId:'other',numericValue:2})
+ lessons[0].gradeItems.push({...lessons[0].gradeItems[0],id:'points',gradingScale:'points',scores:[{...lessons[0].gradeItems[0].scores[0],id:'point-score',numericValue:1}]})
+ const total = {id:'final',quarterId:'q-1',classSubjectId:assignment.id,studentId:student.student.id,gradingScale:'five_point',numericValue:3}
+ vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:lessons}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[total]}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-01',endsOn:'2026-09-30'}]}/>)
+ const average = await screen.findByLabelText('Средний балл Анна Иванова за период')
+ expect(average).toHaveTextContent('4,66')
+ expect(screen.getByRole('button',{name:'Изменить итог Анна Иванова'})).toHaveTextContent('3')
+ expect(screen.queryByRole('button',{name:'Домашнее задание 2026-09-30'})).not.toBeInTheDocument()
+ await userEvent.click(screen.getByRole('button',{name:'Весь период'}))
+ expect(screen.getByRole('button',{name:'Домашнее задание 2026-09-30'})).toBeInTheDocument()
+ expect(average).toHaveTextContent('4,66')
+})
+
+it('updates the period average after editing and deleting a lesson grade', async () => {
+ const lessons = ['2026-09-01','2026-09-15','2026-09-30'].map((date,index) => {
+  const {lesson} = gradedLesson(`update-${index}`,date)
+  lesson.gradeItems[0].scores[0].numericValue = index===2 ? 4 : 5
+  return lesson
+ })
+ const saved = {...lessons[0].gradeItems[0].scores[0],numericValue:4}
+ vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:lessons}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({score:saved}),{status:200}))
+  .mockResolvedValueOnce(new Response(null,{status:204}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-01',endsOn:'2026-09-30'}]}/>)
+ const average = await screen.findByLabelText('Средний балл Анна Иванова за период')
+ expect(average).toHaveTextContent('4,66')
+ await userEvent.click(screen.getByRole('button',{name:'Изменить оценку Работа update-0'}))
+ const input=screen.getByLabelText('Оценка Работа update-0')
+ await userEvent.clear(input)
+ await userEvent.type(input,'4')
+ await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ await waitFor(()=>expect(average).toHaveTextContent('4,33'))
+ await userEvent.click(screen.getByRole('button',{name:'Изменить оценку Работа update-0'}))
+ await userEvent.click(screen.getByRole('button',{name:'Удалить'}))
+ await waitFor(()=>expect(average).toHaveTextContent('4,50'))
+})
+
+it('shows a dash for the average when only a final grade exists', async () => {
+ const total={id:'final',quarterId:'q-1',classSubjectId:assignment.id,studentId:student.student.id,gradingScale:'five_point',numericValue:5}
+ vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[total]}),{status:200}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-01',endsOn:'2026-09-30'}]}/>)
+ expect(await screen.findByLabelText('Средний балл Анна Иванова за период')).toHaveTextContent('—')
+})
 it('shows the date with a tasks button and hides empty homework',async()=>{vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}));render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,name:'Осень',startsOn:'2026-09-21',endsOn:'2026-09-27'}]}/>);const date=await screen.findByText('21 сентября, Пн.'),tasks=screen.getByRole('button',{name:'Домашнее задание 2026-09-21'});expect(date).toHaveClass('lesson-date');expect(screen.getByRole('option',{name:'Осень · 21.09.2026 — 27.09.2026'})).toBeInTheDocument();expect(date.parentElement).toContainElement(tasks);expect(tasks.querySelector('svg')).toBeInTheDocument();expect(screen.queryByText('Домашнее задание')).not.toBeInTheDocument();expect(screen.queryByText('—')).not.toBeInTheDocument();await userEvent.click(tasks);expect(screen.getByLabelText('Тема')).toBeInTheDocument();expect(screen.getByLabelText('Домашнее задание')).toBeInTheDocument()})
 it('shows a bold topic and homework in one abbreviated line',async()=>{const lesson={id:'l-1',classSubjectId:'link-1',lessonDate:'2026-09-21',position:1,topic:'Линейные уравнения',homework:'№ 5, стр. 12',materials:[],absences:[],gradeItems:[]};vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}));render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-21',endsOn:'2026-09-21'}]}/>);expect(await screen.findByText('Линейные уравнения')).toHaveClass('lesson-topic');const label=screen.getByText('Д.З.:');expect(label.tagName).toBe('STRONG');expect(label.parentElement).toHaveTextContent('Д.З.: № 5, стр. 12');expect(label.parentElement).toHaveClass('homework-text')})
 it('creates lesson with a material',async()=>{vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200})).mockResolvedValueOnce(new Response(JSON.stringify({lesson:{id:'l-1',classSubjectId:'link-1',lessonDate:'2026-09-09',position:1,topic:'Дроби',homework:null,materials:[{id:'m-1',title:'Видео',url:'https://example.test',position:1}],gradeItems:[]}}),{status:201}));render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/>);await userEvent.click(await screen.findByRole('button',{name:'Домашнее задание 2026-09-09'}));await userEvent.clear(screen.getByLabelText('Дата урока'));await userEvent.type(screen.getByLabelText('Дата урока'),'2026-09-09');await userEvent.type(screen.getByLabelText('Тема'),'Дроби');await userEvent.click(screen.getByRole('button',{name:/Материал/}));await userEvent.type(screen.getByLabelText('Название материала 1'),'Видео');await userEvent.type(screen.getByLabelText('Ссылка материала 1'),'https://example.test');await userEvent.click(screen.getByRole('button',{name:'Сохранить'}));expect(await screen.findByText('Дроби')).toBeInTheDocument()})

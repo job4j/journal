@@ -148,6 +148,26 @@ function GradeTable({
     return result
   }, [from, to, items, periodView, weekOffset])
   const lessons = useMemo(() => new Map(items.map((item) => [item.lessonDate, item])), [items])
+  const periodAverages = useMemo(() => {
+    const totals = new Map<string, { sum: number; count: number }>()
+    for (const lesson of items) {
+      if ((from && lesson.lessonDate < from) || (to && lesson.lessonDate > to)) continue
+      for (const item of lesson.gradeItems) {
+        if (item.gradingScale !== 'five_point') continue
+        for (const score of item.scores) {
+          if (score.numericValue == null || !Number.isFinite(score.numericValue)) continue
+          const total = totals.get(score.studentId) ?? { sum: 0, count: 0 }
+          total.sum += score.numericValue
+          total.count++
+          totals.set(score.studentId, total)
+        }
+      }
+    }
+    return new Map([...totals].map(([id, total]) => {
+      const [integer, fraction = ''] = (total.sum / total.count).toString().split('.')
+      return [id, `${integer},${fraction.padEnd(2, '0').slice(0, 2)}`]
+    }))
+  }, [items, from, to])
   if (!dates.length && !quarterID) return <div className="empty-card">Добавьте учебный период.</div>
   return (
     <div className="table-card journal-scroll">
@@ -176,7 +196,7 @@ function GradeTable({
                 </th>
               )
             })}
-            <th className="journal-total-heading">Итоги</th>
+            <th className="journal-total-heading">Итог / средний</th>
           </tr>
         </thead>
         <tbody>
@@ -254,6 +274,7 @@ function GradeTable({
                 )
               })}
               <td className="journal-total-cell">
+                <div className="journal-total-values">
                 <QuarterGradeEditor
                   assignmentID={assignmentID}
                   quarterID={quarterID}
@@ -263,6 +284,9 @@ function GradeTable({
                   onSaved={onQuarterGradeSaved}
                   onDeleted={onQuarterGradeDeleted}
                 />
+                <span aria-hidden="true">/</span>
+                <span className="journal-period-average" aria-label={`Средний балл ${member.student.name} за период`} title="Средний балл по оценкам за уроки за весь выбранный период">{periodAverages.get(member.student.id) ?? '—'}</span>
+                </div>
               </td>
             </tr>
           ))}

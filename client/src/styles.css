@@ -411,7 +411,9 @@ button.grade-control {
 }
 .journal-total-heading { z-index: 4; }
 .journal-total-cell .grade-control {
-  width: 100%;
+  display: inline-flex;
+  width: fit-content;
+  min-width: 1.8rem;
   justify-content: center;
   padding-left: .45rem;
   font-weight: 800;
@@ -514,13 +516,15 @@ button.grade-control {
 }
 .journal-table thead .journal-total-heading,
 .journal-table .journal-total-cell {
-  width: 3.75rem;
-  min-width: 3.75rem;
-  max-width: 3.75rem;
+  width: 7rem;
+  min-width: 7rem;
+  max-width: 7rem;
   padding-right: .4rem;
   padding-left: .4rem;
   text-align: center;
 }
+.journal-total-values { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+.journal-period-average { color: #39546c; font-size: .8rem; font-weight: 700; }
 @media(max-width:45rem) {
   .journal-toolbar {
     align-items: flex-start;

@@ -2,18 +2,21 @@ import { afterEach, expect, it } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import ParentStrengths from './ParentStrengths'
 import { gradedLesson, journalFixture } from './test/parentJournalFixture'
-import type { QuarterGrade } from './quarterGrades'
+import type { GradeItem } from './lessons'
 
 afterEach(cleanup)
 
-function finalGrade(id: string, value: number, scale: QuarterGrade['gradingScale'] = 'five_point'): QuarterGrade {
-  return { id, quarterId: 'quarter-1', classSubjectId: 'link-1', studentId: 'student-1', numericValue: value, gradingScale: scale }
+function workGrade(id: string, value: number, scale: GradeItem['gradingScale'] = 'five_point') {
+  const entry = gradedLesson(id, '2026-10-19')
+  entry.lesson.gradeItems[0].gradingScale = scale
+  entry.lesson.gradeItems[0].scores[0].numericValue = value
+  return entry
 }
 
 it('shows horizontal subject bars alphabetically with widths proportional to average grades', () => {
   const journal = journalFixture()
-  journal.subjects[0].quarterGrades = [finalGrade('math-1',5),{...finalGrade('math-2',5),quarterId:'quarter-2'}]
-  const english = { ...journal.subjects[0], classSubject: { ...journal.subjects[0].classSubject, id:'english-link', subject:{id:'english',name:'Английский язык',code:'english'} }, quarterGrades:[finalGrade('english-1',3),{...finalGrade('english-2',3),quarterId:'quarter-2'}] }
+  journal.subjects[0].lessons = [workGrade('math-1',5),workGrade('math-2',5)]
+  const english = { ...journal.subjects[0], classSubject: { ...journal.subjects[0].classSubject, id:'english-link', subject:{id:'english',name:'Английский язык',code:'english'} }, lessons:[workGrade('english-1',3),workGrade('english-2',3)] }
   journal.subjects.push(english)
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   const chart = screen.getByRole('img')
@@ -31,11 +34,15 @@ it('shows horizontal subject bars alphabetically with widths proportional to ave
   expect(chart).toHaveAccessibleName(expect.stringContaining('Английский язык: 3,00 из 5'))
   expect(chart.querySelector('.strength-bar-row')).toHaveAttribute('title', 'Английский язык: средний балл 3,00 из 5, 2 оценки')
 })
-it('averages only numeric five-point finals and ignores work grades and subjects without finals', () => {
+it('averages numeric five-point lesson grades including remediated grades but excludes finals and other scales', () => {
   const journal = journalFixture()
-  journal.subjects[0].lessons = [gradedLesson('work', '2026-10-19')]
-  journal.subjects[0].quarterGrades = [finalGrade('first',4),{...finalGrade('second',2),quarterId:'quarter-2'},finalGrade('points',1,'points'),finalGrade('pass',0,'pass_fail'),finalGrade('invalid',NaN),{...finalGrade('missing',5),numericValue:null}]
-  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},quarterGrades:undefined})
+  const low = workGrade('second',2)
+  low.lesson.gradeItems[0].scores[0].isRemediated = true
+  const missing = workGrade('missing',5)
+  missing.lesson.gradeItems[0].scores[0].numericValue = null
+  journal.subjects[0].lessons = [workGrade('first',4),low,workGrade('points',1,'points'),workGrade('pass',0,'pass_fail'),workGrade('invalid',NaN),missing]
+  journal.subjects[0].quarterGrades = [{id:'final',quarterId:'quarter-1',classSubjectId:'link-1',studentId:journal.student.id,gradingScale:'five_point',numericValue:5}]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},lessons:[]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 3,00 из 5, 2 оценки'))
   expect(screen.getByRole('img').querySelector('.strength-bar')).toHaveStyle({width: '60%'})
@@ -44,8 +51,8 @@ it('averages only numeric five-point finals and ignores work grades and subjects
 
 it('excludes historical and future years and includes subjects with an average below four', () => {
   const journal = journalFixture()
-  journal.subjects[0].quarterGrades = [finalGrade('low',3)]
-  const past = {...journal,academicYear:{...journal.academicYear,id:'past',startsOn:'2025-09-01',endsOn:'2026-05-31'},subjects:[{...journal.subjects[0],quarterGrades:[finalGrade('past',5)]}]}
+  journal.subjects[0].lessons = [workGrade('low',3)]
+  const past = {...journal,academicYear:{...journal.academicYear,id:'past',startsOn:'2025-09-01',endsOn:'2026-05-31'},subjects:[{...journal.subjects[0],lessons:[workGrade('past',5)]}]}
   const future = {...past,academicYear:{...past.academicYear,id:'future',startsOn:'2027-09-01',endsOn:'2028-05-31'}}
   render(<ParentStrengths student={journal.student} journals={[past,journal,future]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toBeInTheDocument()
@@ -53,10 +60,10 @@ it('excludes historical and future years and includes subjects with an average b
   expect(screen.getByRole('img').querySelector('.strength-bar-value')).toHaveTextContent('3')
 })
 
-it('combines finals for the same subject using grade counts rather than averaging class averages', () => {
+it('combines lesson grades for the same subject using grade counts rather than averaging class averages', () => {
   const journal = journalFixture()
-  journal.subjects[0].quarterGrades = [finalGrade('first',5)]
-  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'second-link'},quarterGrades:[finalGrade('second',4),{...finalGrade('third',4),quarterId:'quarter-2'}]})
+  journal.subjects[0].lessons = [workGrade('first',5)]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'second-link'},lessons:[workGrade('second',4),workGrade('third',4)]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getAllByRole('img')).toHaveLength(1)
   expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4,33 из 5'))
@@ -64,8 +71,8 @@ it('combines finals for the same subject using grade counts rather than averagin
 
 it('truncates subject averages to hundredths but uses full precision for the overall average', () => {
   const journal = journalFixture()
-  journal.subjects[0].quarterGrades = [finalGrade('math-1',5),finalGrade('math-2',5),finalGrade('math-3',4)]
-  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},quarterGrades:[finalGrade('english-1',3),finalGrade('english-2',3),finalGrade('english-3',4)]})
+  journal.subjects[0].lessons = [workGrade('math-1',5),workGrade('math-2',5),workGrade('math-3',4)]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},lessons:[workGrade('english-1',3),workGrade('english-2',3),workGrade('english-3',4)]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-11-09" loading={false} error="" />)
   const chart = screen.getByRole('img')
   expect(chart).toHaveAccessibleName(expect.stringContaining('Математика: 4,66 из 5'))
@@ -73,23 +80,23 @@ it('truncates subject averages to hundredths but uses full precision for the ove
   expect(screen.getByRole('heading', {name:'Средний балл: 4,00'})).toBeInTheDocument()
 })
 
-it('weights subjects equally in the heading and excludes subjects without finals', () => {
+it('weights subjects equally in the heading and excludes subjects without lesson grades', () => {
   const journal = journalFixture()
-  journal.subjects[0].quarterGrades = [finalGrade('math-1',5),finalGrade('math-2',5),finalGrade('math-3',5)]
-  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},quarterGrades:[finalGrade('english',4)]})
-  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},quarterGrades:[]})
+  journal.subjects[0].lessons = [workGrade('math-1',5),workGrade('math-2',5),workGrade('math-3',5)]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},lessons:[workGrade('english',4)]})
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},lessons:[]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-11-09" loading={false} error="" />)
   expect(screen.getByRole('heading', {name:'Средний балл: 4,50'})).toBeInTheDocument()
   expect(screen.queryByText('Физика')).not.toBeInTheDocument()
 })
 
-it('does not calculate an average from work grades when there are no finals', () => {
+it('does not calculate an average from finals when there are no lesson grades', () => {
   const journal = journalFixture()
-  journal.subjects[0].lessons = [gradedLesson('work', '2026-10-19')]
+  journal.subjects[0].quarterGrades = [{id:'final',quarterId:'quarter-1',classSubjectId:'link-1',studentId:journal.student.id,gradingScale:'five_point',numericValue:5}]
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.queryByRole('img')).not.toBeInTheDocument()
   expect(screen.getByRole('heading', {name:'Средний балл'})).toBeInTheDocument()
-  expect(screen.getByText('Пока нет итоговых оценок для расчёта.')).toBeInTheDocument()
+  expect(screen.getByText('Пока нет оценок за уроки для расчёта.')).toBeInTheDocument()
 })
 
 it('distinguishes loading and errors from a computed result', () => {
@@ -98,5 +105,5 @@ it('distinguishes loading and errors from a computed result', () => {
   expect(screen.getByRole('status')).toHaveTextContent('Загружаем средний балл…')
   rerender(<ParentStrengths student={journal.student} journals={[]} today="2026-10-21" loading={false} error="Доступ к журналу отозван" />)
   expect(screen.getByText('Доступ к журналу отозван')).toBeInTheDocument()
-  expect(screen.queryByText('Пока нет итоговых оценок для расчёта.')).not.toBeInTheDocument()
+  expect(screen.queryByText('Пока нет оценок за уроки для расчёта.')).not.toBeInTheDocument()
 })
