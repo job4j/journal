@@ -44,7 +44,7 @@ export default function ParentReportCard({ student, journals, today, loading, er
           <table aria-label={`Итоги — ${quarter.name}`}>
             <thead><tr><th scope="col">Предмет</th><th scope="col">Оценка</th></tr></thead>
             <tbody>{[...quarter.grades].sort((a, b) => a.subject.localeCompare(b.subject, 'ru') || a.className.localeCompare(b.className, 'ru')).map(({ subject, className, grade }) => <tr key={grade.id}>
-              <th scope="row">{subject}{multipleClasses && <small>{className}</small>}{grade.teacherComment && <small>{grade.teacherComment}</small>}</th>
+              <th scope="row">{subject}{multipleClasses && <small>{className}</small>}</th>
               <td><strong>{gradeValue(grade)}</strong></td>
             </tr>)}</tbody>
           </table>

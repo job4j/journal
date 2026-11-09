@@ -18,7 +18,7 @@ it('shows horizontal subject bars alphabetically with widths proportional to ave
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   const chart = screen.getByRole('img')
   expect(screen.getByRole('region', {name: `Средний балл — ${journal.student.name}`})).toBeInTheDocument()
-  expect(screen.getByRole('heading', {name: 'Средний балл'})).toBeInTheDocument()
+  expect(screen.getByRole('heading', {name: 'Средний балл: 4,00'})).toBeInTheDocument()
   const bars = chart.querySelectorAll<HTMLElement>('.strength-bar')
   expect(bars).toHaveLength(2)
   expect([...chart.querySelectorAll('.strength-bar-name')].map(label => label.textContent)).toEqual(['Английский язык', 'Математика'])
@@ -27,9 +27,9 @@ it('shows horizontal subject bars alphabetically with widths proportional to ave
   expect(bars[0].style.backgroundColor).not.toBe(bars[1].style.backgroundColor)
   expect(chart.querySelectorAll('.strength-bar-value')[0]).toHaveTextContent('3')
   expect(chart.querySelectorAll('.strength-bar-value')[1]).toHaveTextContent('5')
-  expect(chart).toHaveAccessibleName(expect.stringContaining('Математика: 5 из 5'))
-  expect(chart).toHaveAccessibleName(expect.stringContaining('Английский язык: 3 из 5'))
-  expect(chart.querySelector('.strength-bar-row')).toHaveAttribute('title', 'Английский язык: средний балл 3 из 5, 2 оценки')
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Математика: 5,00 из 5'))
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Английский язык: 3,00 из 5'))
+  expect(chart.querySelector('.strength-bar-row')).toHaveAttribute('title', 'Английский язык: средний балл 3,00 из 5, 2 оценки')
 })
 it('averages only numeric five-point finals and ignores work grades and subjects without finals', () => {
   const journal = journalFixture()
@@ -37,7 +37,7 @@ it('averages only numeric five-point finals and ignores work grades and subjects
   journal.subjects[0].quarterGrades = [finalGrade('first',4),{...finalGrade('second',2),quarterId:'quarter-2'},finalGrade('points',1,'points'),finalGrade('pass',0,'pass_fail'),finalGrade('invalid',NaN),{...finalGrade('missing',5),numericValue:null}]
   journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},quarterGrades:undefined})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
-  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 3 из 5, 2 оценки'))
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 3,00 из 5, 2 оценки'))
   expect(screen.getByRole('img').querySelector('.strength-bar')).toHaveStyle({width: '60%'})
   expect(screen.queryByText('Физика')).not.toBeInTheDocument()
 })
@@ -49,7 +49,7 @@ it('excludes historical and future years and includes subjects with an average b
   const future = {...past,academicYear:{...past.academicYear,id:'future',startsOn:'2027-09-01',endsOn:'2028-05-31'}}
   render(<ParentStrengths student={journal.student} journals={[past,journal,future]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getByRole('img')).toBeInTheDocument()
-  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 3 из 5, 1 оценка'))
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 3,00 из 5, 1 оценка'))
   expect(screen.getByRole('img').querySelector('.strength-bar-value')).toHaveTextContent('3')
 })
 
@@ -59,7 +59,28 @@ it('combines finals for the same subject using grade counts rather than averagin
   journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'second-link'},quarterGrades:[finalGrade('second',4),{...finalGrade('third',4),quarterId:'quarter-2'}]})
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.getAllByRole('img')).toHaveLength(1)
-  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4,3 из 5'))
+  expect(screen.getByRole('img')).toHaveAccessibleName(expect.stringContaining('Математика: 4,33 из 5'))
+})
+
+it('truncates subject averages to hundredths but uses full precision for the overall average', () => {
+  const journal = journalFixture()
+  journal.subjects[0].quarterGrades = [finalGrade('math-1',5),finalGrade('math-2',5),finalGrade('math-3',4)]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},quarterGrades:[finalGrade('english-1',3),finalGrade('english-2',3),finalGrade('english-3',4)]})
+  render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-11-09" loading={false} error="" />)
+  const chart = screen.getByRole('img')
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Математика: 4,66 из 5'))
+  expect(chart).toHaveAccessibleName(expect.stringContaining('Английский язык: 3,33 из 5'))
+  expect(screen.getByRole('heading', {name:'Средний балл: 4,00'})).toBeInTheDocument()
+})
+
+it('weights subjects equally in the heading and excludes subjects without finals', () => {
+  const journal = journalFixture()
+  journal.subjects[0].quarterGrades = [finalGrade('math-1',5),finalGrade('math-2',5),finalGrade('math-3',5)]
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'english-link',subject:{id:'english',name:'Английский язык',code:'english'}},quarterGrades:[finalGrade('english',4)]})
+  journal.subjects.push({...journal.subjects[0],classSubject:{...journal.subjects[0].classSubject,id:'physics-link',subject:{id:'physics',name:'Физика',code:'physics'}},quarterGrades:[]})
+  render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-11-09" loading={false} error="" />)
+  expect(screen.getByRole('heading', {name:'Средний балл: 4,50'})).toBeInTheDocument()
+  expect(screen.queryByText('Физика')).not.toBeInTheDocument()
 })
 
 it('does not calculate an average from work grades when there are no finals', () => {
@@ -67,6 +88,7 @@ it('does not calculate an average from work grades when there are no finals', ()
   journal.subjects[0].lessons = [gradedLesson('work', '2026-10-19')]
   render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
   expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', {name:'Средний балл'})).toBeInTheDocument()
   expect(screen.getByText('Пока нет итоговых оценок для расчёта.')).toBeInTheDocument()
 })
 

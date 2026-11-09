@@ -170,7 +170,7 @@ it('shows final grades in the child report card without extra journal requests',
   const table = await within(report).findByRole('table', { name: 'Итоги — I четверть' })
   expect(within(table).getByText('Математика')).toBeInTheDocument()
   expect(within(table).getByText('4')).toBeInTheDocument()
-  expect(within(table).getByText('Итог за четверть')).toBeInTheDocument()
+  expect(within(table).queryByText('Итог за четверть')).not.toBeInTheDocument()
   expect(within(report).queryByText('II четверть')).not.toBeInTheDocument()
   expect(getJournal).toHaveBeenCalledTimes(1)
 })

@@ -15,6 +15,11 @@ function gradeCount(value: number) {
   return `${value} ${word}`
 }
 
+function formatNumber(value: number) {
+  const [integer, fraction = ''] = value.toString().split('.')
+  return `${integer},${fraction.padEnd(2, '0').slice(0, 2)}`
+}
+
 export default function ParentStrengths({ student, journals, today, loading, error }: Props) {
   const subjects = new Map<string, { name: string; sum: number; count: number }>()
   for (const journal of journals) {
@@ -33,9 +38,9 @@ export default function ParentStrengths({ student, journals, today, loading, err
   const colors = new Map([...subjects.keys()].sort().map((id, index) => [id, `hsl(${(155 + index * 137.508) % 360} 58% 43%)`]))
   const strengths = [...subjects].map(([id, subject]) => ({ id, ...subject, average: subject.sum / subject.count, color: colors.get(id)! }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
-  const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(value)
+  const overallAverage = strengths.length ? strengths.reduce((sum, subject) => sum + subject.average, 0) / strengths.length : null
   return <section className="parent-strengths" aria-label={`Средний балл — ${student.name}`}>
-    <header><h3>Средний балл</h3><p>По итоговым оценкам за текущий учебный год</p></header>
+    <header><h3>Средний балл{!loading && !error && overallAverage != null ? `: ${formatNumber(overallAverage)}` : ''}</h3><p>По итоговым оценкам за текущий учебный год</p></header>
     {loading ? <p className="parent-weekly-message" role="status">Загружаем средний балл…</p>
       : error ? <p className="content-error">{error}</p>
         : strengths.length ? <div className="strength-chart-layout">
