@@ -656,6 +656,18 @@ button.grade-control:hover:not(:disabled) {
 .parent-weekly-subject li > div { display: grid; gap: .2rem; color: #36536b; font-size: .85rem; }
 .parent-weekly-subject time { color: #6a8093; font-size: .78rem; }
 .parent-weekly-score { padding: .25rem .5rem; color: #174f78; background: #dcecf6; border-radius: .45rem; text-align: center; }
+.parent-report-card { padding: 1rem 1.15rem; border-top: 1px solid #e2e9ef; }
+.parent-report-card h3 { margin: 0; color: #29465e; font-size: .95rem; }
+.parent-report-card header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
+.parent-report-quarter { margin-top: 1rem; }
+.parent-report-quarter h4 { margin: 0 0 .5rem; color: #183f5d; font-size: .9rem; }
+.parent-report-quarter table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .85rem; }
+.parent-report-quarter th, .parent-report-quarter td { padding: .55rem .6rem; border-bottom: 1px solid #e2e9ef; text-align: left; overflow-wrap: anywhere; }
+.parent-report-quarter thead th { color: #6a8093; font-size: .75rem; font-weight: 500; }
+.parent-report-quarter tbody th { color: #36536b; font-weight: 500; }
+.parent-report-quarter th:last-child, .parent-report-quarter td:last-child { width: 6rem; text-align: right; }
+.parent-report-quarter td strong { display: inline-block; padding: .25rem .5rem; color: #174f78; background: #dcecf6; border-radius: .45rem; }
+.parent-report-quarter small { display: block; margin-top: .25rem; color: #657b8e; font-size: .78rem; font-weight: 400; line-height: 1.4; white-space: pre-wrap; }
 .parent-weekly-subject li > p { grid-column: 1 / -1; margin: 0; color: #657b8e; font-size: .8rem; line-height: 1.4; }
 .parent-student-export { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .85rem 1.15rem; border-top: 1px solid #e2e9ef; }
 .parent-student-export > small { color: #6a8093; font-size: .78rem; }

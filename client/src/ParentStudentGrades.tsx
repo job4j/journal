@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import ParentRiskGrades from './ParentRiskGrades'
 import ParentStrengths from './ParentStrengths'
+import ParentReportCard from './ParentReportCard'
 import { ParentJournal, ParentStudent, getParentStudentJournal, listParentStudentPeriods } from './parentJournal'
 
 function dateString(date: Date) {
@@ -64,5 +65,5 @@ export default function ParentStudentGrades({ student }: { student: ParentStuden
             {score.teacherComment && <p>{score.teacherComment}</p>}
           </li>)}</ul>
         </div>) : <p className="parent-weekly-message">За текущую неделю оценок пока нет</p>}
-  </section><ParentStrengths student={student} journals={journals} today={week.today} loading={loading} error={error} /><ParentRiskGrades student={student} journals={journals} today={week.today} loading={loading} error={error} /></>
+  </section><ParentReportCard student={student} journals={journals} today={week.today} loading={loading} error={error} /><ParentStrengths student={student} journals={journals} today={week.today} loading={loading} error={error} /><ParentRiskGrades student={student} journals={journals} today={week.today} loading={loading} error={error} /></>
 }

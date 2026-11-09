@@ -153,3 +153,24 @@ it('shows risk grades outside this week using the same journal request as the we
   expect(within(weekly).queryByText('Работа ранняя двойка')).not.toBeInTheDocument()
   expect(getJournal).toHaveBeenCalledTimes(1)
 })
+
+it('shows final grades in the child report card without extra journal requests', async () => {
+  const getJournal = mockJournal()
+  getJournal.mockResolvedValue({
+    student, academicYear: { ...period.academicYear, quarters: [
+      { id: 'quarter-1', number: 1, name: 'I четверть', startsOn: '2026-09-01', endsOn: '2026-10-30' },
+      { id: 'quarter-2', number: 2, name: 'II четверть', startsOn: '2026-11-09', endsOn: '2026-12-30' },
+    ] }, class: period.class,
+    subjects: [{ classSubject: subject, lessons: [], quarterGrades: [
+      { id: 'final', quarterId: 'quarter-1', classSubjectId: subject.id, studentId: student.id, gradingScale: 'five_point', numericValue: 4, teacherComment: 'Итог за четверть' },
+    ] }],
+  })
+  render(<ParentJournalView />)
+  const report = await screen.findByRole('region', { name: `Табель — ${student.name}` })
+  const table = await within(report).findByRole('table', { name: 'Итоги — I четверть' })
+  expect(within(table).getByText('Математика')).toBeInTheDocument()
+  expect(within(table).getByText('4')).toBeInTheDocument()
+  expect(within(table).getByText('Итог за четверть')).toBeInTheDocument()
+  expect(within(report).queryByText('II четверть')).not.toBeInTheDocument()
+  expect(getJournal).toHaveBeenCalledTimes(1)
+})
