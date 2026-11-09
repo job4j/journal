@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ClassOverviewView from './ClassOverviewView'
 
@@ -91,11 +91,14 @@ describe('class overview', () => {
       { label: 'Математика' },
     ])
     expect(await screen.findAllByText('Анна Иванова')).toHaveLength(1)
-    expect(screen.getByText('Итоги')).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'Итог / средний' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Изменить итог Анна Иванова' })).toHaveTextContent('5')
+    expect(screen.getByLabelText('Средний балл Анна Иванова за период')).toHaveTextContent('—')
     const period = screen.getByLabelText('Период')
     expect(period).toHaveValue('quarter-1')
 
     await userEvent.selectOptions(period, 'quarter-2')
     expect(period).toHaveValue('quarter-2')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Изменить итог Анна Иванова' })).toHaveTextContent('4'))
   })
 })
