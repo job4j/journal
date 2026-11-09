@@ -721,6 +721,23 @@ button.teacher-retake-score:hover:not(:disabled) { box-shadow: 0 0 0 2px #b5c9d8
 button.teacher-retake-score:focus-visible { outline: 2px solid #2b74aa; outline-offset: 2px; }
 button.teacher-retake-score:disabled { cursor: default; opacity: .6; }
 .parent-strengths { padding: 1rem 1.15rem; border-top: 1px solid #e2e9ef; }
+.schedule-toolbar, .schedule-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.schedule-toolbar label { display: grid; gap: .3rem; color: #39546c; font-size: .8rem; }
+.schedule-toolbar input { padding: .5rem; border: 1px solid #cbd9e3; border-radius: .45rem; font: inherit; }
+.schedule-hint { margin: 0; color: #657b8e; font-size: .82rem; line-height: 1.5; }
+.schedule-scroll { overflow-x: auto; }
+.schedule-table { width: 100%; min-width: 65rem; border-collapse: collapse; table-layout: fixed; }
+.schedule-table th, .schedule-table td { border: 1px solid #e2e9ef; padding: .5rem; vertical-align: top; }
+.schedule-table thead th { background: #f3f7fa; color: #39546c; text-align: left; text-transform: capitalize; }
+.schedule-table small { display: block; margin-top: .25rem; color: #657b8e; font-size: .75rem; font-weight: 400; text-transform: none; white-space: pre-wrap; }
+.schedule-table th:first-child { width: 2.5rem; }
+.schedule-entry { display: block; width: 100%; margin-bottom: .4rem; padding: .6rem; border: 1px solid #c9dfed; border-radius: .5rem; background: #edf6fc; color: #224d6c; text-align: left; font: inherit; font-size: .82rem; cursor: pointer; overflow-wrap: anywhere; }
+.schedule-entry-extra { border-color: #e1d8c2; background: #faf6ed; }
+.schedule-entry > span { display: block; margin-top: .3rem; color: #89734b; font-size: .7rem; }
+.schedule-add { border: 1px dashed #cbd9e3; border-radius: .4rem; width: 100%; background: transparent; color: #6a8093; cursor: pointer; }
+.schedule-entry:hover:not(:disabled), .schedule-add:hover:not(:disabled) { border-color: #2b74aa; }
+.schedule-entry:focus-visible, .schedule-add:focus-visible { outline: 2px solid #2b74aa; outline-offset: 2px; }
+.schedule-outside { background: #f3f5f7; }
 .parent-strengths h3 { margin: 0; color: #25694f; font-size: .95rem; }
 .parent-strengths header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }
 .strength-chart-layout { display: grid; gap: .85rem; margin-top: .9rem; }

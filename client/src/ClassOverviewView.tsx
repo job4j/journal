@@ -5,6 +5,7 @@ import { ClassSubjectRecord, listClassSubjects } from './classSubjects'
 import ClassRosterView from './ClassRosterView'
 import ClassSubjectsView from './ClassSubjectsView'
 import TeacherLessonsView from './TeacherLessonsView'
+import ClassScheduleView from './ClassScheduleView'
 
 type Breadcrumb = { label: string; action?: () => void }
 
@@ -16,10 +17,10 @@ interface Props {
   setBreadcrumbs?: (items: Breadcrumb[]) => void
 }
 
-type Section = 'summary' | 'roster' | 'subjects'
+type Section = 'summary' | 'roster' | 'subjects' | 'schedule'
 
 export default function ClassOverviewView({ item, year, onBack, onCountChange, setBreadcrumbs }: Props) {
-  const [section, setSection] = useState<Section>('summary')
+  const [section, setSection] = useState<Section>(location.hash.endsWith('/schedule') ? 'schedule' : 'summary')
   const [journal, setJournal] = useState<ClassSubjectRecord | null>(null)
   const [students, setStudents] = useState<ClassStudent[]>([])
   const [subjects, setSubjects] = useState<ClassSubjectRecord[]>([])
@@ -69,6 +70,7 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange, s
     if (journal) items.push({ label: journal.subject.name })
     else if (section === 'roster') items.push({ label: 'Ученики' })
     else if (section === 'subjects') items.push({ label: 'Предметы' })
+    else if (section === 'schedule') items.push({ label: 'Расписание' })
     else items.push({ label: item.name })
     setBreadcrumbs?.(items)
   }, [item.name, journal, onBack, section, setBreadcrumbs, showSummary])
@@ -88,6 +90,9 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange, s
       />
     )
   }
+  if (section === 'schedule') return year && !loading
+    ? <ClassScheduleView item={item} year={year} subjects={subjects} onBack={showSummary} />
+    : <div className="empty-card">{error || 'Загружаем расписание…'}</div>
   if (section === 'subjects') {
     return <ClassSubjectsView item={item} />
   }
@@ -106,6 +111,7 @@ export default function ClassOverviewView({ item, year, onBack, onCountChange, s
     <div className="content-stack">
       <div className="page-actions">
         <div className="heading-actions">
+          <button className="secondary-action" type="button" disabled={loading || !year || Boolean(error)} onClick={() => {location.hash=`classes/${item.id}/schedule`;setSection('schedule')}}>Расписание</button>
           <button
             className="primary-action"
             type="button"

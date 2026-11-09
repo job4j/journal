@@ -34,6 +34,23 @@ afterEach(() => {
   location.hash = ''
 })
 
+it('opens the class schedule from the administrator class card', async () => {
+  vi.spyOn(globalThis,'fetch').mockImplementation(async input => {
+    const url=String(input)
+    if (url.includes('/schedule/')) return new Response(JSON.stringify({week:{weekStart:url.split('/').pop(),revision:0,entries:[]}}),{status:200})
+    if (url.endsWith('/students')) return new Response(JSON.stringify({items:[student]}),{status:200})
+    if (url.endsWith('/subjects')) return new Response(JSON.stringify({items:[assignment]}),{status:200})
+    return new Response(null,{status:404})
+  })
+  render(<ClassOverviewView item={item} year={{id:'year-1',name:'2026/2027',startsOn:'2026-09-01',endsOn:'2027-05-31',status:'active',quarters:[]}} onBack={() => {}} onCountChange={() => {}} />)
+  await waitFor(() => expect(screen.getByRole('button',{name:'Расписание'})).toBeEnabled())
+  await userEvent.click(screen.getByRole('button',{name:'Расписание'}))
+  expect(await screen.findByRole('table',{name:'Расписание 7А'})).toBeInTheDocument()
+  expect(location.hash).toBe('#classes/class-1/schedule')
+  await userEvent.click(screen.getByRole('button',{name:'← К классу'}))
+  expect(await screen.findByRole('button',{name:'Расписание'})).toBeInTheDocument()
+})
+
 describe('class overview', () => {
   it('shows students, subjects and period grades', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
