@@ -52,6 +52,15 @@ type ClassService struct {
 	domain    *domain.ClassDomain
 }
 
+type ScheduleService struct {
+	txManager repository.TransactionManager
+	domain    *domain.ScheduleDomain
+}
+
+func NewScheduleService(txManager repository.TransactionManager, repo repository.ScheduleRepository) *ScheduleService {
+	return &ScheduleService{txManager: txManager, domain: domain.NewScheduleDomain(repo)}
+}
+
 func NewClassService(txManager repository.TransactionManager, repo repository.ClassReadRepository) *ClassService {
 	return &ClassService{txManager: txManager, domain: domain.NewClassDomain(repo)}
 }

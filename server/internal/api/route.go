@@ -2,6 +2,11 @@ package api
 
 import "github.com/gofiber/fiber/v2"
 
+func (h *ScheduleHandler) Register(router fiber.Router) {
+	router.Get("/classes/:classId/schedule/:weekStart", h.GetClassSchedule)
+	router.Put("/classes/:classId/schedule/:weekStart", h.ReplaceClassSchedule)
+}
+
 func (h *AuthHandler) Register(router fiber.Router) {
 	router.Post("/auth/login", h.Login)
 	router.Post("/auth/logout", h.Logout)

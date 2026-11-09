@@ -54,6 +54,7 @@ func main() {
 	httpapi.NewAcademicYearHandler(academicYearService, logger).Register(apiRouter)
 	httpapi.NewSubjectHandler(subjectService, logger).Register(apiRouter)
 	httpapi.NewClassHandler(classService, logger).Register(apiRouter)
+	httpapi.NewScheduleHandler(service.NewScheduleService(txManager, appRepository), logger).Register(apiRouter)
 
 	// The root spec is served by the Swagger middleware at /api/openapi.yml.
 	// Expose its sibling path files so relative $ref values resolve in Swagger UI.

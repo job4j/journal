@@ -69,6 +69,15 @@ type ClassHandler struct {
 	service ClassService
 	logger  *slog.Logger
 }
+
+type ScheduleHandler struct {
+	service ScheduleService
+	logger  *slog.Logger
+}
+type ScheduleService interface {
+	GetClassSchedule(context.Context, string, domain.GetClassScheduleRequest) (domain.GetClassScheduleResponse, error)
+	ReplaceClassSchedule(context.Context, string, domain.ReplaceClassScheduleRequest) (domain.ReplaceClassScheduleResponse, error)
+}
 type ClassService interface {
 	ListClasses(context.Context, string, uuid.UUID) ([]domain.ClassView, error)
 	GetClass(context.Context, string, uuid.UUID) (domain.ClassView, error)
