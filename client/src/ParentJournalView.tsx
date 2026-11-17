@@ -9,9 +9,9 @@ function formatLessonDate(value: string) {
   return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' }).format(new Date(`${value}T00:00:00`))
 }
 
-function scoreValue(score: { numericValue?: number | null; textValue?: string | null } | undefined) {
+function scoreValue(score: { numericValue?: number | null; textValue?: string | null; teacherComment?: string | null } | undefined) {
   if (!score) return '—'
-  return score.numericValue ?? (score.textValue === 'pass' ? 'Зачёт' : 'Незачёт')
+  return score.numericValue ?? (score.textValue === 'pass' ? 'Зачёт' : score.textValue === 'fail' ? 'Незачёт' : score.teacherComment ? 'Комментарий' : '—')
 }
 
 export default function ParentJournalView() {

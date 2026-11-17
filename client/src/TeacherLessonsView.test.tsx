@@ -8,6 +8,47 @@ const assignment={id:'link-1',classId:'class-1',subject:{id:'s-1',code:'MATH',na
 const student={student:{id:'student-1',name:'Анна'+' '+'Иванова',roles:['student']},enrolledOn:'2026-09-01',leftOn:null}
 afterEach(()=>{cleanup();vi.restoreAllMocks();document.cookie='journal_period_view=; Max-Age=0; Path=/'})
 
+it('creates, edits and deletes a behavior comment without a grade', async () => {
+ const lesson={id:'l-behavior',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Дроби',materials:[],absences:[],gradeItems:[]}
+ const item={id:'g-behavior',lessonId:lesson.id,title:'Поведение',kind:'behavior',gradingScale:'five_point',scores:[]}
+ const score={id:'s-behavior',gradeItemId:item.id,studentId:student.student.id,teacherComment:'Опоздание на 10 минут'}
+ const fetch=vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[student]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({gradeItem:item}),{status:201}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({score}),{status:200}))
+  .mockResolvedValueOnce(new Response(JSON.stringify({score:{...score,teacherComment:'Обсудили опоздание'}}),{status:200}))
+  .mockResolvedValueOnce(new Response(null,{status:204}))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/> )
+ await userEvent.click(await screen.findByRole('button',{name:'Добавить Поведение'}))
+ expect(screen.queryByLabelText('Оценка Поведение')).not.toBeInTheDocument()
+ expect(screen.queryByRole('checkbox',{name:'Оценка отработана'})).not.toBeInTheDocument()
+ expect(screen.getByRole('button',{name:'Сохранить комментарий'})).toBeDisabled()
+ await userEvent.type(screen.getByLabelText('Комментарий Поведение'),'   ')
+ expect(screen.getByRole('button',{name:'Сохранить комментарий'})).toBeDisabled()
+ await userEvent.clear(screen.getByLabelText('Комментарий Поведение'))
+ await userEvent.type(screen.getByLabelText('Комментарий Поведение'),score.teacherComment)
+ await userEvent.click(screen.getByRole('button',{name:'Сохранить комментарий'}))
+ const marker=await screen.findByLabelText('Есть комментарий о поведении')
+ expect(marker).toBeInTheDocument()
+ expect(fetch.mock.calls[3][1]).toEqual(expect.objectContaining({body:JSON.stringify({title:'Поведение',kind:'behavior',gradingScale:'five_point'}),method:'POST'}))
+ expect(fetch.mock.calls[4][1]).toEqual(expect.objectContaining({body:JSON.stringify({teacherComment:score.teacherComment}),method:'PUT'}))
+ expect(screen.getByLabelText('Средний балл Анна Иванова за период')).toHaveTextContent('—')
+ expect(screen.queryByRole('region',{name:'Список учеников с отработками'})).not.toBeInTheDocument()
+ await userEvent.click(screen.getByRole('button',{name:'Изменить комментарий Поведение'}))
+ expect(screen.getByLabelText('Комментарий Поведение')).toHaveValue(score.teacherComment)
+ expect(screen.queryByLabelText('Оценка Поведение')).not.toBeInTheDocument()
+ await userEvent.clear(screen.getByLabelText('Комментарий Поведение'))
+ await userEvent.type(screen.getByLabelText('Комментарий Поведение'),'Обсудили опоздание')
+ await userEvent.click(screen.getByRole('button',{name:'Сохранить'}))
+ await waitFor(()=>expect(screen.getByRole('button',{name:'Изменить комментарий Поведение'})).toHaveAttribute('title','Обсудили опоздание'))
+ await userEvent.click(screen.getByRole('button',{name:'Изменить комментарий Поведение'}))
+ await userEvent.click(screen.getByRole('button',{name:'Удалить'}))
+ await waitFor(()=>expect(screen.queryByLabelText('Есть комментарий о поведении')).not.toBeInTheDocument())
+ expect(fetch).toHaveBeenLastCalledWith(`/api/v1/grade-items/${item.id}/scores/${student.student.id}`,expect.objectContaining({method:'DELETE'}))
+})
+
 it('shows a period average from all lessons independent of the visible week', async () => {
  const lessons = ['2026-09-01','2026-09-15','2026-09-30','2026-08-31','2026-10-01'].map((date,index) => {
   const {lesson} = gradedLesson(`average-${index}`,date)

@@ -61,7 +61,7 @@ export default function ParentStudentGrades({ student }: { student: ParentStuden
           <h4>{subject.name}</h4>
           <ul>{subject.grades.map(({ score, work, date }) => <li key={score.id}>
             <div><time dateTime={date}>{formatDate(date)}</time><span>{work}</span></div>
-            <strong className="parent-weekly-score">{score.numericValue ?? (score.textValue === 'pass' ? 'Зачёт' : 'Незачёт')}</strong>
+            <strong className="parent-weekly-score">{score.numericValue ?? (score.textValue === 'pass' ? 'Зачёт' : score.textValue === 'fail' ? 'Незачёт' : 'Комментарий')}</strong>
             {score.teacherComment && <p>{score.teacherComment}</p>}
           </li>)}</ul>
         </div>) : <p className="parent-weekly-message">За текущую неделю оценок пока нет</p>}

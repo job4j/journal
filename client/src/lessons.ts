@@ -2,7 +2,7 @@ import{request}from'./api'
 export interface LessonMaterial{id:string;title:string;url:string;position:number}
 export interface Score{isRemediated?:boolean;id:string;gradeItemId:string;studentId:string;numericValue?:number|null;textValue?:string|null;teacherComment?:string|null}
 export interface Absence{id:string;lessonId:string;studentId:string}
-export interface GradeItem{id:string;lessonId:string;title:string;kind:'homework'|'classwork'|'knowledge_check'|'other';gradingScale:'five_point'|'points'|'pass_fail';maxScore?:number|null;scores:Score[]}
+export interface GradeItem{id:string;lessonId:string;title:string;kind:'homework'|'classwork'|'knowledge_check'|'behavior'|'other';gradingScale:'five_point'|'points'|'pass_fail';maxScore?:number|null;scores:Score[]}
 export type GradeItemDraft=Omit<GradeItem,'id'|'lessonId'|'scores'>
 export interface LessonRecord{id:string;classSubjectId:string;lessonDate:string;position:number;topic:string;homework?:string|null;materials:LessonMaterial[];gradeItems:GradeItem[];absences:Absence[]}
 export interface LessonDraft{lessonDate:string;position:number;topic:string;homework?:string;materials:{title:string;url:string;position:number}[]}

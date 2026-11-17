@@ -77,3 +77,26 @@ func TestLessonResponsePreservesRemediation(t *testing.T) {
 		t.Fatal("journal response lost remediation")
 	}
 }
+
+func TestPutStudentScoreAcceptsBehaviorCommentWithoutGrade(t *testing.T) {
+	stub := &scoreServiceStub{}
+	app := fiber.New()
+	NewClassHandler(stub, slog.New(slog.NewTextHandler(io.Discard, nil))).Register(app)
+	request := httptest.NewRequest("PUT", "/grade-items/"+uuid.NewString()+"/scores/"+uuid.NewString(), strings.NewReader(`{"teacherComment":"Опоздание на 10 минут"}`))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := app.Test(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		t.Fatalf("status=%d", response.StatusCode)
+	}
+	var body gen.PutStudentScoreResponse
+	if err := json.NewDecoder(response.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Score.NumericValue != nil || body.Score.TextValue != nil || body.Score.TeacherComment == nil || *body.Score.TeacherComment != "Опоздание на 10 минут" {
+		t.Fatalf("body=%+v", body)
+	}
+}

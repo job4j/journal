@@ -24,8 +24,8 @@ func (h *ClassHandler) PutStudentScore(c *fiber.Ctx) error {
 		return writeError(c, 400, "invalid_student_id", "Некорректный идентификатор ученика")
 	}
 	var body putScoreBody
-	if err = c.BodyParser(&body); err != nil || (body.NumericValue == nil) == (body.TextValue == nil) {
-		return writeError(c, 400, "invalid_request", "Нужно передать один вид оценки")
+	if err = c.BodyParser(&body); err != nil || (body.NumericValue != nil && body.TextValue != nil) || (body.NumericValue == nil && body.TextValue == nil && body.TeacherComment == nil) {
+		return writeError(c, 400, "invalid_request", "Нужно передать оценку или комментарий о поведении")
 	}
 	score, err := h.service.PutStudentScore(c.UserContext(), c.Cookies("journal_session"), gradeItemID, studentID, body.NumericValue, body.TextValue, body.TeacherComment, body.IsRemediated)
 	if err != nil {

@@ -5,7 +5,7 @@ import type { GradeItem, LessonRecord } from './lessons'
 export default function TeacherRetakesView({ lessons, students, renderScore }: { lessons: LessonRecord[]; students: ClassStudent[]; renderScore?: (item: GradeItem, member: ClassStudent, date: string) => ReactNode }) {
   const members = new Map(students.map(member => [member.student.id, member]))
   const retakes = lessons.flatMap(lesson => lesson.gradeItems
-    .filter(item => item.gradingScale === 'five_point')
+    .filter(item => item.kind !== 'behavior' && item.gradingScale === 'five_point')
     .flatMap(item => item.scores
       .filter(score => !score.isRemediated && (score.numericValue === 2 || score.numericValue === 3) && members.has(score.studentId))
       .map(score => ({ id: score.id, gradeItem: item, member: members.get(score.studentId)!, student: members.get(score.studentId)!.student.name, value: score.numericValue, date: lesson.lessonDate, position: lesson.position, topic: lesson.topic, work: item.title }))))

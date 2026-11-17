@@ -28,7 +28,7 @@ export default function ParentStrengths({ student, journals, today, loading, err
       const id = subject.classSubject.subject.id
       for (const { lesson } of subject.lessons) {
         for (const item of lesson.gradeItems) {
-          if (item.gradingScale !== 'five_point') continue
+          if (item.kind === 'behavior' || item.gradingScale !== 'five_point') continue
           for (const score of item.scores) {
             if (score.numericValue == null || !Number.isFinite(score.numericValue)) continue
             const summary = subjects.get(id) ?? { name: subject.classSubject.subject.name, sum: 0, count: 0 }

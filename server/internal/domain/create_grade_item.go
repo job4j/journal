@@ -33,7 +33,7 @@ func (d *ClassDomain) CreateGradeItem(ctx context.Context, tx repository.Transac
 		return entity.GradeItem{}, err
 	}
 	title = strings.TrimSpace(title)
-	validKind := kind == "homework" || kind == "classwork" || kind == "knowledge_check" || kind == "other"
+	validKind := kind == "homework" || kind == "classwork" || kind == "knowledge_check" || kind == "behavior" || kind == "other"
 	validScale := scale == "five_point" || scale == "points" || scale == "pass_fail"
 	if title == "" || !validKind || !validScale || (scale == "points" && (maxScore == nil || *maxScore <= 0)) || (scale != "points" && maxScore != nil) {
 		return entity.GradeItem{}, ErrInvalidGradeItem

@@ -14,6 +14,7 @@ export default function ParentRiskGrades({ student, journals, today, loading, er
       const subjectName = subject.classSubject.subject.name
       const lessonGrades = subject.lessons.flatMap(({ lesson }) => lesson.gradeItems
         .filter(item => item.gradingScale === 'five_point')
+        .filter(item => item.kind !== 'behavior')
         .flatMap(item => item.scores.filter(score => !score.isRemediated && (score.numericValue === 2 || score.numericValue === 3))
           .map(score => ({ id: score.id, subjectName, work: item.title, date: lesson.lessonDate, position: lesson.position, value: score.numericValue, comment: score.teacherComment }))))
       const periodGrades = (subject.quarterGrades ?? [])

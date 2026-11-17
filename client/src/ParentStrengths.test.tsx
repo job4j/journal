@@ -6,6 +6,17 @@ import type { GradeItem } from './lessons'
 
 afterEach(cleanup)
 
+it('excludes behavior comments from the average', () => {
+ const journal=journalFixture()
+ const behavior=gradedLesson('behavior','2026-10-20')
+ behavior.lesson.gradeItems[0].kind='behavior'
+ behavior.lesson.gradeItems[0].scores[0].numericValue=null
+ behavior.lesson.gradeItems[0].scores[0].teacherComment='Опоздание'
+ journal.subjects[0].lessons=[workGrade('work',5),behavior]
+ render(<ParentStrengths student={journal.student} journals={[journal]} today="2026-10-21" loading={false} error="" />)
+ expect(screen.getByRole('heading',{name:'Средний балл: 5,00'})).toBeInTheDocument()
+})
+
 function workGrade(id: string, value: number, scale: GradeItem['gradingScale'] = 'five_point') {
   const entry = gradedLesson(id, '2026-10-19')
   entry.lesson.gradeItems[0].gradingScale = scale

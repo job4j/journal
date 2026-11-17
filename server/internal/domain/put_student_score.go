@@ -49,10 +49,14 @@ func (d *ClassDomain) PutStudentScore(ctx context.Context, tx repository.Transac
 	if lessonDay.Before(dayUTC(membership.EnrolledOn)) || (membership.LeftOn != nil && lessonDay.After(dayUTC(*membership.LeftOn))) {
 		return entity.Score{}, ErrClassStudentNotFound
 	}
-	if !validScore(item, numeric, text) {
+	comment = trimmedOptional(comment)
+	if item.Kind == "behavior" {
+		if numeric != nil || text != nil || comment == nil || remediated {
+			return entity.Score{}, ErrInvalidScore
+		}
+	} else if !validScore(item, numeric, text) {
 		return entity.Score{}, ErrInvalidScore
 	}
-	comment = trimmedOptional(comment)
 	if remediated && comment == nil {
 		return entity.Score{}, ErrRemediationCommentRequired
 	}

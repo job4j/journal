@@ -463,7 +463,8 @@ components:
 
     GradeItemKind:
       type: string
-      enum: [homework, classwork, knowledge_check, other]
+      description: behavior — комментарий о поведении без оценки, не влияет на средний балл.
+      enum: [homework, classwork, knowledge_check, behavior, other]
 
     GradingScale:
       type: string
@@ -1285,6 +1286,16 @@ components:
       oneOf:
         - $ref: '#/components/schemas/PutNumericStudentScoreRequest'
         - $ref: '#/components/schemas/PutTextStudentScoreRequest'
+        - $ref: '#/components/schemas/PutBehaviorCommentRequest'
+    PutBehaviorCommentRequest:
+      type: object
+      additionalProperties: false
+      description: Только для работы типа behavior. Непустой комментарий без numericValue и textValue. Отработка недоступна.
+      required: [teacherComment]
+      properties:
+        teacherComment:
+          type: string
+          minLength: 1
     PutNumericStudentScoreRequest:
       type: object
       additionalProperties: false

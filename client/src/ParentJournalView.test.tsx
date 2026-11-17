@@ -35,6 +35,29 @@ function mockJournal(lessons: LessonRecord[] = []) {
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
 
+it('shows behavior comments on the child card and in the subject journal without a grade', async () => {
+ const entry=lesson('behavior','2026-10-20')
+ entry.gradeItems[0].kind='behavior'
+ entry.gradeItems[0].title='Поведение'
+ entry.gradeItems[0].scores[0].numericValue=null
+ entry.gradeItems[0].scores[0].teacherComment='Опоздание на 10 минут'
+ mockJournal([entry])
+ render(<ParentJournalView />)
+ const weekly=await screen.findByRole('region',{name:`Оценки за неделю — ${student.name}`})
+ expect(await within(weekly).findByText('Поведение')).toBeInTheDocument()
+ expect(within(weekly).getByText('Комментарий')).toBeInTheDocument()
+ expect(within(weekly).getByText('Опоздание на 10 минут')).toBeInTheDocument()
+ expect(screen.queryByText('Незачёт')).not.toBeInTheDocument()
+ await userEvent.click(screen.getByRole('button',{name:student.name}))
+ await userEvent.click(await screen.findByRole('button',{name:period.class.name}))
+ await userEvent.click(await screen.findByRole('button',{name:subject.subject.name}))
+ expect(await screen.findByText('Опоздание на 10 минут')).toBeInTheDocument()
+ expect(screen.getByText('Поведение')).toBeInTheDocument()
+ expect(screen.getByText('Комментарий')).toBeInTheDocument()
+ expect(screen.queryByText('Незачёт')).not.toBeInTheDocument()
+ expect(screen.queryByRole('button',{name:/Сохранить/})).not.toBeInTheDocument()
+})
+
 it('opens the mobile weekly schedule from the child card', async () => {
   mockJournal()
   vi.spyOn(scheduleAPI,'getParentSchedule').mockImplementation(async(_student,_class,start)=>({weekStart:start,entries:[{id:'scheduled',day:'2026-10-19',position:1,classSubjectId:subject.id,title:'Математика',notes:'',startsAt:'08:45',endsAt:'09:30',homework:'Упражнение 5',homeworkFrom:'2026-10-16'}]}))

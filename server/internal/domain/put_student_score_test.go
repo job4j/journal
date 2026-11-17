@@ -87,6 +87,75 @@ func TestPutStudentScoreRejectsFormerStudentAndOtherTeacher(t *testing.T) {
 func floatPointer(value float64) *float64 { return &value }
 func stringPointer(value string) *string  { return &value }
 
+func TestPutStudentScoreBehaviorComment(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		comment    *string
+		numeric    *float64
+		text       *string
+		remediated bool
+		want       error
+	}{
+		{name: "comment only", comment: stringPointer("  Опоздание на 10 минут  ")},
+		{name: "missing", want: ErrInvalidScore},
+		{name: "whitespace", comment: stringPointer(" \t\n\u00a0 "), want: ErrInvalidScore},
+		{name: "numeric", comment: stringPointer("Опоздание"), numeric: floatPointer(2), want: ErrInvalidScore},
+		{name: "text grade", comment: stringPointer("Опоздание"), text: stringPointer("fail"), want: ErrInvalidScore},
+		{name: "remediated", comment: stringPointer("Опоздание"), remediated: true, want: ErrInvalidScore},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo, itemID, studentID := scoreFixture("five_point")
+			repo.gradeItems[0].Kind = "behavior"
+			stored := entity.Score{}
+			repo.upsertedScore = &stored
+			_, err := NewClassDomain(repo).PutStudentScore(context.Background(), testTx{}, "hash", itemID, studentID, tc.numeric, tc.text, tc.comment, tc.remediated)
+			if !errors.Is(err, tc.want) {
+				t.Fatalf("error=%v, want %v", err, tc.want)
+			}
+			if tc.want != nil {
+				if stored.UserID != uuid.Nil {
+					t.Fatal("invalid behavior persisted")
+				}
+			} else if stored.NumericValue != nil || stored.TextValue != nil || stored.IsRemediated || stored.TeacherComment == nil || *stored.TeacherComment != "Опоздание на 10 минут" || stored.UserID != studentID || stored.CreatedBy != repo.currentUser.ID {
+				t.Fatalf("stored=%+v", stored)
+			}
+		})
+	}
+}
+
+func TestPutStudentScoreBehaviorCannotBypassAccess(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		change func(*classRepoStub)
+		want   error
+	}{
+		{"other teacher", func(r *classRepoStub) { r.classSubjects[0].ResponsibleTeacherID = uuid.New() }, ErrForbidden},
+		{"no permission", func(r *classRepoStub) { r.allowed = false }, ErrForbidden},
+		{"former student", func(r *classRepoStub) {
+			left := r.lessons[0].LessonDate.AddDate(0, 0, -1)
+			r.students[0].LeftOn = &left
+		}, ErrClassStudentNotFound},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo, itemID, studentID := scoreFixture("five_point")
+			repo.gradeItems[0].Kind = "behavior"
+			tc.change(&repo)
+			_, err := NewClassDomain(repo).PutStudentScore(context.Background(), testTx{}, "hash", itemID, studentID, nil, nil, stringPointer("Опоздание"), false)
+			if !errors.Is(err, tc.want) {
+				t.Fatalf("error=%v", err)
+			}
+		})
+	}
+}
+
+func TestPutStudentScoreRegularWorkRequiresGrade(t *testing.T) {
+	repo, itemID, studentID := scoreFixture("five_point")
+	_, err := NewClassDomain(repo).PutStudentScore(context.Background(), testTx{}, "hash", itemID, studentID, nil, nil, stringPointer("Комментарий без оценки"), false)
+	if !errors.Is(err, ErrInvalidScore) {
+		t.Fatalf("error=%v", err)
+	}
+}
+
 func TestPutStudentScoreRemediationRequiresExplanation(t *testing.T) {
 	for _, comment := range []*string{nil, stringPointer(""), stringPointer(" \t\n "), stringPointer("\u00a0")} {
 		repo, itemID, studentID := scoreFixture("five_point")

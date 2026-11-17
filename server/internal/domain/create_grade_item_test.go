@@ -24,3 +24,11 @@ func TestCreateGradeItemValidatesScales(t *testing.T) {
 		t.Fatalf("error=%v", err)
 	}
 }
+
+func TestCreateGradeItemAcceptsBehavior(t *testing.T) {
+	repo, lessonID := gradeItemRepo()
+	item, err := NewClassDomain(repo).CreateGradeItem(context.Background(), testTx{}, "hash", lessonID, "Поведение", "behavior", "five_point", nil)
+	if err != nil || item.Kind != "behavior" || item.Title != "Поведение" {
+		t.Fatalf("item=%+v error=%v", item, err)
+	}
+}

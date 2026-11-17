@@ -47,16 +47,20 @@ export default function TeacherLessonsView({assignment,quarters=[]}:{assignment:
  return <div className="content-stack teacher-journal-view">{error&&<p className="content-error" role="alert">{error}</p>}{loading?<div className="empty-card">Загружаем журнал…</div>:<><div className="journal-toolbar"><div className="grade-legend" aria-label="Обозначения оценок">{gradeKinds.map(kind=><span key={kind}><GradeIcon kind={kind}/>{gradeLabels[kind]}</span>)}</div><div className="lesson-filters"><div className="period-view-toggle" aria-label="Отображение периода"><button type="button" aria-pressed={periodView==='week'} onClick={()=>changePeriodView('week')}>Неделя</button><button type="button" aria-pressed={periodView==='period'} onClick={()=>changePeriodView('period')}>Весь период</button></div>{periodView==='week'&&<div className="week-pagination" aria-label="Навигация по неделям"><button type="button" aria-label="Предыдущая неделя" disabled={!weekWindow?.hasPrevious} onClick={()=>setWeekOffset(value=>value-1)}>‹</button><button type="button" aria-label="Следующая неделя" disabled={!weekWindow?.hasNext} onClick={()=>setWeekOffset(value=>value+1)}>›</button></div>}{quarters.length>0?<label><span className="visually-hidden">Период</span><select aria-label="Период" value={quarterID} onChange={e=>{setQuarterID(e.target.value);setWeekOffset(0)}}>{quarters.map(item=><option value={item.id} key={item.id}>{formatPeriodLabel(item)}</option>)}</select></label>:<span className="summary-empty">Нет периодов</span>}</div></div><TeacherRetakesView lessons={items} students={students} renderScore={(item,member,date)=><ScoreEditor item={item} studentID={member.student.id} disabled={date<member.enrolledOn||Boolean(member.leftOn&&date>member.leftOn)} onSaved={scoreSaved} onDeleted={scoreDeleted} compact triggerLabel={`Изменить отработку ${member.student.name} · ${item.title} · ${date}`}/>}/><GradeTable assignmentID={assignment.id} periodView={periodView} weekOffset={weekOffset} items={items} students={students} from={from} to={to} quarterID={quarterID} quarterGrades={quarterGrades} onHomework={(date,lesson)=>{setEditingLessonID(lesson?.id??'');setDraft(lesson?{lessonDate:lesson.lessonDate,position:lesson.position,topic:lesson.topic,homework:lesson.homework??'',materials:lesson.materials.map(m=>({title:m.title,url:m.url,position:m.position}))}:{...emptyLesson(),lessonDate:date})}} onSaved={scoreSaved} onDeleted={scoreDeleted} onAbsence={absenceChanged} onQuarterGradeSaved={quarterGradeSaved} onQuarterGradeDeleted={quarterGradeDeleted} onAddGrade={(date,lesson,studentID,kind)=>setNewScore({date,lesson,studentID,kind})}/></>}{draft&&<LessonDialog draft={draft} setDraft={setDraft} saving={saving} submit={submit}/>}{newScore&&<NewScoreDialog assignmentID={assignment.id} date={newScore.date} lesson={newScore.lesson} studentID={newScore.studentID} kind={newScore.kind} onBack={()=>setNewScore(null)} onSaved={(lesson,saved)=>{setItems(current=>current.some(item=>item.id===lesson.id)?current.map(item=>item.id===lesson.id?{...item,gradeItems:[...item.gradeItems,saved]}:item):[...current,{...lesson,gradeItems:[saved],absences:lesson.absences??[]}]);setNewScore(null)}}/>}</div>
 }
 
-type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'absence'
-const gradeKinds: JournalKind[] = ['homework', 'classwork', 'knowledge_check', 'absence']
+type JournalKind = 'homework' | 'classwork' | 'knowledge_check' | 'behavior' | 'absence'
+const gradeKinds: JournalKind[] = ['homework', 'classwork', 'knowledge_check', 'behavior', 'absence']
 const gradeLabels: Record<JournalKind, string> = {
   homework: 'Домашняя работа',
   classwork: 'Работа на уроке',
   knowledge_check: 'Проверочная работа',
+  behavior: 'Поведение',
   absence: 'Пропуск',
 }
 
 function GradeIcon({ kind }: { kind: JournalKind }) {
+  if (kind === 'behavior') {
+    return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v10H9l-5 4V3ZM7 7h6M7 10h4"/></svg>
+  }
   if (kind === 'absence') {
     return <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m5 5 10 10"/></svg>
   }
@@ -153,7 +157,7 @@ function GradeTable({
     for (const lesson of items) {
       if ((from && lesson.lessonDate < from) || (to && lesson.lessonDate > to)) continue
       for (const item of lesson.gradeItems) {
-        if (item.gradingScale !== 'five_point') continue
+        if (item.kind === 'behavior' || item.gradingScale !== 'five_point') continue
         for (const score of item.scores) {
           if (score.numericValue == null || !Number.isFinite(score.numericValue)) continue
           const total = totals.get(score.studentId) ?? { sum: 0, count: 0 }
@@ -360,12 +364,13 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted, compact = 
   onDeleted: (gradeItemID: string, studentID: string) => void
 }) {
   const existing = item.scores.find((score) => score.studentId === studentID)
+  const behavior = item.kind === 'behavior'
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const [comment, setComment] = useState('')
   const [isRemediated, setIsRemediated] = useState(false)
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
-  const kind = item.kind === 'knowledge_check' ? 'knowledge_check'
+  const kind = item.kind === 'behavior' ? 'behavior' : item.kind === 'knowledge_check' ? 'knowledge_check'
     : item.kind === 'homework' ? 'homework' : 'classwork'
 
   function show() {
@@ -378,10 +383,10 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted, compact = 
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    if (!value || disabled || (isRemediated && !comment.trim())) return
+    if ((behavior ? !comment.trim() : !value || (isRemediated && !comment.trim())) || disabled) return
     setState('saving')
     try {
-      const payload = item.gradingScale === 'pass_fail'
+      const payload = behavior ? { teacherComment: comment.trim() } : item.gradingScale === 'pass_fail'
         ? { textValue: value, teacherComment: comment || undefined, isRemediated }
         : { numericValue: Number(value), teacherComment: comment || undefined, isRemediated }
       onSaved(await putStudentScore(item.id, studentID, payload))
@@ -407,40 +412,40 @@ function ScoreEditor({ item, studentID, disabled, onSaved, onDeleted, compact = 
     <>
       <button
         className={compact ? `teacher-retake-score teacher-retake-score-${existing?.numericValue}` : `grade-control ${existing ? `grade-control--${kind}` : 'grade-control--empty'}`}
-        aria-label={triggerLabel ?? `Изменить оценку ${item.title}`}
+        aria-label={triggerLabel ?? (behavior ? `Изменить комментарий ${item.title}` : `Изменить оценку ${item.title}`)}
         title={existing?.teacherComment || item.title}
         disabled={disabled}
         onClick={show}
       >
         {compact ? displayGrade(existing) : <>
         <GradeIcon kind={kind}/>
-        <span className="grade-value">{displayGrade(existing)}{existing?.teacherComment ? '*' : ''}</span>{existing?.isRemediated && <span className="remediated-mark" aria-label="Оценка отработана">✓</span>}
+        <span className="grade-value">{behavior ? (existing ? <span aria-label="Есть комментарий о поведении">●</span> : '') : <>{displayGrade(existing)}{existing?.teacherComment ? '*' : ''}</>}</span>{existing?.isRemediated && <span className="remediated-mark" aria-label="Оценка отработана">✓</span>}
         </>}
       </button>
       {open && (
         <div className="dialog-backdrop">
           <form className="role-dialog role-form" onSubmit={save}>
             <h3>{item.title}</h3>
-            <GradeValueField
+            {!behavior && <GradeValueField
               label={`Оценка ${item.title}`}
               scale={item.gradingScale}
               maxScore={item.maxScore ?? undefined}
               value={value}
               setValue={setValue}
-            />
-            <RemediationField checked={isRemediated} onChange={setIsRemediated} />
+            />}
+            {!behavior && <RemediationField checked={isRemediated} onChange={setIsRemediated} />}
             <label>
               Комментарий
               <textarea
                 aria-label={`Комментарий ${item.title}`}
-                required={isRemediated}
+                required={behavior || isRemediated}
                 value={comment}
                 onChange={(event) => setComment(event.target.value)}
               />
             </label>
-            {state === 'error' && <p className="content-error" role="alert">Не удалось изменить оценку</p>}
+            {state === 'error' && <p className="content-error" role="alert">{behavior ? 'Не удалось изменить комментарий' : 'Не удалось изменить оценку'}</p>}
             <div className="dialog-actions">
-              <button className="primary-action" disabled={!value || (isRemediated && !comment.trim()) || state === 'saving'}>
+              <button className="primary-action" disabled={(behavior ? !comment.trim() : !value || (isRemediated && !comment.trim())) || state === 'saving'}>
                 {state === 'saving' ? 'Сохраняем…' : 'Сохранить'}
               </button>
               <button type="button" className="secondary-action" onClick={() => setOpen(false)}>
@@ -509,6 +514,7 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
   onSaved: (lesson: LessonRecord, item: GradeItem) => void
 }) {
   const title = gradeLabels[kind as JournalKind] ?? 'Работа'
+  const behavior = kind === 'behavior'
   const [value, setValue] = useState('')
   const [comment, setComment] = useState('')
   const [isRemediated, setIsRemediated] = useState(false)
@@ -517,7 +523,7 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!value || (isRemediated && !comment.trim())) return
+    if (behavior ? !comment.trim() : !value || (isRemediated && !comment.trim())) return
     setSaving(true)
     setError('')
     try {
@@ -532,14 +538,14 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
         kind,
         gradingScale: 'five_point',
       })
-      const score = await putStudentScore(item.id, studentID, {
+      const score = await putStudentScore(item.id, studentID, behavior ? { teacherComment: comment.trim() } : {
         numericValue: Number(value),
         teacherComment: comment || undefined,
         isRemediated,
       })
       onSaved(currentLesson, { ...item, scores: [score] })
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Не удалось сохранить оценку')
+      setError(cause instanceof Error ? cause.message : behavior ? 'Не удалось сохранить комментарий' : 'Не удалось сохранить оценку')
     } finally {
       setSaving(false)
     }
@@ -549,7 +555,7 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
     <div className="dialog-backdrop">
       <form className="role-dialog role-form" onSubmit={submit}>
         <h3>{title}</h3>
-        <label>
+        {!behavior && <label>
           Оценка
           <input
             aria-label={`Оценка ${title}`}
@@ -561,13 +567,14 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
             onChange={(event) => setValue(event.target.value)}
             autoFocus
           />
-        </label>
-        <RemediationField checked={isRemediated} onChange={setIsRemediated} />
+        </label>}
+        {!behavior && <RemediationField checked={isRemediated} onChange={setIsRemediated} />}
         <label>
           Комментарий
           <textarea
             aria-label={`Комментарий ${title}`}
-            required={isRemediated}
+            required={behavior || isRemediated}
+            autoFocus={behavior}
             value={comment}
             onChange={(event) => setComment(event.target.value)}
           />
@@ -577,8 +584,8 @@ function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, o
           <button type="button" className="secondary-action" onClick={onBack}>
             Отмена
           </button>
-          <button className="primary-action" disabled={!value || (isRemediated && !comment.trim()) || saving}>
-            {saving ? 'Сохраняем…' : 'Сохранить оценку'}
+          <button className="primary-action" disabled={(behavior ? !comment.trim() : !value || (isRemediated && !comment.trim())) || saving}>
+            {saving ? 'Сохраняем…' : behavior ? 'Сохранить комментарий' : 'Сохранить оценку'}
           </button>
         </div>
       </form>

@@ -36,3 +36,20 @@ func TestGetParentStudentJournalRequiresMatchingPermissions(t *testing.T) {
 		t.Fatalf("error = %v", err)
 	}
 }
+
+func TestGetParentStudentJournalBehaviorCommentsArePrivate(t *testing.T) {
+	repo, studentID, yearID := parentJournalFixture()
+	repo.gradeItems[0].Kind = "behavior"
+	repo.gradeItems[0].Title = "Поведение"
+	repo.scores[0].TeacherComment = stringPointer("Опоздание на 10 минут")
+	repo.scores[1].TeacherComment = stringPointer("Чужое замечание")
+	result, err := NewClassDomain(repo).GetParentStudentJournal(context.Background(), testTx{}, "hash", studentID, yearID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lesson := result.Subjects[0].Lessons[0]
+	scores := lesson.Scores[repo.gradeItems[0].ID]
+	if lesson.GradeItems[0].Kind != "behavior" || len(scores) != 1 || scores[0].UserID != studentID || scores[0].NumericValue != nil || scores[0].TextValue != nil || scores[0].TeacherComment == nil || *scores[0].TeacherComment != "Опоздание на 10 минут" {
+		t.Fatalf("behavior comments = %+v", lesson)
+	}
+}

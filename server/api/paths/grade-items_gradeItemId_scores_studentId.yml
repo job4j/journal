@@ -2,7 +2,7 @@ put:
   tags: [Scores]
   operationId: putStudentScore
   summary: Поставить или изменить оценку ученика
-  description: Ученик должен состоять в классе на дату урока.
+  description: Ученик должен состоять в классе на дату урока. Для типа behavior сохраняется только непустой teacherComment без оценки и отработки.
   x-required-permission: can_create_score
   parameters:
     - $ref: '../openapi.yml#/components/parameters/GradeItemIdPath'
