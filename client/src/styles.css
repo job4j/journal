@@ -419,6 +419,10 @@ button.grade-control {
   padding-left: .45rem;
   font-weight: 800;
 }
+.role-form textarea[aria-invalid="true"] {
+  border-color: #b42318;
+  box-shadow: 0 0 0 2px #fecdca;
+}
 .role-form textarea {
   min-height: 6rem;
   resize: vertical;

@@ -503,7 +503,31 @@ function QuarterGradeEditor({assignmentID,quarterID,studentID,studentName,curren
  async function remove(){if(!current)return;setState('saving');try{await deleteQuarterGrade(assignmentID,quarterID,studentID);onDeleted(studentID);setOpen(false)}catch{setState('error')}}
  return <><button className={`grade-control${current?' grade-control--total':' grade-control--empty'}`} aria-label={`Изменить итог ${studentName}`} title={current?.teacherComment||'Задать итог'} onClick={show}><span>{displayGrade(current)}{current?.teacherComment?'*':''}</span></button>{open&&<div className="dialog-backdrop"><form className="role-dialog role-form" onSubmit={save}><h3>Итог · {studentName}</h3><GradeValueField label={`Итоговая оценка ${studentName}`} scale={scale} maxScore={current?.maxScore??undefined} value={value} setValue={setValue}/><label>Комментарий<textarea aria-label={`Комментарий к итогу ${studentName}`} value={comment} onChange={event=>setComment(event.target.value)}/></label>{state==='error'&&<p className="content-error" role="alert">Не удалось изменить итог</p>}<div className="dialog-actions"><button className="primary-action" disabled={!value||state==='saving'}>{state==='saving'?'Сохраняем…':'Сохранить'}</button><button type="button" className="secondary-action" onClick={()=>setOpen(false)}>Отменить</button><button type="button" className="secondary-action danger-action dialog-delete-action" disabled={!current||state==='saving'} onClick={remove}>Удалить</button></div></form></div>}</>
 }
-function LessonDialog({draft,setDraft,saving,submit}:{draft:LessonDraft;setDraft:(value:LessonDraft|null)=>void;saving:boolean;submit:(event:FormEvent)=>void}){return <div className="dialog-backdrop"><form className="role-dialog role-form" onSubmit={submit}><h3>Новый урок</h3><label>Дата<input aria-label="Дата урока" type="date" value={draft.lessonDate} onChange={e=>setDraft({...draft,lessonDate:e.target.value})}/></label><label>Позиция<input aria-label="Позиция урока" type="number" min="1" value={draft.position} onChange={e=>setDraft({...draft,position:Number(e.target.value)})}/></label><label>Тема<input value={draft.topic} onChange={e=>setDraft({...draft,topic:e.target.value})} required/></label><label>Домашнее задание<input value={draft.homework} onChange={e=>setDraft({...draft,homework:e.target.value})}/></label><button type="button" className="secondary-action" onClick={()=>setDraft({...draft,materials:[...draft.materials,{title:'',url:'',position:draft.materials.length+1}]})}>+ Материал</button>{draft.materials.map((material,i)=><div className="form-columns" key={i}><label>Название материала<input aria-label={`Название материала ${i+1}`} value={material.title} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,title:e.target.value}:m)})}/></label><label>Ссылка<input aria-label={`Ссылка материала ${i+1}`} type="url" value={material.url} onChange={e=>setDraft({...draft,materials:draft.materials.map((m,j)=>j===i?{...m,url:e.target.value}:m)})}/></label></div>)}<button className="primary-action" disabled={saving}>Сохранить</button></form></div>}
+function LessonDialog({draft,setDraft,saving,submit}:{draft:LessonDraft;setDraft:(value:LessonDraft|null)=>void;saving:boolean;submit:(event:FormEvent)=>void}){
+ const [attempted,setAttempted]=useState(false)
+ const topicInvalid=attempted&&!draft.topic.trim()
+ function save(event:FormEvent<HTMLFormElement>){
+  event.preventDefault()
+  setAttempted(true)
+  if(!draft.topic.trim()){
+   event.currentTarget.querySelector<HTMLTextAreaElement>('textarea')?.focus()
+   return
+  }
+  submit(event)
+ }
+ return <div className="dialog-backdrop">
+  <form className="role-dialog role-form" role="dialog" aria-modal="true" aria-labelledby="lesson-dialog-title" noValidate onSubmit={save}>
+   <h3 id="lesson-dialog-title">Тема и домашнее задание</h3>
+   <label>Тема<textarea value={draft.topic} onChange={event=>setDraft({...draft,topic:event.target.value})} required aria-invalid={topicInvalid} aria-describedby={topicInvalid?'lesson-topic-error':undefined}/></label>
+   {topicInvalid&&<p id="lesson-topic-error" className="content-error" role="alert">Заполните тему урока</p>}
+   <label>Домашнее задание<textarea value={draft.homework} onChange={event=>setDraft({...draft,homework:event.target.value})}/></label>
+   <div className="dialog-actions">
+    <button type="submit" className="primary-action" disabled={saving}>{saving?'Сохраняем…':'Сохранить'}</button>
+    <button type="button" className="secondary-action" disabled={saving} onClick={()=>setDraft(null)}>Отменить</button>
+   </div>
+  </form>
+ </div>
+}
 function NewScoreDialog({ assignmentID, date, lesson, studentID, kind, onBack, onSaved }: {
   assignmentID: string
   date: string
