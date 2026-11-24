@@ -1,0 +1,41 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/LessonIdPath'
+get:
+  tags: [Lessons]
+  operationId: listLessonAttachments
+  summary: Файлы урока для ответственного учителя или администратора
+  responses:
+    '200':
+      description: Список файлов без ключей и адресов хранилища.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/ListLessonAttachmentsResponse' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+post:
+  tags: [Lessons]
+  operationId: createLessonAttachment
+  summary: Прикрепить файл к уроку с заполненной темой
+  description: Доступно ответственному учителю с правом изменения урока и администратору. Один непустой файл до 20 МиБ за запрос.
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required: [file]
+          properties:
+            file: { type: string, format: binary }
+  responses:
+    '201':
+      description: Файл загружен.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/CreateLessonAttachmentResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '413': { description: Тело запроса превышает 24 МиБ. }
+    '503': { description: Хранилище недоступно или не настроено. }

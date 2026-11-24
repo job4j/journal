@@ -1,0 +1,23 @@
+parameters:
+  - name: attachmentId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+get:
+  tags: [Lessons]
+  operationId: downloadLessonAttachment
+  summary: Скачать файл урока
+  responses:
+    '200':
+      description: Файл, выдаваемый как attachment после проверки доступа. Прямые ссылки MinIO не выдаются.
+      headers:
+        Content-Disposition: { schema: { type: string } }
+        Cache-Control: { schema: { type: string, enum: ['private, no-store'] } }
+      content:
+        application/octet-stream:
+          schema: { type: string, format: binary }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '503': { description: Хранилище недоступно. }

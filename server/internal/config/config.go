@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	Storage         Storage
 	DatabaseURL     string
 	HTTPAddress     string
 	CookieSecure    bool
@@ -47,6 +48,10 @@ func Load() (Config, error) {
 	}
 	if _, _, err := net.SplitHostPort(cfg.HTTPAddress); err != nil {
 		return Config{}, fmt.Errorf("HTTP_ADDR: %w", err)
+	}
+	cfg.Storage, err = loadStorage()
+	if err != nil {
+		return Config{}, err
 	}
 	return cfg, nil
 }

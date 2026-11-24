@@ -36,6 +36,16 @@ tags:
     description: Дети текущего родителя и их табели.
 
 paths:
+  /lessons/{lessonId}/attachments:
+    $ref: './paths/lessons_lessonId_attachments.yml'
+  /lesson-attachments/{attachmentId}:
+    $ref: './paths/lesson-attachments_attachmentId.yml'
+  /lesson-attachments/{attachmentId}/download:
+    $ref: './paths/lesson-attachments_attachmentId_download.yml'
+  /parent/students/{studentId}/lessons/{lessonId}/attachments:
+    $ref: './paths/parent_students_studentId_lessons_lessonId_attachments.yml'
+  /parent/students/{studentId}/lesson-attachments/{attachmentId}/download:
+    $ref: './paths/parent_students_studentId_lesson-attachments_attachmentId_download.yml'
   /parent/students/{studentId}/classes/{classId}/schedule/{weekStart}:
     $ref: './paths/parent_students_studentId_classes_classId_schedule_weekStart.yml'
   /classes/{classId}/schedule/{weekStart}:
@@ -256,6 +266,26 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    LessonAttachment:
+      type: object
+      required: [id, lessonId, fileName, contentType, sizeBytes, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        lessonId: { type: string, format: uuid }
+        fileName: { type: string }
+        contentType: { type: string }
+        sizeBytes: { type: integer, format: int64, minimum: 1, maximum: 20971520 }
+        createdAt: { type: string, format: date-time }
+    ListLessonAttachmentsResponse:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LessonAttachment' } }
+    CreateLessonAttachmentResponse:
+      type: object
+      required: [attachment]
+      properties:
+        attachment: { $ref: '#/components/schemas/LessonAttachment' }
     ParentScheduleEntry:
       type: object
       additionalProperties: false

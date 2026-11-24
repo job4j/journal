@@ -19,7 +19,21 @@ type AuthRepository interface {
 	UpdatePasswordHash(context.Context, Transaction, uuid.UUID, string) error
 }
 
+type AttachmentRepository interface {
+	FindActiveUserBySessionHash(context.Context, Transaction, string) (entity.User, error)
+	CheckSessionPermissionForValue(context.Context, Transaction, string, string, string) (bool, bool, error)
+	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)
+	GetClassStudent(context.Context, Transaction, uuid.UUID, uuid.UUID) (entity.ClassStudent, error)
+	GetLesson(context.Context, Transaction, uuid.UUID) (entity.Lesson, error)
+	GetClassSubject(context.Context, Transaction, uuid.UUID) (entity.ClassSubject, error)
+	CreateLessonAttachment(context.Context, Transaction, entity.LessonAttachment) (entity.LessonAttachment, error)
+	ListLessonAttachments(context.Context, Transaction, uuid.UUID) ([]entity.LessonAttachment, error)
+	GetLessonAttachment(context.Context, Transaction, uuid.UUID) (entity.LessonAttachment, error)
+	DeleteLessonAttachment(context.Context, Transaction, uuid.UUID) error
+}
+
 type ScheduleRepository interface {
+	ListScheduleEntriesInRange(context.Context, Transaction, uuid.UUID, time.Time, time.Time) ([]entity.ScheduleEntry, error)
 	ListScheduleLessons(context.Context, Transaction, uuid.UUID, time.Time, time.Time) ([]entity.Lesson, error)
 	CheckSessionPermissionForValue(context.Context, Transaction, string, string, string) (bool, bool, error)
 	GetUser(context.Context, Transaction, uuid.UUID) (entity.User, error)

@@ -80,6 +80,17 @@ func TestParentScheduleProtectsFamiliesMembershipAndHomework(t *testing.T) {
 	if err != nil || len(result.Entries) != 2 || result.Entries[1].Homework == nil || *result.Entries[1].Homework != homework {
 		t.Fatalf("homework: %+v %v", result, err)
 	}
+	_, err = tx.Exec(ctx, `UPDATE class_students SET left_on='2026-11-11' WHERE class_id=$1 AND user_id=$2`, classID, child)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = d.GetParentSchedule(ctx, tx, hash, req)
+	if err != nil || len(result.Entries) != 3 {
+		t.Fatalf("schedule after extending membership: %+v %v", result, err)
+	}
+	if result.Entries[2].Homework != nil || result.Entries[2].HomeworkFrom != nil {
+		t.Fatal("older homework reused despite an unfilled scheduled lesson on November 10")
+	}
 	for _, test := range []struct {
 		token   string
 		request domain.GetParentScheduleRequest

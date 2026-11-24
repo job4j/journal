@@ -1,0 +1,17 @@
+parameters:
+  - name: attachmentId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+delete:
+  tags: [Lessons]
+  operationId: deleteLessonAttachment
+  summary: Удалить файл урока
+  description: Ответственный учитель с правом изменения урока или администратор. При сбое удаления из MinIO доступ к файлу уже закрыт; запрос можно повторить с тем же ID.
+  responses:
+    '204': { description: Файл удалён. }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '503': { description: Не удалось удалить объект из хранилища; повторите запрос. }

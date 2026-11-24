@@ -2,6 +2,10 @@ package api
 
 import "log/slog"
 
+func NewAttachmentHandler(service AttachmentService, logger *slog.Logger) *AttachmentHandler {
+	return &AttachmentHandler{service: service, logger: logger}
+}
+
 func NewScheduleHandler(service ScheduleService, logger *slog.Logger) *ScheduleHandler {
 	return &ScheduleHandler{service: service, logger: logger}
 }

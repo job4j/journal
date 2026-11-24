@@ -244,6 +244,16 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .lesson-tasks-button:hover { color: #155f99; background: #e5eef5; }
 .lesson-tasks-button:focus-visible { outline: 3px solid rgba(38, 117, 184, 0.25); outline-offset: 1px; }
 .lesson-tasks-button svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+.lesson-tasks-button:disabled { opacity: .35; cursor: default; }
+.lesson-header-actions { display: inline-flex; flex-shrink: 0; align-items: center; gap: .15rem; }
+.attachment-dialog { display: grid; gap: 1rem; }
+.attachment-dialog h3 { margin: 0; }
+.attachment-list { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.attachment-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-bottom: .75rem; border-bottom: 1px solid #dce6ee; }
+.attachment-list li>div { display: grid; gap: .3rem; min-width: 0; }
+.attachment-list small { color: #607b91; }
+.attachment-name { overflow-wrap: anywhere; text-align: left; }
+.attachment-dialog input[type="file"] { max-width: 100%; }
 .homework-text { overflow: hidden; margin-top: 0.5rem; color: #526a7e; font-size: 0.78rem; font-weight: 500; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
 .student-name { color: #1e3c56; font-size: 0.84rem; font-weight: 750; line-height: 1.2; }
 .journal-table td { height: 2.5rem; padding: .25rem .5rem; vertical-align: middle; background: #fff; }

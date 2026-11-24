@@ -1,10 +1,27 @@
 package service
 
 import (
+	"context"
+	"io"
 	"journal/server/internal/domain"
 	"journal/server/internal/repository"
 	"time"
 )
+
+type AttachmentObjectStore interface {
+	Put(context.Context, string, string, io.Reader, int64) error
+	Open(context.Context, string) (io.ReadCloser, error)
+	Delete(context.Context, string) error
+}
+type AttachmentService struct {
+	txManager repository.TransactionManager
+	domain    *domain.AttachmentDomain
+	store     AttachmentObjectStore
+}
+
+func NewAttachmentService(txManager repository.TransactionManager, repo repository.AttachmentRepository, store AttachmentObjectStore) *AttachmentService {
+	return &AttachmentService{txManager: txManager, domain: domain.NewAttachmentDomain(repo), store: store}
+}
 
 type AuthService struct {
 	txManager repository.TransactionManager

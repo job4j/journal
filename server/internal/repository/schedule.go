@@ -18,6 +18,9 @@ func (r *Repository) GetScheduleWeek(ctx context.Context, tx Transaction, classI
 func (r *Repository) ListScheduleLessons(ctx context.Context, tx Transaction, classID uuid.UUID, from, to time.Time) ([]entity.Lesson, error) {
 	return queryMany[entity.Lesson](ctx, tx, "list schedule lessons", `SELECT l.id,l.class_subject_id,l.lesson_date,l.position,l.topic,l.homework,l.created_by,l.created_at,l.updated_at FROM lessons l JOIN class_subjects cs ON cs.id=l.class_subject_id WHERE cs.class_id=$1 AND l.lesson_date BETWEEN $2 AND $3 ORDER BY l.lesson_date,l.position,l.id`, classID, from, to)
 }
+func (r *Repository) ListScheduleEntriesInRange(ctx context.Context, tx Transaction, classID uuid.UUID, from, to time.Time) ([]entity.ScheduleEntry, error) {
+	return queryMany[entity.ScheduleEntry](ctx, tx, "list schedule entries in range", `SELECT e.id,e.week_id,e.lesson_date,e.position,e.class_subject_id,e.title,e.notes,e.starts_at,e.ends_at FROM class_schedule_entries e JOIN class_schedule_weeks w ON w.id=e.week_id WHERE w.class_id=$1 AND e.lesson_date BETWEEN $2 AND $3 ORDER BY e.lesson_date,e.position,e.id`, classID, from, to)
+}
 func (r *Repository) SaveScheduleWeek(ctx context.Context, tx Transaction, classID uuid.UUID, start time.Time) (entity.ScheduleWeek, error) {
 	return queryOne[entity.ScheduleWeek](ctx, tx, "save schedule week", `INSERT INTO class_schedule_weeks(class_id,week_start) VALUES($1,$2) ON CONFLICT(class_id,week_start) DO UPDATE SET revision=class_schedule_weeks.revision+1,updated_at=now() RETURNING id,class_id,week_start,revision,updated_at`, classID, start)
 }

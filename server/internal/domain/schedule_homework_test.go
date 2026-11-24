@@ -24,7 +24,12 @@ func TestScheduleHomeworkUsesPreviousDateAndOnlyFirstDailyLesson(t *testing.T) {
 		{ClassSubjectID: subject, LessonDate: day, Position: 1, Homework: text("Ко вторнику")},
 		{ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, 2), Position: 1, Homework: text("Будущее")},
 	}
-	fillScheduleHomework(entries, lessons)
+	schedule := []entity.ScheduleEntry{
+		{ClassSubjectID: &subject, LessonDate: day.AddDate(0, 0, -3), Position: 3},
+		{ClassSubjectID: &other, LessonDate: day.AddDate(0, 0, -1), Position: 1},
+		{ClassSubjectID: &subject, LessonDate: day, Position: 3},
+	}
+	fillScheduleHomework(entries, schedule, lessons)
 	if entries[0].Homework == nil || *entries[0].Homework != "№ 2\nПовторить тему" || *entries[0].HomeworkFrom != "2026-11-06" {
 		t.Fatalf("first lesson: %+v", entries[0])
 	}
@@ -42,11 +47,56 @@ func TestScheduleHomeworkDoesNotReuseOlderAssignmentAfterEmptyLesson(t *testing.
 	subject := uuid.New()
 	day := time.Date(2026, 11, 9, 0, 0, 0, 0, time.UTC)
 	old := "Старое задание"
-	for _, empty := range []*string{nil, new(string)} {
+	whitespace := " \n "
+	for _, empty := range []*string{nil, new(string), &whitespace} {
 		entries := []ParentScheduleEntry{{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day, Position: 1}}}
-		fillScheduleHomework(entries, []entity.Lesson{{ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -5), Position: 1, Homework: &old}, {ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -1), Position: 1, Homework: empty}})
+		schedule := []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: day.AddDate(0, 0, -5)}, {ClassSubjectID: &subject, LessonDate: day.AddDate(0, 0, -1)}}
+		fillScheduleHomework(entries, schedule, []entity.Lesson{{ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -5), Position: 1, Homework: &old}, {ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -1), Position: 1, Homework: empty}})
 		if entries[0].Homework != nil {
 			t.Fatal("old assignment was reused")
 		}
+	}
+}
+
+func TestScheduleHomeworkUsesScheduleEvenWhenJournalIsMissing(t *testing.T) {
+	subject, other := uuid.New(), uuid.New()
+	day := time.Date(2026, 11, 9, 0, 0, 0, 0, time.UTC)
+	old, unscheduled := "Старое задание", "Урок вне расписания"
+	previous := day.AddDate(0, 0, -3)
+	older := day.AddDate(0, 0, -7)
+	for _, test := range []struct {
+		name     string
+		schedule []entity.ScheduleEntry
+		lessons  []entity.Lesson
+		want     *string
+	}{
+		{
+			name:     "missing journal on previous scheduled date blocks older homework",
+			schedule: []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: older}, {ClassSubjectID: &subject, LessonDate: previous}},
+			lessons:  []entity.Lesson{{ClassSubjectID: subject, LessonDate: older, Homework: &old}},
+		},
+		{
+			name:     "unscheduled journal entry is ignored",
+			schedule: []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: previous}},
+			lessons:  []entity.Lesson{{ClassSubjectID: subject, LessonDate: previous, Homework: &old}, {ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -1), Homework: &unscheduled}},
+			want:     &old,
+		},
+		{
+			name:     "no earlier scheduled lesson",
+			schedule: []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: day}, {ClassSubjectID: &subject, LessonDate: day.AddDate(0, 0, 1)}, {ClassSubjectID: &other, LessonDate: previous}, {LessonDate: previous}},
+			lessons:  []entity.Lesson{{ClassSubjectID: subject, LessonDate: older, Homework: &old}},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			entries := []ParentScheduleEntry{{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day}}}
+			fillScheduleHomework(entries, test.schedule, test.lessons)
+			if test.want == nil {
+				if entries[0].Homework != nil || entries[0].HomeworkFrom != nil {
+					t.Fatalf("unexpected homework: %+v", entries[0])
+				}
+			} else if entries[0].Homework == nil || *entries[0].Homework != *test.want || entries[0].HomeworkFrom == nil || *entries[0].HomeworkFrom != previous.Format(time.DateOnly) {
+				t.Fatalf("wrong scheduled homework: %+v", entries[0])
+			}
+		})
 	}
 }

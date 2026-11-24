@@ -3,11 +3,23 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
+	"io"
 	"journal/server/internal/domain"
 	"journal/server/internal/repository/entity"
 	"log/slog"
 	"time"
 )
+
+type AttachmentHandler struct {
+	service AttachmentService
+	logger  *slog.Logger
+}
+type AttachmentService interface {
+	CreateLessonAttachment(context.Context, string, domain.CreateLessonAttachmentRequest, io.Reader) (domain.CreateLessonAttachmentResponse, error)
+	ListLessonAttachments(context.Context, string, domain.ListLessonAttachmentsRequest) (domain.ListLessonAttachmentsResponse, error)
+	GetLessonAttachment(context.Context, string, domain.GetLessonAttachmentRequest) (domain.GetLessonAttachmentResponse, io.ReadCloser, error)
+	DeleteLessonAttachment(context.Context, string, domain.DeleteLessonAttachmentRequest) error
+}
 
 type AuthHandler struct {
 	service      AuthService

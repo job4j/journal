@@ -89,11 +89,15 @@ func (d *ScheduleDomain) GetParentSchedule(ctx context.Context, tx repository.Tr
 		to = dayUTC(*membership.LeftOn)
 	}
 	if len(result.Entries) > 0 {
+		history, readErr := d.repo.ListScheduleEntriesInRange(ctx, tx, req.ClassID, from, to)
+		if readErr != nil {
+			return result, readErr
+		}
 		lessons, readErr := d.repo.ListScheduleLessons(ctx, tx, req.ClassID, from, to)
 		if readErr != nil {
 			return result, readErr
 		}
-		fillScheduleHomework(result.Entries, lessons)
+		fillScheduleHomework(result.Entries, history, lessons)
 	}
 	return result, nil
 }

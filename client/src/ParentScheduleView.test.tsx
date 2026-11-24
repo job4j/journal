@@ -53,7 +53,7 @@ it('switches weeks without retaining previous homework',async()=>{
 it('shows unassigned homework without inventing an older assignment',async()=>{
   setup().mockResolvedValue({weekStart:'2026-11-09',entries:[{...entry('empty'),homework:null,homeworkFrom:null}]})
   render(<ParentScheduleView student={journal.student} onBack={vi.fn()} />)
-  expect(await screen.findByText('Не задано')).toBeInTheDocument()
+  expect(await screen.findByText('Не заполнено')).toBeInTheDocument()
   expect(screen.queryByText(/Задано /)).not.toBeInTheDocument()
 })
 

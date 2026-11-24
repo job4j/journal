@@ -2,6 +2,15 @@ package api
 
 import "github.com/gofiber/fiber/v2"
 
+func (h *AttachmentHandler) Register(router fiber.Router) {
+	router.Get("/lessons/:lessonId/attachments", h.ListLessonAttachments)
+	router.Post("/lessons/:lessonId/attachments", h.CreateLessonAttachment)
+	router.Delete("/lesson-attachments/:attachmentId", h.DeleteLessonAttachment)
+	router.Get("/lesson-attachments/:attachmentId/download", h.GetLessonAttachment)
+	router.Get("/parent/students/:studentId/lessons/:lessonId/attachments", h.ListLessonAttachments)
+	router.Get("/parent/students/:studentId/lesson-attachments/:attachmentId/download", h.GetLessonAttachment)
+}
+
 func (h *ScheduleHandler) Register(router fiber.Router) {
 	router.Get("/parent/students/:studentId/classes/:classId/schedule/:weekStart", h.GetParentSchedule)
 	router.Get("/classes/:classId/schedule/:weekStart", h.GetClassSchedule)

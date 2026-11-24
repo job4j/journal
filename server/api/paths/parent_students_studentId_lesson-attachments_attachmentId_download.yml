@@ -1,0 +1,22 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  - name: attachmentId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+get:
+  tags: [Parent]
+  operationId: downloadParentLessonAttachment
+  summary: Скачать файл урока доступного ребёнка
+  description: Те же проверки семьи, класса и дат обучения, что и при просмотре списка файлов. Родитель не может загружать или удалять файлы.
+  responses:
+    '200':
+      description: Файл для скачивания.
+      content:
+        application/octet-stream:
+          schema: { type: string, format: binary }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
+    '503': { description: Хранилище недоступно. }

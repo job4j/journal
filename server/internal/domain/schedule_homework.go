@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func fillScheduleHomework(entries []ParentScheduleEntry, lessons []entity.Lesson) {
+func fillScheduleHomework(entries []ParentScheduleEntry, schedule []entity.ScheduleEntry, lessons []entity.Lesson) {
 	sort.SliceStable(entries, func(i, j int) bool {
 		a, b := entries[i].Entry, entries[j].Entry
 		if !a.LessonDate.Equal(b.LessonDate) {
@@ -39,10 +39,23 @@ func fillScheduleHomework(entries []ParentScheduleEntry, lessons []entity.Lesson
 			continue
 		}
 		seen[key] = true
+		var previousDate time.Time
+		for _, candidate := range schedule {
+			date := dayUTC(candidate.LessonDate)
+			if candidate.ClassSubjectID == nil || *candidate.ClassSubjectID != *entry.Entry.ClassSubjectID || !date.Before(dayUTC(entry.Entry.LessonDate)) {
+				continue
+			}
+			if previousDate.IsZero() || date.After(previousDate) {
+				previousDate = date
+			}
+		}
+		if previousDate.IsZero() {
+			continue
+		}
 		var previous *entity.Lesson
 		for j := range lessons {
 			candidate := &lessons[j]
-			if candidate.ClassSubjectID != *entry.Entry.ClassSubjectID || !dayUTC(candidate.LessonDate).Before(dayUTC(entry.Entry.LessonDate)) {
+			if candidate.ClassSubjectID != *entry.Entry.ClassSubjectID || !dayUTC(candidate.LessonDate).Equal(previousDate) {
 				continue
 			}
 			if previous == nil || candidate.LessonDate.After(previous.LessonDate) || (candidate.LessonDate.Equal(previous.LessonDate) && candidate.Position > previous.Position) {

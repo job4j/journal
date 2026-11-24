@@ -1,4 +1,5 @@
 import TeacherRetakesView from './TeacherRetakesView'
+import LessonAttachmentsButton from './LessonAttachmentsButton'
 import{FormEvent,useCallback,useEffect,useMemo,useState}from'react'
 import{ClassStudent,listClassStudents}from'./classes'
 import{ClassSubjectRecord}from'./classSubjects'
@@ -185,6 +186,7 @@ function GradeTable({
                 <th className={date === today ? 'journal-today' : undefined} key={date}>
                   <div className="lesson-date-row">
                     <span className="lesson-date">{formatLessonDate(date)}, {formatWeekday(date)}</span>
+                    <span className="lesson-header-actions">
                     <button
                       type="button"
                       className="lesson-tasks-button"
@@ -194,6 +196,8 @@ function GradeTable({
                     >
                       <TasksIcon/>
                     </button>
+                    <LessonAttachmentsButton lessonID={lesson?.topic.trim()?lesson.id:undefined} date={date}/>
+                    </span>
                   </div>
                   {lesson?.topic && <span className="lesson-topic">{lesson.topic}</span>}
                   {lesson?.homework && <span className="homework-text"><strong>Д.З.:</strong> {lesson.homework}</span>}

@@ -1,0 +1,18 @@
+parameters:
+  - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+  - $ref: '../openapi.yml#/components/parameters/LessonIdPath'
+get:
+  tags: [Parent]
+  operationId: listParentLessonAttachments
+  summary: Файлы урока доступного ребёнка
+  description: Требуются роль родителя, can_view_user и can_view_journal для указанного ученика. Дата урока должна входить в период его обучения в классе.
+  responses:
+    '200':
+      description: Список файлов.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/ListLessonAttachmentsResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }
