@@ -18,6 +18,8 @@ type ParentScheduleEntry struct {
 	Entry                  entity.ScheduleEntry
 	Homework, HomeworkFrom *string
 	HomeworkLessonID       *uuid.UUID
+	LessonID               *uuid.UUID
+	Topic                  *string
 }
 type GetParentScheduleResponse struct {
 	WeekStart time.Time

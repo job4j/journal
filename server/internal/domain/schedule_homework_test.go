@@ -58,6 +58,34 @@ func TestScheduleHomeworkDoesNotReuseOlderAssignmentAfterEmptyLesson(t *testing.
 	}
 }
 
+func TestScheduleSeparatesCurrentTopicAndFilesFromPreviousHomework(t *testing.T) {
+	subject, other, currentID, previousID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	day := time.Date(2026, 11, 24, 0, 0, 0, 0, time.UTC)
+	homework := "Повторить прошлую тему"
+	entries := []ParentScheduleEntry{{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day, Position: 1}}, {Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day, Position: 2}}}
+	schedule := []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: day.AddDate(0, 0, -1)}}
+	lessons := []entity.Lesson{
+		{ID: previousID, ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, -1), Topic: "Предыдущая тема", Homework: &homework},
+		{ID: uuid.New(), ClassSubjectID: subject, LessonDate: day, Position: 1, Topic: "Первый урок"},
+		{ID: currentID, ClassSubjectID: subject, LessonDate: day, Position: 2, Topic: "Тема выбранного дня"},
+		{ID: uuid.New(), ClassSubjectID: other, LessonDate: day, Topic: "Другой предмет"},
+		{ID: uuid.New(), ClassSubjectID: subject, LessonDate: day.AddDate(0, 0, 1), Topic: "Будущая тема"},
+	}
+	fillScheduleHomework(entries, schedule, lessons)
+	first := entries[0]
+	if first.LessonID == nil || *first.LessonID != currentID || first.Topic == nil || *first.Topic != "Тема выбранного дня" || first.Homework == nil || *first.Homework != homework || first.HomeworkLessonID == nil || *first.HomeworkLessonID != previousID {
+		t.Fatalf("mixed lesson dates: %+v", first)
+	}
+	if entries[1].LessonID != nil || entries[1].Topic != nil {
+		t.Fatal("current topic and files repeated in same day")
+	}
+	entries = []ParentScheduleEntry{{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day}}}
+	fillScheduleHomework(entries, schedule, lessons[:1])
+	if entries[0].LessonID != nil || entries[0].Topic != nil {
+		t.Fatal("previous topic/files substituted for missing current lesson")
+	}
+}
+
 func TestScheduleHomeworkLinksFilesFromPreviousLessonWithoutHomeworkText(t *testing.T) {
 	subject, lessonID, olderID := uuid.New(), uuid.New(), uuid.New()
 	day := time.Date(2026, 11, 24, 0, 0, 0, 0, time.UTC)

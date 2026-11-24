@@ -39,6 +39,17 @@ func fillScheduleHomework(entries []ParentScheduleEntry, schedule []entity.Sched
 			continue
 		}
 		seen[key] = true
+		var current *entity.Lesson
+		for j := range lessons {
+			candidate := &lessons[j]
+			if candidate.ClassSubjectID == *entry.Entry.ClassSubjectID && dayUTC(candidate.LessonDate).Equal(dayUTC(entry.Entry.LessonDate)) && (current == nil || candidate.Position > current.Position) {
+				current = candidate
+			}
+		}
+		if current != nil {
+			entry.LessonID = &current.ID
+			entry.Topic = &current.Topic
+		}
 		var previousDate time.Time
 		for _, candidate := range schedule {
 			date := dayUTC(candidate.LessonDate)

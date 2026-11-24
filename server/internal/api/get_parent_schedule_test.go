@@ -15,11 +15,30 @@ import (
 
 type scheduleWithAttachmentsStub struct {
 	scheduleServiceStub
-	lessonID uuid.UUID
+	lessonID        uuid.UUID
+	currentLessonID *uuid.UUID
+	currentTopic    *string
 }
 
 func (s *scheduleWithAttachmentsStub) GetParentSchedule(_ context.Context, _ string, req domain.GetParentScheduleRequest) (domain.GetParentScheduleResponse, error) {
-	return domain.GetParentScheduleResponse{WeekStart: req.WeekStart, Entries: []domain.ParentScheduleEntry{{Entry: entity.ScheduleEntry{ID: uuid.New(), LessonDate: req.WeekStart, Title: "Предмет"}, HomeworkLessonID: &s.lessonID}}}, nil
+	return domain.GetParentScheduleResponse{WeekStart: req.WeekStart, Entries: []domain.ParentScheduleEntry{{Entry: entity.ScheduleEntry{ID: uuid.New(), LessonDate: req.WeekStart, Title: "Предмет"}, HomeworkLessonID: &s.lessonID, LessonID: s.currentLessonID, Topic: s.currentTopic}}}, nil
+}
+func TestParentScheduleSeparatesCurrentLessonFromHomeworkSource(t *testing.T) {
+	current, previous := uuid.New(), uuid.New()
+	topic := "Тема выбранного дня"
+	app := fiber.New()
+	NewScheduleHandler(&scheduleWithAttachmentsStub{lessonID: previous, currentLessonID: &current, currentTopic: &topic}, slog.New(slog.NewTextHandler(io.Discard, nil))).Register(app)
+	res, err := app.Test(httptest.NewRequest("GET", "/parent/students/10000000-0000-4000-8000-000000000001/classes/60000000-0000-4000-8000-000000000001/schedule/2026-11-09", nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(res.Body)
+	_ = res.Body.Close()
+	for _, field := range []string{`"lessonId":"` + current.String() + `"`, `"homeworkLessonId":"` + previous.String() + `"`, `"topic":"` + topic + `"`} {
+		if res.StatusCode != 200 || !strings.Contains(string(body), field) {
+			t.Fatalf("missing field %s: %s", field, body)
+		}
+	}
 }
 func TestParentScheduleReturnsFileSourceWithoutHomeworkText(t *testing.T) {
 	id := uuid.New()

@@ -250,14 +250,16 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .attachment-dialog h3 { margin: 0; }
 .attachment-list { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
 .attachment-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-bottom: .75rem; border-bottom: 1px solid #dce6ee; }
-.attachment-list li>div { display: grid; gap: .3rem; min-width: 0; }
+.attachment-list li>div { display: grid; grid-template-columns: minmax(0, 1fr); gap: .3rem; min-width: 0; flex: 1; }
 .attachment-list small { color: #607b91; }
-.attachment-name { overflow-wrap: anywhere; text-align: left; }
-.lesson-attachments-list { min-width: 0; margin-top: .7rem; font-size: .85rem; }
+.subject-link.attachment-name { width: 100%; max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.lesson-attachments-list { width: 100%; max-width: 100%; min-width: 0; margin-top: .7rem; font-size: .85rem; }
 .lesson-attachments-list > strong { color: #36536b; font-size: .8rem; }
-.lesson-attachments-list ul { display: grid; gap: .5rem; list-style: none; margin: .4rem 0 0; padding: 0; }
+.lesson-attachments-list ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; list-style: none; margin: .4rem 0 0; padding: 0; min-width: 0; }
 .lesson-attachments-list ul > li { display: grid; gap: .2rem; min-width: 0; padding: 0; border: 0; }
-.lesson-attachments-list button.attachment-name { display: inline-flex; align-items: flex-start; gap: .4rem; padding: .25rem 0; }
+.lesson-attachments-list button.attachment-name { display: grid; grid-template-columns: 1rem minmax(0, 1fr); align-items: start; justify-content: start; gap: .4rem; padding: .25rem 0; }
+.lesson-attachments-list button.attachment-name > span { min-width: 0; overflow-wrap: anywhere; }
+.parent-lesson-card > .lesson-attachments-list { margin: 0; padding: .85rem 1rem; border-bottom: 1px solid #edf1f4; }
 .lesson-attachments-list svg { width: 1rem; height: 1rem; flex-shrink: 0; margin-top: .1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .lesson-attachments-list small { color: #6a8093; }
 .attachment-dialog input[type="file"] { max-width: 100%; }
@@ -775,17 +777,17 @@ button.teacher-retake-score:disabled { cursor: default; opacity: .6; }
 .parent-schedule-day > header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .3rem; padding-bottom: .65rem; }
 .parent-schedule-day h3 { margin: 0; color: #29465e; font-size: 1rem; text-transform: capitalize; }
 .parent-schedule-day time { color: #657b8e; font-size: .82rem; }
-.parent-schedule-day ol { list-style: none; margin: 0; padding: 0; }
-.parent-schedule-day li { min-width: 0; padding: .8rem 0; border-top: 1px solid #e2e9ef; overflow-wrap: anywhere; }
+.parent-schedule-day > ol { list-style: none; margin: 0; padding: 0; }
+.parent-schedule-day > ol > li { min-width: 0; padding: .8rem 0; border-top: 1px solid #e2e9ef; overflow-wrap: anywhere; }
 .parent-schedule-lesson { display: flex; gap: .7rem; align-items: baseline; }
 .parent-schedule-lesson > div { min-width: 0; }
 .parent-schedule-number { flex: 0 0 1.5rem; color: #6a8093; font-size: .8rem; }
 .parent-schedule-day h4 { margin: 0; color: #183f5d; font-size: .95rem; }
 .parent-schedule-time { margin: .3rem 0 0; color: #526f86; font-size: .85rem; }
 .parent-schedule-notes { margin: .5rem 0 0 2.2rem; color: #657b8e; font-size: .82rem; white-space: pre-wrap; }
-.parent-schedule-homework { margin-top: .65rem; padding: .65rem .75rem; background: #f5f8fa; border-radius: .5rem; color: #36536b; font-size: .85rem; }
-.parent-schedule-homework > strong { font-size: .78rem; font-weight: 600; }
-.parent-schedule-homework p { margin: .3rem 0 0; white-space: pre-wrap; }
+.parent-schedule-homework, .parent-schedule-topic { min-width: 0; margin-top: .65rem; padding: .65rem .75rem; background: #f5f8fa; border-radius: .5rem; color: #36536b; font-size: .85rem; overflow-wrap: anywhere; }
+.parent-schedule-homework > strong, .parent-schedule-topic > strong { font-size: .78rem; font-weight: 600; }
+.parent-schedule-homework p, .parent-schedule-topic p { margin: .3rem 0 0; white-space: pre-wrap; }
 .parent-schedule-homework small { display: block; margin-top: .4rem; color: #6a8093; }
 .parent-strengths h3 { margin: 0; color: #25694f; font-size: .95rem; }
 .parent-strengths header p { margin: .4rem 0 0; color: #6a8093; font-size: .82rem; line-height: 1.5; }

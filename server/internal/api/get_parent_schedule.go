@@ -29,7 +29,7 @@ func (h *ScheduleHandler) GetParentSchedule(c *fiber.Ctx) error {
 			id := e.ClassSubjectID.String()
 			subject = &id
 		}
-		week.Entries = append(week.Entries, gen.ParentScheduleEntry{Id: e.ID.String(), Day: e.LessonDate.Format(time.DateOnly), Position: e.Position, ClassSubjectId: subject, Title: e.Title, Notes: e.Notes, StartsAt: e.StartsAt, EndsAt: e.EndsAt, Homework: item.Homework, HomeworkFrom: item.HomeworkFrom, HomeworkLessonId: item.HomeworkLessonID})
+		week.Entries = append(week.Entries, gen.ParentScheduleEntry{Id: e.ID.String(), Day: e.LessonDate.Format(time.DateOnly), Position: e.Position, ClassSubjectId: subject, Title: e.Title, Notes: e.Notes, StartsAt: e.StartsAt, EndsAt: e.EndsAt, Homework: item.Homework, HomeworkFrom: item.HomeworkFrom, HomeworkLessonId: item.HomeworkLessonID, LessonId: item.LessonID, Topic: item.Topic})
 	}
 	return c.JSON(gen.GetParentScheduleResponse{Week: week})
 }

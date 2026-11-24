@@ -19,21 +19,34 @@ function setup() {
 }
 afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers()})
 
-it('shows files from the previous scheduled lesson even without homework text and only once per day',async()=>{
-  setup().mockResolvedValue({weekStart:'2026-11-09',entries:[{...entry('first'),homework:null,homeworkFrom:null,homeworkLessonId:'previous-lesson'},{...entry('second','2026-11-09',4),homework:null,homeworkFrom:null,homeworkLessonId:'previous-lesson'}]})
-  const file={id:'file-1',lessonId:'previous-lesson',fileName:'Карточки.pdf',contentType:'application/pdf',sizeBytes:1024,createdAt:'2026-11-06T00:00:00Z'}
+it('shows current lesson topic and files while keeping homework from the previous lesson',async()=>{
+  setup().mockResolvedValue({weekStart:'2026-11-09',entries:[{...entry('first'),homework:'Повторить прошлую тему',homeworkFrom:'2026-11-06',homeworkLessonId:'previous-lesson',lessonId:'current-lesson',topic:'Новая тема\nКлиматические зоны'},{...entry('second','2026-11-09',4),homework:null,homeworkFrom:null,lessonId:'current-lesson',topic:'Новая тема\nКлиматические зоны'}]})
+  const file={id:'file-1',lessonId:'current-lesson',fileName:'Карточки.pdf',contentType:'application/pdf',sizeBytes:1024,createdAt:'2026-11-09T00:00:00Z'}
   const list=vi.spyOn(attachmentsAPI,'listLessonAttachments').mockResolvedValue([file])
   const download=vi.spyOn(attachmentsAPI,'downloadLessonAttachment').mockResolvedValue()
   render(<ParentScheduleView student={journal.student} onBack={vi.fn()}/>);
   const button=await screen.findByRole('button',{name:'Скачать Карточки.pdf'})
   expect(screen.getAllByRole('button',{name:'Скачать Карточки.pdf'})).toHaveLength(1)
-  expect(screen.getByText('Не заполнено')).toBeInTheDocument()
+  expect(screen.getByText('Новая тема Климатические зоны')).toBeInTheDocument()
+  expect(screen.getAllByText('Тема урока')).toHaveLength(1)
+  expect(screen.getByText('Повторить прошлую тему')).toBeInTheDocument()
+  expect(screen.getByText('Задано 6 ноября')).toBeInTheDocument()
   expect(list).toHaveBeenCalledTimes(1)
-  expect(list).toHaveBeenCalledWith('previous-lesson',journal.student.id)
+  expect(list).toHaveBeenCalledWith('current-lesson',journal.student.id)
   await userEvent.click(button)
   expect(download).toHaveBeenCalledWith(file,journal.student.id)
   await userEvent.click(screen.getByRole('button',{name:'Следующая неделя'}))
   expect(screen.queryByRole('button',{name:'Скачать Карточки.pdf'})).not.toBeInTheDocument()
+})
+
+it('does not show previous lesson files as current files when the current lesson is not filled',async()=>{
+  setup().mockResolvedValue({weekStart:'2026-11-09',entries:[{...entry('first'),homeworkLessonId:'previous-lesson',lessonId:null,topic:null}]})
+  const list=vi.spyOn(attachmentsAPI,'listLessonAttachments')
+  render(<ParentScheduleView student={journal.student} onBack={vi.fn()}/>);
+  expect(await screen.findByText('Задано 6 ноября')).toBeInTheDocument()
+  expect(screen.queryByText('Тема урока')).not.toBeInTheDocument()
+  expect(screen.queryByRole('list',{name:'Файлы урока'})).not.toBeInTheDocument()
+  expect(list).not.toHaveBeenCalled()
 })
 
 it('shows day cards with times and homework only on the first daily subject lesson',async()=>{

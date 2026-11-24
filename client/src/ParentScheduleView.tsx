@@ -73,8 +73,9 @@ export default function ParentScheduleView({student,onBack}:{student:ParentStude
           return <li key={entry.id}>
             <div className="parent-schedule-lesson"><span className="parent-schedule-number">{entry.position}</span><div><h4>{entry.title}</h4><p className="parent-schedule-time">{entry.startsAt ? `${entry.startsAt}${entry.endsAt ? `–${entry.endsAt}` : ''}` : 'Время не указано'}</p></div></div>
             {entry.notes && <p className="parent-schedule-notes">{entry.notes}</p>}
+            {firstOfSubject && entry.topic?.trim() && <div className="parent-schedule-topic"><strong>Тема урока</strong><p>{entry.topic}</p></div>}
             {firstOfSubject && <div className="parent-schedule-homework"><strong>Домашнее задание</strong><p>{entry.homework || 'Не заполнено'}</p>{entry.homework && entry.homeworkFrom && <small>Задано {formatDate(entry.homeworkFrom)}</small>}</div>}
-            {firstOfSubject && entry.homeworkLessonId && <ParentLessonAttachments key={`${student.id}:${entry.homeworkLessonId}`} lessonID={entry.homeworkLessonId} studentID={student.id}/>}
+            {firstOfSubject && entry.lessonId && <ParentLessonAttachments key={`${student.id}:${entry.lessonId}`} lessonID={entry.lessonId} studentID={student.id}/>}
           </li>
         })}</ol> : <p className="parent-weekly-message">Занятий нет</p>}
       </section>
