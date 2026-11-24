@@ -1,12 +1,52 @@
-import{afterEach,expect,it,vi}from'vitest'
+import{afterEach,beforeEach,expect,it,vi}from'vitest'
 import{cleanup,render,screen,within,waitFor}from'@testing-library/react'
 import userEvent from'@testing-library/user-event'
 import TeacherLessonsView from'./TeacherLessonsView'
 import { gradedLesson } from './test/parentJournalFixture'
+import * as attachmentsAPI from './lessonAttachments'
 
 const assignment={id:'link-1',classId:'class-1',subject:{id:'s-1',code:'MATH',name:'Математика'},responsibleTeacher:{id:'t-1',name:'Иван'+' '+'Петров',roles:['teacher']}}
 const student={student:{id:'student-1',name:'Анна'+' '+'Иванова',roles:['student']},enrolledOn:'2026-09-01',leftOn:null}
+beforeEach(()=>{vi.spyOn(attachmentsAPI,'listLessonAttachments').mockResolvedValue([])})
 afterEach(()=>{cleanup();vi.restoreAllMocks();document.cookie='journal_period_view=; Max-Age=0; Path=/'})
+
+it('lists attachments after topic and homework and refreshes after uploading and deleting',async()=>{
+ const lesson={id:'l-1',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Дроби',homework:'Задание 5',materials:[],absences:[],gradeItems:[]}
+ const oldFile={id:'file-1',lessonId:lesson.id,fileName:'Первый.pdf',contentType:'application/pdf',sizeBytes:1024,createdAt:'2026-09-09T00:00:00Z'}
+ const newFile={...oldFile,id:'file-2',fileName:'Второй.pdf'}
+ let files=[oldFile]
+ vi.mocked(attachmentsAPI.listLessonAttachments).mockImplementation(async()=>[...files])
+ vi.spyOn(attachmentsAPI,'uploadLessonAttachment').mockImplementation(async()=>{files=[...files,newFile];return newFile})
+ vi.spyOn(attachmentsAPI,'deleteLessonAttachment').mockImplementation(async id=>{files=files.filter(file=>file.id!==id)})
+ const download=vi.spyOn(attachmentsAPI,'downloadLessonAttachment').mockResolvedValue()
+ vi.spyOn(globalThis,'fetch')
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[lesson]})))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]})))
+  .mockResolvedValueOnce(new Response(JSON.stringify({items:[]})))
+ render(<TeacherLessonsView assignment={assignment} quarters={[{id:'q-1',number:1,startsOn:'2026-09-09',endsOn:'2026-09-09'}]}/>);
+ const fileButton=await screen.findByRole('button',{name:'Скачать Первый.pdf'})
+ const topic=screen.getByText('Дроби'),homework=screen.getByText('Задание 5',{exact:false})
+ expect(topic.compareDocumentPosition(homework)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+ expect(homework.compareDocumentPosition(fileButton)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+ await userEvent.click(fileButton)
+ expect(download).toHaveBeenCalledWith(oldFile,undefined)
+ const column=topic.closest('th') as HTMLElement
+ await userEvent.click(screen.getByRole('button',{name:'Файлы урока 2026-09-09'}))
+ let dialog=screen.getByRole('dialog')
+ await within(dialog).findByRole('button',{name:'Скачать Первый.pdf'})
+ await userEvent.upload(within(dialog).getByLabelText('Файл'),new File(['pdf'],'Второй.pdf',{type:'application/pdf'}))
+ await userEvent.click(within(dialog).getByRole('button',{name:'Загрузить'}))
+ await within(dialog).findByRole('button',{name:'Скачать Второй.pdf'})
+ await userEvent.click(within(dialog).getByRole('button',{name:'Закрыть'}))
+ expect(await within(column).findByRole('button',{name:'Скачать Второй.pdf'})).toBeInTheDocument()
+ await userEvent.click(screen.getByRole('button',{name:'Файлы урока 2026-09-09'}))
+ dialog=screen.getByRole('dialog')
+ await userEvent.click(await within(dialog).findByRole('button',{name:'Удалить Первый.pdf'}))
+ await waitFor(()=>expect(within(dialog).queryByRole('button',{name:'Скачать Первый.pdf'})).not.toBeInTheDocument())
+ await userEvent.click(within(dialog).getByRole('button',{name:'Закрыть'}))
+ await waitFor(()=>expect(within(column).queryByRole('button',{name:'Скачать Первый.pdf'})).not.toBeInTheDocument())
+ expect(await within(column).findByRole('button',{name:'Скачать Второй.pdf'})).toBeInTheDocument()
+})
 
 it('creates, edits and deletes a behavior comment without a grade', async () => {
  const lesson={id:'l-behavior',classSubjectId:assignment.id,lessonDate:'2026-09-09',position:1,topic:'Дроби',materials:[],absences:[],gradeItems:[]}

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import ParentJournalView from './ParentJournalView'
 import * as api from './parentJournal'
 import * as scheduleAPI from './parentSchedule'
+import * as attachmentsAPI from './lessonAttachments'
 import { GradeItem, LessonRecord } from './lessons'
 
 const student = { id: 'student-1', name: 'Анна Иванова', roles: ['student'] }
@@ -23,6 +24,7 @@ function lesson(id: string, date: string, numericValue = 5): LessonRecord {
 }
 
 function mockJournal(lessons: LessonRecord[] = []) {
+  vi.spyOn(attachmentsAPI,'listLessonAttachments').mockResolvedValue([])
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(2026, 9, 21, 12))
   vi.spyOn(api, 'listCurrentParentStudents').mockResolvedValue([student])
@@ -81,6 +83,21 @@ it('preserves navigation from the student name to the read-only subject journal'
   expect(screen.getByText('Пропуск')).toBeInTheDocument()
   expect(screen.queryByRole('table')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Сохранить' })).not.toBeInTheDocument()
+})
+
+it('shows lesson attachment names directly in the parent journal',async()=>{
+  mockJournal([lesson('detail','2026-09-09')])
+  const file={id:'file-1',lessonId:'detail',fileName:'Упражнения.pdf',contentType:'application/pdf',sizeBytes:2048,createdAt:'2026-09-09T00:00:00Z'}
+  vi.mocked(attachmentsAPI.listLessonAttachments).mockResolvedValue([file])
+  const download=vi.spyOn(attachmentsAPI,'downloadLessonAttachment').mockResolvedValue()
+  render(<ParentJournalView/>);
+  await userEvent.click(await screen.findByRole('button',{name:student.name}))
+  await userEvent.click(await screen.findByRole('button',{name:'7А'}))
+  await userEvent.click(await screen.findByRole('button',{name:'Математика'}))
+  await userEvent.click(await screen.findByRole('button',{name:'Скачать Упражнения.pdf'}))
+  expect(download).toHaveBeenCalledWith(file,student.id)
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button',{name:/Удалить/})).not.toBeInTheDocument()
 })
 
 it('shows subjects, lesson dates, multiple grades and comments only for the current Monday–Sunday week', async () => {

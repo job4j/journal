@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { addDays, localToday, monday } from './classSchedule'
 import { listParentStudentPeriods, type ParentStudent, type ParentStudentPeriod } from './parentJournal'
 import { getParentSchedule, type ParentScheduleWeek } from './parentSchedule'
+import ParentLessonAttachments from './ParentLessonAttachments'
 
 function formatDate(day: string) {
   return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(`${day}T00:00:00Z`))
@@ -73,6 +74,7 @@ export default function ParentScheduleView({student,onBack}:{student:ParentStude
             <div className="parent-schedule-lesson"><span className="parent-schedule-number">{entry.position}</span><div><h4>{entry.title}</h4><p className="parent-schedule-time">{entry.startsAt ? `${entry.startsAt}${entry.endsAt ? `–${entry.endsAt}` : ''}` : 'Время не указано'}</p></div></div>
             {entry.notes && <p className="parent-schedule-notes">{entry.notes}</p>}
             {firstOfSubject && <div className="parent-schedule-homework"><strong>Домашнее задание</strong><p>{entry.homework || 'Не заполнено'}</p>{entry.homework && entry.homeworkFrom && <small>Задано {formatDate(entry.homeworkFrom)}</small>}</div>}
+            {firstOfSubject && entry.homeworkLessonId && <ParentLessonAttachments key={`${student.id}:${entry.homeworkLessonId}`} lessonID={entry.homeworkLessonId} studentID={student.id}/>}
           </li>
         })}</ol> : <p className="parent-weekly-message">Занятий нет</p>}
       </section>

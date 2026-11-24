@@ -253,6 +253,13 @@ input:focus { background: white; border-color: #2675b8; box-shadow: 0 0 0 3px rg
 .attachment-list li>div { display: grid; gap: .3rem; min-width: 0; }
 .attachment-list small { color: #607b91; }
 .attachment-name { overflow-wrap: anywhere; text-align: left; }
+.lesson-attachments-list { min-width: 0; margin-top: .7rem; font-size: .85rem; }
+.lesson-attachments-list > strong { color: #36536b; font-size: .8rem; }
+.lesson-attachments-list ul { display: grid; gap: .5rem; list-style: none; margin: .4rem 0 0; padding: 0; }
+.lesson-attachments-list ul > li { display: grid; gap: .2rem; min-width: 0; padding: 0; border: 0; }
+.lesson-attachments-list button.attachment-name { display: inline-flex; align-items: flex-start; gap: .4rem; padding: .25rem 0; }
+.lesson-attachments-list svg { width: 1rem; height: 1rem; flex-shrink: 0; margin-top: .1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.lesson-attachments-list small { color: #6a8093; }
 .attachment-dialog input[type="file"] { max-width: 100%; }
 .homework-text { overflow: hidden; margin-top: 0.5rem; color: #526a7e; font-size: 0.78rem; font-weight: 500; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
 .student-name { color: #1e3c56; font-size: 0.84rem; font-weight: 750; line-height: 1.2; }

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import ParentScheduleView from './ParentScheduleView'
 import * as journalAPI from './parentJournal'
 import * as scheduleAPI from './parentSchedule'
+import * as attachmentsAPI from './lessonAttachments'
 import { journalFixture } from './test/parentJournalFixture'
 import type { ParentScheduleWeek } from './parentSchedule'
 
@@ -17,6 +18,23 @@ function setup() {
   return vi.spyOn(scheduleAPI,'getParentSchedule').mockImplementation(async(_student,_class,start)=>({weekStart:start,entries:start==='2026-11-09' ? [entry('first'),{...entry('second','2026-11-09',4),startsAt:'12:00',endsAt:'12:45',homework:'Не должно появиться у второго урока'}, {...entry('extra','2026-11-11',5),classSubjectId:null,title:'Классный час',notes:'Раз в месяц',homework:null,homeworkFrom:null}] : []}))
 }
 afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers()})
+
+it('shows files from the previous scheduled lesson even without homework text and only once per day',async()=>{
+  setup().mockResolvedValue({weekStart:'2026-11-09',entries:[{...entry('first'),homework:null,homeworkFrom:null,homeworkLessonId:'previous-lesson'},{...entry('second','2026-11-09',4),homework:null,homeworkFrom:null,homeworkLessonId:'previous-lesson'}]})
+  const file={id:'file-1',lessonId:'previous-lesson',fileName:'Карточки.pdf',contentType:'application/pdf',sizeBytes:1024,createdAt:'2026-11-06T00:00:00Z'}
+  const list=vi.spyOn(attachmentsAPI,'listLessonAttachments').mockResolvedValue([file])
+  const download=vi.spyOn(attachmentsAPI,'downloadLessonAttachment').mockResolvedValue()
+  render(<ParentScheduleView student={journal.student} onBack={vi.fn()}/>);
+  const button=await screen.findByRole('button',{name:'Скачать Карточки.pdf'})
+  expect(screen.getAllByRole('button',{name:'Скачать Карточки.pdf'})).toHaveLength(1)
+  expect(screen.getByText('Не заполнено')).toBeInTheDocument()
+  expect(list).toHaveBeenCalledTimes(1)
+  expect(list).toHaveBeenCalledWith('previous-lesson',journal.student.id)
+  await userEvent.click(button)
+  expect(download).toHaveBeenCalledWith(file,journal.student.id)
+  await userEvent.click(screen.getByRole('button',{name:'Следующая неделя'}))
+  expect(screen.queryByRole('button',{name:'Скачать Карточки.pdf'})).not.toBeInTheDocument()
+})
 
 it('shows day cards with times and homework only on the first daily subject lesson',async()=>{
   const get=setup()

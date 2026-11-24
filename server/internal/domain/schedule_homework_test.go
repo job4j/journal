@@ -58,6 +58,30 @@ func TestScheduleHomeworkDoesNotReuseOlderAssignmentAfterEmptyLesson(t *testing.
 	}
 }
 
+func TestScheduleHomeworkLinksFilesFromPreviousLessonWithoutHomeworkText(t *testing.T) {
+	subject, lessonID, olderID := uuid.New(), uuid.New(), uuid.New()
+	day := time.Date(2026, 11, 24, 0, 0, 0, 0, time.UTC)
+	previous, older := day.AddDate(0, 0, -1), day.AddDate(0, 0, -4)
+	entries := []ParentScheduleEntry{
+		{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day, Position: 1}},
+		{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day, Position: 2}},
+	}
+	schedule := []entity.ScheduleEntry{{ClassSubjectID: &subject, LessonDate: previous}, {ClassSubjectID: &subject, LessonDate: older}}
+	lessons := []entity.Lesson{{ID: olderID, ClassSubjectID: subject, LessonDate: older}, {ID: lessonID, ClassSubjectID: subject, LessonDate: previous}}
+	fillScheduleHomework(entries, schedule, lessons)
+	if entries[0].HomeworkLessonID == nil || *entries[0].HomeworkLessonID != lessonID || entries[0].Homework != nil {
+		t.Fatalf("wrong file source: %+v", entries[0])
+	}
+	if entries[1].HomeworkLessonID != nil {
+		t.Fatal("files repeated for second daily subject lesson")
+	}
+	entries = []ParentScheduleEntry{{Entry: entity.ScheduleEntry{ClassSubjectID: &subject, LessonDate: day}}}
+	fillScheduleHomework(entries, schedule, lessons[:1])
+	if entries[0].HomeworkLessonID != nil {
+		t.Fatal("older files reused after missing scheduled lesson")
+	}
+}
+
 func TestScheduleHomeworkUsesScheduleEvenWhenJournalIsMissing(t *testing.T) {
 	subject, other := uuid.New(), uuid.New()
 	day := time.Date(2026, 11, 9, 0, 0, 0, 0, time.UTC)

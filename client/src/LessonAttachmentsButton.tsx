@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { deleteLessonAttachment, downloadLessonAttachment, listLessonAttachments, maxAttachmentBytes, uploadLessonAttachment, type LessonAttachment } from './lessonAttachments'
 
-export default function LessonAttachmentsButton({lessonID,date,studentID}:{lessonID?:string;date:string;studentID?:string}) {
+export default function LessonAttachmentsButton({lessonID,date,studentID,onChanged}:{lessonID?:string;date:string;studentID?:string;onChanged?:()=>void}) {
   const [open,setOpen]=useState(false)
   const [items,setItems]=useState<LessonAttachment[]>([])
   const [file,setFile]=useState<File|null>(null)
@@ -25,13 +25,13 @@ export default function LessonAttachmentsButton({lessonID,date,studentID}:{lesso
     if(!file||!lessonID||busy)return
     if(!file.size||file.size>maxAttachmentBytes){setError('Выберите непустой файл размером не более 20 МБ');return}
     setBusy(true);setError('')
-    try{const saved=await uploadLessonAttachment(lessonID,file);setItems(current=>[...current,saved]);setFile(null);setInputVersion(value=>value+1)}
+    try{const saved=await uploadLessonAttachment(lessonID,file);setItems(current=>[...current,saved]);setFile(null);setInputVersion(value=>value+1);onChanged?.()}
     catch(cause){setError(cause instanceof Error?cause.message:'Не удалось загрузить файл')}
     finally{setBusy(false)}
   }
   async function remove(item:LessonAttachment){
     setBusy(true);setError('')
-    try{await deleteLessonAttachment(item.id);setItems(current=>current.filter(value=>value.id!==item.id))}
+    try{await deleteLessonAttachment(item.id);setItems(current=>current.filter(value=>value.id!==item.id));onChanged?.()}
     catch(cause){setError(cause instanceof Error?cause.message:'Не удалось удалить файл')}
     finally{setBusy(false)}
   }

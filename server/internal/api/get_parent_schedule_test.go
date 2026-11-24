@@ -1,14 +1,40 @@
 package api
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"io"
 	"journal/server/internal/domain"
+	"journal/server/internal/repository/entity"
 	"log/slog"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
+
+type scheduleWithAttachmentsStub struct {
+	scheduleServiceStub
+	lessonID uuid.UUID
+}
+
+func (s *scheduleWithAttachmentsStub) GetParentSchedule(_ context.Context, _ string, req domain.GetParentScheduleRequest) (domain.GetParentScheduleResponse, error) {
+	return domain.GetParentScheduleResponse{WeekStart: req.WeekStart, Entries: []domain.ParentScheduleEntry{{Entry: entity.ScheduleEntry{ID: uuid.New(), LessonDate: req.WeekStart, Title: "Предмет"}, HomeworkLessonID: &s.lessonID}}}, nil
+}
+func TestParentScheduleReturnsFileSourceWithoutHomeworkText(t *testing.T) {
+	id := uuid.New()
+	app := fiber.New()
+	NewScheduleHandler(&scheduleWithAttachmentsStub{lessonID: id}, slog.New(slog.NewTextHandler(io.Discard, nil))).Register(app)
+	res, err := app.Test(httptest.NewRequest("GET", "/parent/students/10000000-0000-4000-8000-000000000001/classes/60000000-0000-4000-8000-000000000001/schedule/2026-11-09", nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(res.Body)
+	_ = res.Body.Close()
+	if res.StatusCode != 200 || !strings.Contains(string(body), `"homeworkLessonId":"`+id.String()+`"`) || !strings.Contains(string(body), `"homework":null`) {
+		t.Fatalf("file source missing: %s", body)
+	}
+}
 
 func TestParentScheduleHTTPContract(t *testing.T) {
 	for _, test := range []struct {

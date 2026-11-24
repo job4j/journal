@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import LessonAttachmentsButton from './LessonAttachmentsButton'
+import ParentLessonAttachments from './ParentLessonAttachments'
 import ParentStudentGrades from './ParentStudentGrades'
 import ParentStudentExport from './ParentStudentExport'
 import ParentScheduleView from './ParentScheduleView'
@@ -84,9 +84,10 @@ function ParentSubjectJournal({ student, period, subject, onBack }: { student: P
     {loading ? <div className="empty-card">Загружаем табель…</div> : <>
       {data?.quarterGrades?.length ? <div className="quarter-summary">{data.quarterGrades.map(item => <span key={item.id}>{period.academicYear.quarters.find(q => q.id === item.quarterId)?.name ?? 'Период'}: <strong>{scoreValue(item)}</strong></span>)}</div> : null}
       {data?.lessons.length ? <div className="parent-lesson-list">{[...data.lessons].sort((a, b) => b.lesson.lessonDate.localeCompare(a.lesson.lessonDate) || b.lesson.position - a.lesson.position).map(({ lesson }) => <article className="parent-lesson-card" key={lesson.id}>
-        <header><time dateTime={lesson.lessonDate}>{formatLessonDate(lesson.lessonDate)}</time><LessonAttachmentsButton lessonID={lesson.id} date={lesson.lessonDate} studentID={student.id}/>{lesson.absences.length ? <span className="absence-mark">Пропуск</span> : <span className="attendance-mark">Был</span>}</header>
+        <header><time dateTime={lesson.lessonDate}>{formatLessonDate(lesson.lessonDate)}</time>{lesson.absences.length ? <span className="absence-mark">Пропуск</span> : <span className="attendance-mark">Был</span>}</header>
         {lesson.topic && <div className="parent-lesson-section"><span>Тема</span><strong>{lesson.topic}</strong></div>}
         <div className="parent-lesson-section"><span>Домашнее задание</span><strong>{lesson.homework ?? 'Не задано'}</strong></div>
+        <ParentLessonAttachments key={`${student.id}:${lesson.id}`} lessonID={lesson.id} studentID={student.id}/>
         {lesson.gradeItems.length ? <div className="parent-lesson-section"><span>Работы и оценки</span><div className="parent-score-list">{lesson.gradeItems.map(item => { const score = item.scores[0]; return <div className="parent-score-card" key={item.id}><span>{item.title}</span><strong>{scoreValue(score)}</strong>{score?.teacherComment && <small>{score.teacherComment}</small>}</div> })}</div></div> : null}
         {lesson.materials.length ? <div className="parent-lesson-section"><span>Материалы</span><div className="parent-materials">{lesson.materials.map(item => <a href={item.url} key={item.id}>{item.title}</a>)}</div></div> : null}
       </article>)}</div> : <div className="empty-card">По предмету пока нет уроков</div>}

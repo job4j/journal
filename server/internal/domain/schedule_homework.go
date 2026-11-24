@@ -62,6 +62,9 @@ func fillScheduleHomework(entries []ParentScheduleEntry, schedule []entity.Sched
 				previous = candidate
 			}
 		}
+		if previous != nil {
+			entry.HomeworkLessonID = &previous.ID
+		}
 		if previous != nil && previous.Homework != nil && strings.TrimSpace(*previous.Homework) != "" {
 			entry.Homework = previous.Homework
 			from := previous.LessonDate.Format(time.DateOnly)

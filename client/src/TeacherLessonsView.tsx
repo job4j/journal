@@ -1,5 +1,6 @@
 import TeacherRetakesView from './TeacherRetakesView'
 import LessonAttachmentsButton from './LessonAttachmentsButton'
+import LessonAttachmentsList from './LessonAttachmentsList'
 import{FormEvent,useCallback,useEffect,useMemo,useState}from'react'
 import{ClassStudent,listClassStudents}from'./classes'
 import{ClassSubjectRecord}from'./classSubjects'
@@ -130,6 +131,7 @@ function GradeTable({
     kind: GradeItem['kind'],
   ) => void
 }) {
+  const [attachmentRevisions,setAttachmentRevisions]=useState<Record<string,number>>({})
   const today = new Date().toISOString().slice(0, 10)
   const dates = useMemo(() => {
     if (!from || !to) return items.map((item) => item.lessonDate)
@@ -196,11 +198,12 @@ function GradeTable({
                     >
                       <TasksIcon/>
                     </button>
-                    <LessonAttachmentsButton lessonID={lesson?.topic.trim()?lesson.id:undefined} date={date}/>
+                    <LessonAttachmentsButton lessonID={lesson?.topic.trim()?lesson.id:undefined} date={date} onChanged={()=>{if(lesson)setAttachmentRevisions(current=>({...current,[lesson.id]:(current[lesson.id]??0)+1}))}}/>
                     </span>
                   </div>
                   {lesson?.topic && <span className="lesson-topic">{lesson.topic}</span>}
                   {lesson?.homework && <span className="homework-text"><strong>Д.З.:</strong> {lesson.homework}</span>}
+                  {lesson&&<LessonAttachmentsList key={lesson.id} lessonID={lesson.id} revision={attachmentRevisions[lesson.id]??0}/>}
                 </th>
               )
             })}

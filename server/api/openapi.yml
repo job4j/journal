@@ -301,6 +301,7 @@ components:
         endsAt: { type: string, nullable: true }
         homework: { type: string, nullable: true, description: 'Задание из последнего урока предмета на предыдущей дате; только для первого занятия предмета в день.' }
         homeworkFrom: { type: string, nullable: true, description: 'Дата урока, на котором задали домашнее задание.' }
+        homeworkLessonId: { type: string, format: uuid, nullable: true, description: 'Урок на предыдущей дате по расписанию для просмотра файлов. Может присутствовать при пустом тексте домашнего задания; у повторных занятий предмета в день отсутствует.' }
     ParentScheduleWeek:
       type: object
       required: [weekStart, entries]
