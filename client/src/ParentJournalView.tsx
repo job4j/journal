@@ -3,6 +3,7 @@ import ParentLessonAttachments from './ParentLessonAttachments'
 import ParentStudentGrades from './ParentStudentGrades'
 import ParentStudentExport from './ParentStudentExport'
 import ParentScheduleView from './ParentScheduleView'
+import ParentMissedTopicsView from './ParentMissedTopicsView'
 import { ClassSubjectRecord } from './classSubjects'
 import { ParentJournalSubject, ParentStudent, ParentStudentPeriod, getParentStudentJournal, listCurrentParentStudents, listParentStudentPeriods } from './parentJournal'
 
@@ -19,6 +20,7 @@ export default function ParentJournalView() {
   const [students, setStudents] = useState<ParentStudent[]>([])
   const [student, setStudent] = useState<ParentStudent | null>(null)
   const [scheduleStudent, setScheduleStudent] = useState<ParentStudent | null>(null)
+  const [missedTopicsStudent,setMissedTopicsStudent]=useState<ParentStudent|null>(null)
   const [periods, setPeriods] = useState<ParentStudentPeriod[]>([])
   const [period, setPeriod] = useState<ParentStudentPeriod | null>(null)
   const [subject, setSubject] = useState<ClassSubjectRecord | null>(null)
@@ -46,6 +48,7 @@ export default function ParentJournalView() {
   }
 
   if (scheduleStudent) return <ParentScheduleView student={scheduleStudent} onBack={() => setScheduleStudent(null)} />
+  if(missedTopicsStudent)return <ParentMissedTopicsView key={missedTopicsStudent.id} student={missedTopicsStudent} onBack={()=>setMissedTopicsStudent(null)}/>
   if (subject && period && student) return <ParentSubjectJournal student={student} period={period} subject={subject} onBack={() => setSubject(null)} />
 
   if (period && student) return <div className="content-stack">
@@ -64,7 +67,7 @@ export default function ParentJournalView() {
   return <div className="content-stack">
     <div className="content-heading"><div><p className="content-kicker">Родительский кабинет</p><h2>Ученики</h2></div><span className="count-badge">{students.length}</span></div>
     {error && <p className="content-error" role="alert">{error}</p>}
-    {loading ? <div className="empty-card">Загружаем учеников…</div> : students.length ? <div className="parent-option-list parent-student-list">{students.map(item => <div className="parent-student-overview" key={item.id}><button className="parent-option-card" aria-label={item.name} onClick={() => void openStudent(item)}><span><strong>{item.name}</strong><small>Открыть журнал</small></span><span aria-hidden="true">›</span></button><button type="button" className="parent-schedule-link" aria-label={`Расписание — ${item.name}`} onClick={() => setScheduleStudent(item)}><span><strong>Расписание</strong><small>Уроки и домашние задания по неделям</small></span><span aria-hidden="true">›</span></button><ParentStudentGrades student={item} /><ParentStudentExport student={item} /></div>)}</div> : <div className="empty-card">Нет доступных учеников</div>}
+    {loading ? <div className="empty-card">Загружаем учеников…</div> : students.length ? <div className="parent-option-list parent-student-list">{students.map(item => <div className="parent-student-overview" key={item.id}><button className="parent-option-card" aria-label={item.name} onClick={() => void openStudent(item)}><span><strong>{item.name}</strong><small>Открыть журнал</small></span><span aria-hidden="true">›</span></button><button type="button" className="parent-schedule-link" aria-label={`Расписание — ${item.name}`} onClick={() => setScheduleStudent(item)}><span><strong>Расписание</strong><small>Уроки и домашние задания по неделям</small></span><span aria-hidden="true">›</span></button><button type="button" className="parent-schedule-link" aria-label={`Пропущенные темы — ${item.name}`} onClick={()=>setMissedTopicsStudent(item)}><span><strong>Пропущенные темы</strong><small>Даты, предметы и темы пропущенных уроков</small></span><span aria-hidden="true">›</span></button><ParentStudentGrades student={item} /><ParentStudentExport student={item} /></div>)}</div> : <div className="empty-card">Нет доступных учеников</div>}
   </div>
 }
 

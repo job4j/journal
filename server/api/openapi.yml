@@ -36,6 +36,8 @@ tags:
     description: Дети текущего родителя и их табели.
 
 paths:
+  /parent/students/{studentId}/missed-topics:
+    $ref: './paths/parent_students_studentId_missed-topics.yml'
   /lessons/{lessonId}/attachments:
     $ref: './paths/lessons_lessonId_attachments.yml'
   /lesson-attachments/{attachmentId}:
@@ -266,6 +268,23 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    ParentMissedTopic:
+      type: object
+      required: [lessonId, lessonDate, position, topic, subjectId, subjectName, classId, className]
+      properties:
+        lessonId: { type: string, format: uuid }
+        lessonDate: { type: string, format: date }
+        position: { type: integer }
+        topic: { type: string }
+        subjectId: { type: string, format: uuid }
+        subjectName: { type: string }
+        classId: { type: string, format: uuid }
+        className: { type: string }
+    ListParentMissedTopicsResponse:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ParentMissedTopic' } }
     LessonAttachment:
       type: object
       required: [id, lessonId, fileName, contentType, sizeBytes, createdAt]

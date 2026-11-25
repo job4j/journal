@@ -1,0 +1,18 @@
+get:
+  tags: [Parent]
+  operationId: listParentMissedTopics
+  summary: Уроки, пропущенные ребёнком за учебный год
+  description: Требуются роль parent и оба персональных разрешения can_view_user и can_view_journal для studentId. Возвращаются только уроки с отметкой пропуска данного ученика, за выбранный учебный год и в пределах его дат обучения во всех классах этого года. Отсутствие оценки не считается пропуском. Клиент скрывает будущие даты.
+  parameters:
+    - $ref: '../openapi.yml#/components/parameters/StudentIdPath'
+    - $ref: '../openapi.yml#/components/parameters/AcademicYearIdQuery'
+  responses:
+    '200':
+      description: Пропуски от новых к старым; пустой список, если отметок нет.
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yml#/components/schemas/ListParentMissedTopicsResponse' }
+    '400': { $ref: '../openapi.yml#/components/responses/BadRequest' }
+    '401': { $ref: '../openapi.yml#/components/responses/Unauthorized' }
+    '403': { $ref: '../openapi.yml#/components/responses/Forbidden' }
+    '404': { $ref: '../openapi.yml#/components/responses/NotFound' }

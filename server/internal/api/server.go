@@ -92,6 +92,7 @@ type ScheduleService interface {
 	ReplaceClassSchedule(context.Context, string, domain.ReplaceClassScheduleRequest) (domain.ReplaceClassScheduleResponse, error)
 }
 type ClassService interface {
+	ListParentMissedTopics(context.Context, string, domain.ListParentMissedTopicsRequest) (domain.ListParentMissedTopicsResponse, error)
 	ListClasses(context.Context, string, uuid.UUID) ([]domain.ClassView, error)
 	GetClass(context.Context, string, uuid.UUID) (domain.ClassView, error)
 	CreateClass(context.Context, string, uuid.UUID, string, int16) (domain.ClassView, error)

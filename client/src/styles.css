@@ -766,6 +766,17 @@ button.teacher-retake-score:disabled { cursor: default; opacity: .6; }
 .parent-schedule-link strong, .parent-schedule-link small { display: block; }
 .parent-schedule-link small { margin-top: .2rem; color: #657b8e; font-size: .78rem; }
 .parent-schedule-view { width: 100%; max-width: 42rem; min-width: 0; margin-inline: auto; }
+.parent-missed-topics-view { width: 100%; max-width: 52rem; min-width: 0; margin-inline: auto; grid-template-columns: minmax(0, 1fr); }
+.parent-missed-filters { display: flex; flex-wrap: wrap; gap: 1rem; }
+.parent-missed-filters label { display: grid; gap: .4rem; flex: 1 1 14rem; min-width: 0; color: #39546c; font-size: .85rem; }
+.parent-missed-filters select { width: 100%; min-width: 0; padding: .65rem; border: 1px solid #cbd9e3; border-radius: .45rem; background: #fff; font: inherit; }
+.parent-missed-topic-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem; }
+.parent-missed-topic-card { min-width: 0; padding: 1rem; border: 1px solid #dbe5ed; border-radius: .75rem; background: #fff; overflow-wrap: anywhere; }
+.parent-missed-topic-card > header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; color: #183f5d; }
+.parent-missed-topic-card time, .parent-missed-topic-card > small { color: #657b8e; font-size: .8rem; }
+.parent-missed-topic { margin: .7rem 0; color: #29465e; white-space: pre-wrap; line-height: 1.5; }
+.parent-missed-materials { display: flex; align-items: center; gap: .5rem; margin-top: .7rem; color: #36536b; font-size: .8rem; }
+.parent-missed-topics-view .content-error .secondary-action { margin-top: .6rem; display: block; }
 .parent-schedule-period { display: grid; gap: .4rem; min-width: 0; }
 .parent-schedule-period select { width: 100%; min-width: 0; padding: .6rem; border: 1px solid #cbd9e3; border-radius: .4rem; font: inherit; }
 .parent-schedule-navigation { display: grid; grid-template-columns: 2.75rem minmax(0,1fr) 2.75rem; align-items: center; gap: .5rem; }

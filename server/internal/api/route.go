@@ -53,6 +53,7 @@ func (h *SubjectHandler) Register(router fiber.Router) {
 	router.Post("/subjects", h.CreateSubject)
 }
 func (h *ClassHandler) Register(router fiber.Router) {
+	router.Get("/parent/students/:studentId/missed-topics", h.ListParentMissedTopics)
 	router.Get("/classes", h.ListClasses)
 	router.Post("/classes", h.CreateClass)
 	router.Get("/classes/:classId", h.GetClass)

@@ -5,6 +5,7 @@ import ParentJournalView from './ParentJournalView'
 import * as api from './parentJournal'
 import * as scheduleAPI from './parentSchedule'
 import * as attachmentsAPI from './lessonAttachments'
+import * as missedTopicsAPI from './parentMissedTopics'
 import { GradeItem, LessonRecord } from './lessons'
 
 const student = { id: 'student-1', name: 'Анна Иванова', roles: ['student'] }
@@ -36,6 +37,18 @@ function mockJournal(lessons: LessonRecord[] = []) {
 }
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
+
+it('opens missed topics separately for the selected child and returns to the home page',async()=>{
+ mockJournal()
+ const list=vi.spyOn(missedTopicsAPI,'listParentMissedTopics').mockResolvedValue([{lessonId:'missed',lessonDate:'2026-10-20',position:1,topic:'Пропущенная тема',subjectId:'math',subjectName:'Математика',classId:period.class.id,className:period.class.name}])
+ render(<ParentJournalView/>);
+ await userEvent.click(await screen.findByRole('button',{name:`Пропущенные темы — ${student.name}`}))
+ expect(await screen.findByText('Пропущенная тема')).toBeInTheDocument()
+ expect(screen.getByRole('heading',{name:'Пропущенные темы'})).toBeInTheDocument()
+ expect(list).toHaveBeenCalledWith(student.id,period.academicYear.id)
+ await userEvent.click(screen.getByRole('button',{name:'← К ученикам'}))
+ expect(await screen.findByRole('button',{name:student.name})).toBeInTheDocument()
+})
 
 it('shows behavior comments on the child card and in the subject journal without a grade', async () => {
  const entry=lesson('behavior','2026-10-20')
